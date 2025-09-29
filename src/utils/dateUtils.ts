@@ -1,10 +1,11 @@
 /**
- * 날짜를 YYYY-MM-DD 형식으로 변환
+ * 날짜를 YYYY-MM-DD 형식으로 변환 (로컬 시간대 기준)
  */
 export const formatDateForInput = (date: Date): string => {
-  const isoString = date.toISOString();
-  const datePart = isoString.split('T')[0];
-  return datePart || '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**
@@ -15,10 +16,15 @@ export const getTodayDateString = (): string => {
 };
 
 /**
- * YYYY-MM-DD 형식의 문자열을 Date 객체로 변환
+ * YYYY-MM-DD 형식의 문자열을 Date 객체로 변환 (로컬 시간대 기준)
  */
 export const parseInputDate = (dateString: string): Date => {
-  return new Date(dateString + 'T00:00:00');
+  const parts = dateString.split('-').map(Number);
+  if (parts.length !== 3) {
+    throw new Error('Invalid date format. Expected YYYY-MM-DD');
+  }
+  const [year, month, day] = parts;
+  return new Date(year!, month! - 1, day!); // month는 0-based이므로 1을 빼줌
 };
 
 /**
