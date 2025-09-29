@@ -22,14 +22,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
     const symbol = currentCurrency === 'KRW' ? '₩' : currentCurrency === 'JPY' ? '¥' : '$';
     const absAmount = Math.abs(convertedAmount);
 
-    let formattedAmount: string;
-    if (absAmount >= 1000000) {
-      formattedAmount = `${symbol}${(absAmount / 1000000).toFixed(1)}M`;
-    } else if (absAmount >= 1000) {
-      formattedAmount = `${symbol}${(absAmount / 1000).toFixed(0)}K`;
-    } else {
-      formattedAmount = `${symbol}${Math.round(absAmount).toLocaleString()}`;
-    }
+    // 금액을 쉼표와 함께 표시하고 통화 단위를 뒤에 배치
+    const formattedAmount = `${Math.round(absAmount).toLocaleString()}${symbol}`;
 
     return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
   };
