@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { TransactionFormData } from '../../types';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, SUPPORTED_CURRENCIES } from '../../types';
 import { convertToKRW, getCurrencySymbol } from '../../utils/currency';
 import { useCurrency } from '../../hooks/useCurrency';
+import {
+  getTodayDateString,
+  isValidDate,
+  isFutureDate,
+  isTooOldDate,
+  formatInputDateToKorean
+} from '../../utils/dateUtils';
 
 interface TransactionFormProps {
   onSubmit: (data: TransactionFormData & { amountInKRW: number }) => void;
   onCancel: () => void;
+  initialDate?: string | undefined; // 초기 날짜 설정 (YYYY-MM-DD 형식)
 }
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, initialDate }) => {
   const { currentCurrency } = useCurrency();
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: '',
@@ -17,13 +25,41 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
     description: '',
     type: 'expense',
     currency: currentCurrency,
+    date: initialDate || getTodayDateString(), // 초기 날짜가 제공되면 사용, 아니면 오늘 날짜
   });
+
+  // initialDate가 변경될 때 폼 데이터 업데이트
+  useEffect(() => {
+    if (initialDate) {
+      setFormData(prev => ({
+        ...prev,
+        date: initialDate,
+      }));
+    }
+  }, [initialDate]);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
-    if (!formData.amount || !formData.category || !formData.description) {
+    // 필수 필드 검증
+    if (!formData.amount || !formData.category || !formData.description || !formData.date) {
       alert('모든 필드를 입력해 주세요.');
+      return;
+    }
+
+    // 날짜 유효성 검증
+    if (!isValidDate(formData.date)) {
+      alert('올바른 날짜를 입력해 주세요.');
+      return;
+    }
+
+    if (isFutureDate(formData.date)) {
+      alert('미래 날짜는 선택할 수 없습니다.');
+      return;
+    }
+
+    if (isTooOldDate(formData.date)) {
+      alert('너무 오래된 날짜입니다. 최근 10년 이내의 날짜를 선택해 주세요.');
       return;
     }
 
@@ -36,13 +72,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
         amountInKRW,
       });
 
-      // 폼 초기화
+      // 폼 초기화 (날짜는 오늘로 리셋)
       setFormData({
         amount: '',
         category: '',
         description: '',
         type: 'expense',
         currency: currentCurrency,
+        date: getTodayDateString(),
       });
     } catch (error) {
       console.error('환율 변환 실패:', error);
@@ -114,7 +151,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* 금액 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -146,6 +183,23 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel })
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* 날짜 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+            <input
+              type="date"
+              value={formData.date}
+              onChange={(e) => handleInputChange('date', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              max={getTodayDateString()} // 오늘 이후 날짜 선택 방지
+            />
+            {formData.date && (
+              <div className="text-xs text-gray-500 mt-1">
+                선택된 날짜: {formatInputDateToKorean(formData.date)}
+              </div>
+            )}
           </div>
         </div>
 

@@ -19,6 +19,7 @@ export interface TransactionFormData {
   description: string;
   type: TransactionType;
   currency: CurrencyCode;
+  date: string; // 사용자가 선택한 날짜 (YYYY-MM-DD 형식)
 }
 
 export const EXPENSE_CATEGORIES = [

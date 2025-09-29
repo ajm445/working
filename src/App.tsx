@@ -7,11 +7,14 @@ import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { InitialCostCalculator } from './components/InitialCostCalculator';
 import { ModeNavigation } from './components/Navigation';
+import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 
 // Expense Tracker Component (기존 가계부 기능)
 const ExpenseTracker: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
+  const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
 
   const addTransaction = (data: TransactionFormData & { amountInKRW: number }): void => {
     const newTransaction: Transaction = {
@@ -20,13 +23,22 @@ const ExpenseTracker: React.FC = () => {
       amount: parseFloat(data.amount),
       category: data.category,
       description: data.description,
-      date: new Date().toLocaleDateString('ko-KR'),
+      date: formatInputDateToKorean(data.date), // 사용자가 선택한 날짜를 한국 형식으로 변환
       currency: data.currency,
       amountInKRW: data.amountInKRW,
     };
 
     setTransactions([newTransaction, ...transactions]);
     setShowAddForm(false);
+    setPreselectedDate(null); // 거래 추가 후 사전 선택된 날짜 초기화
+  };
+
+  const handleAddTransactionWithDate = (date?: Date): void => {
+    if (date) {
+      const dateString = formatDateForInput(date);
+      setPreselectedDate(dateString);
+    }
+    setShowAddForm(true);
   };
 
   const deleteTransaction = (id: string): void => {
@@ -35,13 +47,18 @@ const ExpenseTracker: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Dashboard */}
-      <Dashboard transactions={transactions} />
+      {/* Dashboard - 뷰 모드 상태를 내부에서 관리 */}
+      <Dashboard
+        transactions={transactions}
+        onViewModeChange={setViewMode}
+        currentViewMode={viewMode}
+        onCalendarDateClick={handleAddTransactionWithDate}
+      />
 
       {/* Add Transaction Button */}
       <div>
         <button
-          onClick={() => setShowAddForm(!showAddForm)}
+          onClick={() => handleAddTransactionWithDate()}
           className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
         >
           <span>➕</span>
@@ -53,15 +70,21 @@ const ExpenseTracker: React.FC = () => {
       {showAddForm && (
         <TransactionForm
           onSubmit={addTransaction}
-          onCancel={() => setShowAddForm(false)}
+          onCancel={() => {
+            setShowAddForm(false);
+            setPreselectedDate(null);
+          }}
+          initialDate={preselectedDate ?? undefined}
         />
       )}
 
-      {/* Transaction List */}
-      <TransactionList
-        transactions={transactions}
-        onDeleteTransaction={deleteTransaction}
-      />
+      {/* Transaction List - 요약 보기일 때만 표시 */}
+      {viewMode === 'summary' && (
+        <TransactionList
+          transactions={transactions}
+          onDeleteTransaction={deleteTransaction}
+        />
+      )}
     </div>
   );
 };

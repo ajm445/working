@@ -6,6 +6,13 @@
 
 ### 주요 기능
 - ✅ **이중 모드 시스템**: 가계부와 일본 특화 초기비용 계산기 전환
+- ✅ **📅 고급 가계부 관리 시스템 (NEW!)**
+  - ✅ 듀얼 뷰 시스템: 요약 보기 ↔ 캘린더 보기 전환
+  - ✅ 월별 캘린더로 거래 내역 시각화
+  - ✅ 날짜별 수입/지출 요약 및 거래 수 표시
+  - ✅ 캘린더에서 직접 특정 날짜에 거래 추가
+  - ✅ 유연한 날짜 선택: 당일 외 과거 날짜 거래 등록 가능
+  - ✅ 날짜 상세 모달: 일일 거래 내역 상세 보기
 - ✅ 수입/지출 내역 관리
 - ✅ 카테고리별 분류 (식비, 숙박, 교통, 쇼핑 등)
 - ✅ **🇯🇵 일본 워킹홀리데이 초기비용 계산기 (일본 특화 완료!)**
@@ -364,6 +371,7 @@ export interface TransactionFormData {
   description: string;
   type: TransactionType;
   currency: CurrencyCode;
+  date: string;  // 📅 추가: 날짜 선택 기능
 }
 ```
 
@@ -393,7 +401,7 @@ export interface TransactionFormData {
 
 ### 1. 프로젝트 설정 (현재 상태)
 
-#### 현재 프로젝트 구조 (일본 특화 업데이트)
+#### 현재 프로젝트 구조 (일본 특화 + 캘린더 업데이트)
 ```bash
 src/
 ├── App.tsx                   # 메인 애플리케이션 컴포넌트 (이중 모드 지원)
@@ -404,11 +412,18 @@ src/
 │   │   ├── Button.tsx
 │   │   └── index.ts
 │   ├── Dashboard/           # 대시보드 컴포넌트 (가계부 모드)
-│   │   ├── Dashboard.tsx
+│   │   ├── Dashboard.tsx        # 듀얼 뷰 시스템 (요약/캘린더)
 │   │   ├── BalanceCard.tsx
 │   │   ├── CurrencySelector.tsx
 │   │   └── index.ts
-│   ├── TransactionForm/     # 거래 추가 폼
+│   ├── Calendar/            # 📅 캘린더 시스템 (NEW!)
+│   │   ├── TransactionCalendar.tsx    # 메인 캘린더 컴포넌트
+│   │   ├── CalendarDay.tsx            # 개별 날짜 셀
+│   │   ├── CalendarHeader.tsx         # 월 네비게이션 헤더
+│   │   ├── CalendarGrid.tsx           # 캘린더 그리드 레이아웃
+│   │   ├── DayDetailModal.tsx         # 날짜 상세 정보 모달
+│   │   └── index.ts
+│   ├── TransactionForm/     # 거래 추가 폼 (날짜 선택 기능 추가)
 │   │   ├── TransactionForm.tsx
 │   │   └── index.ts
 │   ├── TransactionList/     # 거래 목록
@@ -435,12 +450,15 @@ src/
 │   └── useCurrencyConversion.ts  # 환율 변환 훅
 ├── utils/                   # 유틸리티 함수
 │   ├── calculations.ts      # 계산 관련 함수
-│   └── currency.ts          # 환율 API 호출
+│   ├── currency.ts          # 환율 API 호출
+│   ├── calendar.ts          # 📅 캘린더 로직 및 날짜 처리 (NEW!)
+│   └── dateUtils.ts         # 📅 날짜 유틸리티 함수 (NEW!)
 ├── types/                   # TypeScript 타입 정의
 │   ├── index.ts            # 타입 배럴 익스포트
 │   ├── common.ts           # 공통 타입
 │   ├── currency.ts         # 통화 관련 타입
-│   ├── transaction.ts      # 거래 관련 타입
+│   ├── transaction.ts      # 거래 관련 타입 (날짜 필드 추가)
+│   ├── calendar.ts         # 📅 캘린더 관련 타입 (NEW!)
 │   ├── initialCost.ts      # 기존 범용 초기비용 타입
 │   └── japanCost.ts        # 🇯🇵 일본 특화 초기비용 타입
 ├── data/                   # 정적 데이터
@@ -874,15 +892,81 @@ npm run dev
 
 ---
 
-## 🌟 새로 추가된 주요 기능 (일본 특화 완료!)
+## 🌟 새로 추가된 주요 기능 (일본 특화 + 캘린더 완료!)
 
-### 1. 이중 모드 시스템 (✅ 완료)
+### 1. 📅 고급 캘린더 시스템 (✅ NEW! 완료)
+- **듀얼 뷰 시스템**: 요약 보기와 캘린더 보기 간 원활한 전환
+- **월별 캘린더 시각화**: 거래 내역을 달력 형태로 직관적 표시
+- **날짜별 거래 요약**: 각 날짜에 수입/지출 금액과 거래 수 표시
+- **상세 정보 모달**: 특정 날짜 클릭 시 해당일의 모든 거래 내역 상세 보기
+- **캘린더에서 직접 거래 추가**: "이 날짜에 거래 추가" 버튼으로 특정 날짜 거래 등록
+- **유연한 날짜 선택**: 거래 추가 폼에서 과거/미래 날짜 자유롭게 선택
+- **한국어 날짜 형식**: 2024년 12월 25일 수요일 형태로 표시
+- **키보드 지원**: ESC 키로 모달 닫기 등 접근성 향상
+- **반응형 캘린더**: 모바일/데스크톱 모두 최적화된 캘린더 UI
+
+#### 📅 캘린더 시스템 기술 구현
+```typescript
+// src/types/calendar.ts - 캘린더 전용 타입 정의
+export interface CalendarDay {
+  date: Date;
+  dayNumber: number;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  transactions: Transaction[];  // 해당 날짜의 모든 거래
+}
+
+export interface CalendarMonth {
+  year: number;
+  month: number;
+  monthName: string;
+  days: CalendarDay[];
+}
+
+// src/utils/calendar.ts - 캘린더 로직
+export const generateCalendarMonth = (
+  year: number,
+  month: number,
+  transactions: Transaction[]
+): CalendarMonth => {
+  // 월별 캘린더 데이터 생성 및 거래 매핑
+};
+
+export const getDayTransactionSummary = (
+  transactions: Transaction[],
+  date: Date
+) => {
+  // 일별 거래 요약 계산 (수입, 지출, 총계)
+};
+
+// src/utils/dateUtils.ts - 날짜 유틸리티
+export const formatDateForInput = (date: Date): string => {
+  // HTML5 date input용 YYYY-MM-DD 형식 변환
+};
+
+export const formatInputDateToKorean = (dateString: string): string => {
+  // YYYY-MM-DD → 한국어 날짜 형식 변환
+};
+```
+
+#### 📅 캘린더 컴포넌트 구조
+```bash
+src/components/Calendar/
+├── TransactionCalendar.tsx    # 메인 캘린더 (상태 관리)
+├── CalendarHeader.tsx         # 월 네비게이션 (이전/다음/오늘)
+├── CalendarGrid.tsx           # 7×6 캘린더 그리드 레이아웃
+├── CalendarDay.tsx            # 개별 날짜 셀 (거래 미리보기)
+├── DayDetailModal.tsx         # 날짜 클릭 시 상세 모달
+└── index.ts                   # 배럴 익스포트
+```
+
+### 2. 이중 모드 시스템 (✅ 완료)
 - **가계부 모드**: 기존 수입/지출 관리 기능
 - **일본 워킹홀리데이 초기비용 계산기**: 일본 특화 준비 비용 계산
 - **모드 전환**: 상단 탭을 통한 직관적인 전환
 - **상태 관리**: AppModeContext를 통한 전역 모드 상태 관리
 
-### 2. 일본 워킹홀리데이 초기비용 계산기 (NEW! 일본 특화 완료)
+### 3. 일본 워킹홀리데이 초기비용 계산기 (✅ 일본 특화 완료)
 - **🇯🇵 일본 전용 특화**: 도쿄/오사카 지역별 비용 차등화
 - **16개 일본 특화 카테고리**:
   - **필수 8개**: 항공료, 비자, 보험, 초기숙박비, 재류카드, 주민등록, 국민건강보험, 휴대폰개통
@@ -893,20 +977,20 @@ npm run dev
 - **실시간 JPY 환율**: KRW↔JPY 실시간 변환 및 계산
 - **빠른 입력**: 최소/평균/최대 비용 원클릭 입력
 
-### 3. 다중 통화 시스템 (확장)
+### 4. 다중 통화 시스템 (확장)
 - **지원 통화**: 한국 원화(KRW), 미국 달러(USD), 일본 엔(JPY)
 - **실시간 환율**: ExchangeRate-API.com 연동으로 1시간마다 자동 갱신
 - **통화 변환**: 각 거래/비용의 금액을 원화 기준으로 자동 환산하여 저장
 - **통화 선택기**: 대시보드에서 표시 통화 실시간 변경 가능
 - **유연한 변환**: useCurrencyConverter 훅으로 임의 통화 간 변환
 
-### 4. 향상된 컴포넌트 아키텍처
+### 5. 향상된 컴포넌트 아키텍처
 - **모듈화된 구조**: Dashboard, TransactionForm, InitialCostCalculator 등 기능별 분리
 - **Context API**: CurrencyContext, AppModeContext를 통한 전역 상태 관리
 - **커스텀 훅**: useCurrency, useCurrencyConversion, useCurrencyConverter로 로직 재사용성 향상
 - **타입 안전성**: 체계화된 TypeScript 인터페이스 및 타입 정의
 
-### 5. 개선된 사용자 인터페이스
+### 6. 개선된 사용자 인터페이스
 - **실시간 잔액/총계**: 선택된 통화에 따른 즉시 계산 및 표시
 - **환율 정보**: 마지막 업데이트 시간과 함께 현재 환율 표시
 - **반응형 디자인**: 모든 새 컴포넌트가 모바일 친화적 설계
@@ -931,15 +1015,30 @@ npm run dev
    - 한국어-일본어 병기 표시
    - 7개 카테고리 그룹별 체계적 분류
    - JPY 기준 실시간 환율 연동
-10. **앱 모드 관리**: AppModeContext를 통한 전역 상태 관리
-11. **향상된 통화 변환**: useCurrencyConverter 훅을 통한 유연한 변환
+10. **📅 캘린더 시스템 (NEW! 완료)**:
+   - 📅 듀얼 뷰 시스템: 요약 ↔ 캘린더 보기 전환
+   - 📅 월별 캘린더로 거래 내역 시각화
+   - 📅 날짜별 수입/지출 요약 및 거래 수 표시
+   - 📅 캘린더에서 직접 특정 날짜에 거래 추가
+   - 📅 유연한 날짜 선택: 당일 외 과거/미래 날짜 거래 등록
+   - 📅 날짜 상세 모달: 일일 거래 내역 상세 보기
+   - 📅 한국어 날짜 형식 및 접근성 지원
+11. **앱 모드 관리**: AppModeContext를 통한 전역 상태 관리
+12. **향상된 통화 변환**: useCurrencyConverter 훅을 통한 유연한 변환
 
 ### 🔄 진행 중인 작업
 - 현재 모든 기본 기능 구현 완료
 - 사용자가 직접 서버 실행하여 테스트 가능한 상태
 
 ### 📝 향후 개발 권장사항
-1. **일본 특화 기능 확장**:
+1. **📅 캘린더 시스템 고도화**:
+   - 주간 뷰 및 일간 뷰 추가 (현재는 월간 뷰만 지원)
+   - 캘린더에서 거래 직접 편집/삭제 기능
+   - 거래 카테고리별 색상 구분 표시
+   - 반복 거래 설정 기능 (매월 고정비 등)
+   - 캘린더 데이터 CSV/PDF 내보내기
+   - 월별/분기별 통계 차트 연동
+2. **일본 특화 기능 확장**:
    - 더 많은 일본 지역 추가 (후쿠오카, 삿포로, 나고야 등)
    - 계절별 비용 변화 반영 (겨울/여름 차이)
    - 일본어 능력 레벨별 어학원 비용 차등화
