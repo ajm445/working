@@ -43,3 +43,30 @@ export const calculateMonthlyExpenses = (transactions: Transaction[]): { [month:
     return acc;
   }, {} as { [month: string]: number });
 };
+
+// 특정 월의 거래만 필터링
+export const filterTransactionsByMonth = (transactions: Transaction[], year: number, month: number): Transaction[] => {
+  return transactions.filter(transaction => {
+    const transactionDate = new Date(transaction.date);
+    return transactionDate.getFullYear() === year && transactionDate.getMonth() === month;
+  });
+};
+
+// 특정 월의 총 수입 계산
+export const calculateMonthlyIncome = (transactions: Transaction[], year: number, month: number): number => {
+  const monthlyTransactions = filterTransactionsByMonth(transactions, year, month);
+  return calculateTotalIncome(monthlyTransactions);
+};
+
+// 특정 월의 총 지출 계산
+export const calculateMonthlyExpense = (transactions: Transaction[], year: number, month: number): number => {
+  const monthlyTransactions = filterTransactionsByMonth(transactions, year, month);
+  return calculateTotalExpense(monthlyTransactions);
+};
+
+// 특정 월의 잔액 계산
+export const calculateMonthlyBalance = (transactions: Transaction[], year: number, month: number): number => {
+  const monthlyIncome = calculateMonthlyIncome(transactions, year, month);
+  const monthlyExpense = calculateMonthlyExpense(transactions, year, month);
+  return monthlyIncome - monthlyExpense;
+};

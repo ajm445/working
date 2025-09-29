@@ -15,19 +15,23 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
 
   const summary = getDayTransactionSummary(day.transactions, day.date);
 
-  const formatAmount = (amount: number): string => {
-    if (amount === 0) return '';
+  const formatAmount = (amount: number, showZero: boolean = false): string => {
+    if (amount === 0 && !showZero) return '';
 
     const convertedAmount = convertAmount(amount, 'KRW', currentCurrency);
     const symbol = currentCurrency === 'KRW' ? '₩' : currentCurrency === 'JPY' ? '¥' : '$';
+    const absAmount = Math.abs(convertedAmount);
 
-    if (convertedAmount >= 1000000) {
-      return `${symbol}${(convertedAmount / 1000000).toFixed(1)}M`;
-    } else if (convertedAmount >= 1000) {
-      return `${symbol}${(convertedAmount / 1000).toFixed(0)}K`;
+    let formattedAmount: string;
+    if (absAmount >= 1000000) {
+      formattedAmount = `${symbol}${(absAmount / 1000000).toFixed(1)}M`;
+    } else if (absAmount >= 1000) {
+      formattedAmount = `${symbol}${(absAmount / 1000).toFixed(0)}K`;
     } else {
-      return `${symbol}${Math.round(convertedAmount).toLocaleString()}`;
+      formattedAmount = `${symbol}${Math.round(absAmount).toLocaleString()}`;
     }
+
+    return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
   };
 
   return (
@@ -75,28 +79,16 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
             </div>
           )}
 
-          {/* 거래 수 표시 */}
-          <div className="text-xs text-gray-500">
-            {summary.transactionCount}건
-          </div>
-
-          {/* 간단한 거래 내역 미리보기 */}
-          <div className="space-y-0.5">
-            {day.transactions.slice(0, 2).map((transaction) => (
-              <div
-                key={transaction.id}
-                className="text-xs text-gray-600 truncate"
-                title={transaction.description}
-              >
-                {transaction.description}
-              </div>
-            ))}
-            {day.transactions.length > 2 && (
-              <div className="text-xs text-gray-400">
-                +{day.transactions.length - 2}개 더
-              </div>
-            )}
-          </div>
+          {/* 일일 순액 (수입 - 지출) */}
+          {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
+            <div className={`text-xs font-medium ${
+              summary.totalIncome - summary.totalExpense >= 0
+                ? 'text-blue-600'
+                : 'text-red-600'
+            }`}>
+              순액: {formatAmount(summary.totalIncome - summary.totalExpense, true)}
+            </div>
+          )}
         </div>
       )}
 

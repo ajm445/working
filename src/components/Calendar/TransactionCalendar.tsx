@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '../../types/transaction';
 import type { CalendarDay as CalendarDayType } from '../../types/calendar';
 import { generateCalendarMonth } from '../../utils/calendar';
@@ -9,9 +9,10 @@ import DayDetailModal from './DayDetailModal';
 interface TransactionCalendarProps {
   transactions: Transaction[];
   onDateClick?: ((date?: Date) => void) | undefined;
+  onMonthChange?: ((year: number, month: number) => void) | undefined;
 }
 
-const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions, onDateClick }) => {
+const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions, onDateClick, onMonthChange }) => {
   const today = new Date();
   const [currentDate, setCurrentDate] = useState<Date>(today);
   const [selectedDay, setSelectedDay] = useState<CalendarDayType | null>(null);
@@ -25,16 +26,27 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions,
     );
   }, [currentDate, transactions]);
 
+  // 컴포넌트가 마운트될 때 현재 월을 부모에게 알림
+  useEffect(() => {
+    onMonthChange?.(currentDate.getFullYear(), currentDate.getMonth());
+  }, [onMonthChange]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handlePrevMonth = (): void => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
   };
 
   const handleNextMonth = (): void => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
   };
 
   const handleToday = (): void => {
-    setCurrentDate(new Date());
+    const newDate = new Date();
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
   };
 
   const handleDayClick = (day: CalendarDayType): void => {
