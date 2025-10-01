@@ -188,7 +188,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({ day, onClose, onAddTran
                 }}
                 className="flex-1 md:flex-none px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
-                ➕ 이 날짜에 거래 추가
+                ➕ 이 날짜에 내역 추가
               </button>
             )}
             <button

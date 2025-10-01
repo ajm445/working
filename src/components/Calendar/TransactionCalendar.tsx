@@ -84,7 +84,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions,
             <ul className="space-y-1 text-xs">
               <li>• 각 날짜를 클릭하면 해당 날의 상세 거래 내역을 볼 수 있습니다</li>
               <li>• 녹색 숫자는 수입, 빨간색 숫자는 지출을 나타냅니다</li>
-              <li>• 상세 모달에서 "이 날짜에 거래 추가" 버튼으로 특정 날짜에 거래를 등록할 수 있습니다</li>
+              <li>• 상세 모달에서 "이 날짜에 내역 추가" 버튼으로 특정 날짜에 거래를 등록할 수 있습니다</li>
               <li>• 내역 추가하기로 새 거래를 등록하면 자동으로 캘린더에 표시됩니다</li>
             </ul>
           </div>
