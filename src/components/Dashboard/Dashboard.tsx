@@ -9,8 +9,9 @@ import { getKSTDate } from '../../utils/dateUtils';
 import BalanceCard from './BalanceCard';
 import CurrencySelector from './CurrencySelector';
 import { TransactionCalendar } from '../Calendar';
+import { StatisticsDashboard } from '../Statistics';
 
-type ViewMode = 'summary' | 'calendar';
+type ViewMode = 'summary' | 'calendar' | 'statistics';
 
 interface DashboardProps {
   transactions: Transaction[];
@@ -95,11 +96,11 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 뷰 모드 선택 탭 */}
       <div className="bg-white rounded-xl shadow-sm border mb-6 overflow-hidden">
-        <div className="flex">
+        <div className="grid grid-cols-3">
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
-              flex-1 px-6 py-4 text-sm font-medium transition-colors
+              px-4 py-4 text-sm font-medium transition-colors
               ${currentViewMode === 'summary'
                 ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -108,13 +109,14 @@ const Dashboard: React.FC<DashboardProps> = ({
           >
             <div className="flex items-center justify-center gap-2">
               <span>📊</span>
-              요약 보기
+              <span className="hidden sm:inline">요약 보기</span>
+              <span className="sm:hidden">요약</span>
             </div>
           </button>
           <button
             onClick={() => handleViewModeChange('calendar')}
             className={`
-              flex-1 px-6 py-4 text-sm font-medium transition-colors border-l
+              px-4 py-4 text-sm font-medium transition-colors border-l
               ${currentViewMode === 'calendar'
                 ? 'bg-indigo-600 text-white'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -123,7 +125,24 @@ const Dashboard: React.FC<DashboardProps> = ({
           >
             <div className="flex items-center justify-center gap-2">
               <span>📅</span>
-              캘린더 보기
+              <span className="hidden sm:inline">캘린더 보기</span>
+              <span className="sm:hidden">캘린더</span>
+            </div>
+          </button>
+          <button
+            onClick={() => handleViewModeChange('statistics')}
+            className={`
+              px-4 py-4 text-sm font-medium transition-colors border-l
+              ${currentViewMode === 'statistics'
+                ? 'bg-indigo-600 text-white'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+              }
+            `}
+          >
+            <div className="flex items-center justify-center gap-2">
+              <span>📈</span>
+              <span className="hidden sm:inline">통계 분석</span>
+              <span className="sm:hidden">통계</span>
             </div>
           </button>
         </div>
@@ -136,6 +155,10 @@ const Dashboard: React.FC<DashboardProps> = ({
           onDateClick={onCalendarDateClick}
           onMonthChange={handleCalendarMonthChange}
         />
+      )}
+
+      {currentViewMode === 'statistics' && (
+        <StatisticsDashboard transactions={transactions} />
       )}
     </div>
   );

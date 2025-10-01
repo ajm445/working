@@ -13,7 +13,7 @@ import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 const ExpenseTracker: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [viewMode, setViewMode] = useState<'summary' | 'calendar'>('summary');
+  const [viewMode, setViewMode] = useState<'summary' | 'calendar' | 'statistics'>('summary');
   const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
 
   const addTransaction = (data: TransactionFormData & { amountInKRW: number }): void => {
@@ -55,16 +55,18 @@ const ExpenseTracker: React.FC = () => {
         onCalendarDateClick={handleAddTransactionWithDate}
       />
 
-      {/* Add Transaction Button */}
-      <div>
-        <button
-          onClick={() => handleAddTransactionWithDate()}
-          className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
-        >
-          <span>➕</span>
-          내역 추가하기
-        </button>
-      </div>
+      {/* Add Transaction Button - 통계 분석 탭에서는 숨김 */}
+      {viewMode !== 'statistics' && (
+        <div>
+          <button
+            onClick={() => handleAddTransactionWithDate()}
+            className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+          >
+            <span>➕</span>
+            내역 추가하기
+          </button>
+        </div>
+      )}
 
       {/* Add Transaction Form */}
       {showAddForm && (
