@@ -17,12 +17,12 @@ const ExpenseTracker: React.FC = () => {
   const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // 폼이 생성될 때 자동으로 스크롤
+  // 폼이 생성되거나 날짜가 변경될 때 자동으로 스크롤
   useEffect(() => {
     if (showAddForm && formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [showAddForm]);
+  }, [showAddForm, preselectedDate]);
 
   const addTransaction = (data: TransactionFormData & { amountInKRW: number }): void => {
     const newTransaction: Transaction = {
