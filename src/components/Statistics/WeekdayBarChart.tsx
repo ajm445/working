@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   BarChart,
   Bar,
@@ -20,54 +20,59 @@ interface WeekdayBarChartProps {
 const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
   const { currentCurrency, exchangeRates } = useCurrency();
 
-  // 통화 변환 함수
-  const convertAmount = (amountInKRW: number): number => {
+  // 통화 변환 함수 - useCallback으로 메모이제이션
+  const convertAmount = useCallback((amountInKRW: number): number => {
     if (currentCurrency === 'KRW') return amountInKRW;
     if (!exchangeRates) return amountInKRW;
     const rate = exchangeRates[currentCurrency];
-    return rate ? amountInKRW / rate : amountInKRW;
-  };
+    return rate ? amountInKRW * rate : amountInKRW;
+  }, [currentCurrency, exchangeRates]);
 
-  // 요일 순서 조정 (월~일)
-  const weekdayOrder = ['월', '화', '수', '목', '금', '토', '일'];
-  const sortedData = weekdayOrder
-    .map(day => data.find(d => d.weekday === day))
-    .filter((d): d is WeekdayExpenseData => d !== undefined);
+  // 요일 순서 조정 (월~일) - useMemo로 메모이제이션
+  const sortedData = useMemo(() => {
+    const weekdayOrder = ['월', '화', '수', '목', '금', '토', '일'];
+    return weekdayOrder
+      .map(day => data.find(d => d.weekday === day))
+      .filter((d): d is WeekdayExpenseData => d !== undefined);
+  }, [data]);
 
-  // 데이터를 선택된 통화로 변환
-  const chartData = sortedData.map(item => ({
+  // 데이터를 선택된 통화로 변환 - useMemo로 메모이제이션
+  const chartData = useMemo(() => sortedData.map(item => ({
     ...item,
     averageExpense: convertAmount(item.averageExpense),
     totalExpense: convertAmount(item.totalExpense),
-  }));
+  })), [sortedData, convertAmount]);
 
-  // 커스텀 툴팁
-  const CustomTooltip: React.FC<{
-    active?: boolean;
-    payload?: Array<{ value: number; dataKey: string; color: string }>;
-    label?: string;
-  }> = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = sortedData.find(d => d.weekday === label);
-      if (!data) return null;
+  // 커스텀 툴팁 - useMemo로 메모이제이션
+  const CustomTooltip = useMemo(() => {
+    const TooltipComponent: React.FC<{
+      active?: boolean;
+      payload?: Array<{ value: number; dataKey: string; color: string }>;
+      label?: string;
+    }> = ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+        const data = sortedData.find(d => d.weekday === label);
+        if (!data) return null;
 
-      return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900 mb-2">{label}요일</p>
-          <p className="text-sm text-gray-600">
-            평균 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.averageExpense), currentCurrency)}</span>
-          </p>
-          <p className="text-sm text-gray-600">
-            총 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.totalExpense), currentCurrency)}</span>
-          </p>
-          <p className="text-sm text-gray-600">
-            거래 수: <span className="font-semibold">{data.transactionCount}건</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+        return (
+          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <p className="font-semibold text-gray-900 mb-2">{label}요일</p>
+            <p className="text-sm text-gray-600">
+              평균 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.averageExpense), currentCurrency)}</span>
+            </p>
+            <p className="text-sm text-gray-600">
+              총 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.totalExpense), currentCurrency)}</span>
+            </p>
+            <p className="text-sm text-gray-600">
+              거래 수: <span className="font-semibold">{data.transactionCount}건</span>
+            </p>
+          </div>
+        );
+      }
+      return null;
+    };
+    return TooltipComponent;
+  }, [sortedData, convertAmount, currentCurrency]);
 
   if (data.length === 0) {
     return (
@@ -133,4 +138,4 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
   );
 };
 
-export default WeekdayBarChart;
+export default React.memo(WeekdayBarChart);

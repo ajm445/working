@@ -26,7 +26,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
     if (currentCurrency === 'KRW') return amountInKRW;
     if (!exchangeRates) return amountInKRW;
     const rate = exchangeRates[currentCurrency];
-    return rate ? amountInKRW / rate : amountInKRW;
+    return rate ? amountInKRW * rate : amountInKRW;
   };
 
   const { summary } = statistics;

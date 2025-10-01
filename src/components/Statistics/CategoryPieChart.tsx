@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   PieChart,
   Pie,
@@ -18,43 +18,46 @@ interface CategoryPieChartProps {
 const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
   const { currentCurrency, exchangeRates } = useCurrency();
 
-  // 통화 변환 함수
-  const convertAmount = (amountInKRW: number): number => {
+  // 통화 변환 함수 - useCallback으로 메모이제이션
+  const convertAmount = useCallback((amountInKRW: number): number => {
     if (currentCurrency === 'KRW') return amountInKRW;
     if (!exchangeRates) return amountInKRW;
     const rate = exchangeRates[currentCurrency];
-    return rate ? amountInKRW / rate : amountInKRW;
-  };
+    return rate ? amountInKRW * rate : amountInKRW;
+  }, [currentCurrency, exchangeRates]);
 
-  // 데이터를 선택된 통화로 변환
-  const chartData = data.map(item => ({
+  // 데이터를 선택된 통화로 변환 - useMemo로 메모이제이션
+  const chartData = useMemo(() => data.map(item => ({
     ...item,
     amount: convertAmount(item.amount),
-  }));
+  })), [data, convertAmount]);
 
-  // 커스텀 툴팁
-  const CustomTooltip: React.FC<{
-    active?: boolean;
-    payload?: Array<{ payload: CategoryExpenseData & { amount: number } }>;
-  }> = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0]?.payload;
-      if (!data) return null;
+  // 커스텀 툴팁 - useMemo로 메모이제이션
+  const CustomTooltip = useMemo(() => {
+    const TooltipComponent: React.FC<{
+      active?: boolean;
+      payload?: Array<{ payload: CategoryExpenseData & { amount: number } }>;
+    }> = ({ active, payload }) => {
+      if (active && payload && payload.length) {
+        const data = payload[0]?.payload;
+        if (!data) return null;
 
-      return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900 mb-2">{data.category}</p>
-          <p className="text-sm text-gray-600">
-            금액: <span className="font-semibold">{formatCurrencyForStats(data.amount, currentCurrency)}</span>
-          </p>
-          <p className="text-sm text-gray-600">
-            비율: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+        return (
+          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <p className="font-semibold text-gray-900 mb-2">{data.category}</p>
+            <p className="text-sm text-gray-600">
+              금액: <span className="font-semibold">{formatCurrencyForStats(data.amount, currentCurrency)}</span>
+            </p>
+            <p className="text-sm text-gray-600">
+              비율: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
+            </p>
+          </div>
+        );
+      }
+      return null;
+    };
+    return TooltipComponent;
+  }, [currentCurrency]);
 
   if (data.length === 0) {
     return (
@@ -115,4 +118,4 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
   );
 };
 
-export default CategoryPieChart;
+export default React.memo(CategoryPieChart);

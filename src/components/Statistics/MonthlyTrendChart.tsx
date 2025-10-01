@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   LineChart,
   Line,
@@ -21,47 +21,50 @@ interface MonthlyTrendChartProps {
 const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
   const { currentCurrency, exchangeRates } = useCurrency();
 
-  // 통화 변환 함수
-  const convertAmount = (amountInKRW: number): number => {
+  // 통화 변환 함수 - useCallback으로 메모이제이션
+  const convertAmount = useCallback((amountInKRW: number): number => {
     if (currentCurrency === 'KRW') return amountInKRW;
     if (!exchangeRates) return amountInKRW;
     const rate = exchangeRates[currentCurrency];
-    return rate ? amountInKRW / rate : amountInKRW;
-  };
+    return rate ? amountInKRW * rate : amountInKRW;
+  }, [currentCurrency, exchangeRates]);
 
-  // 데이터를 선택된 통화로 변환
-  const chartData = data.map(item => ({
+  // 데이터를 선택된 통화로 변환 - useMemo로 메모이제이션
+  const chartData = useMemo(() => data.map(item => ({
     ...item,
     income: convertAmount(item.income),
     expense: convertAmount(item.expense),
     balance: convertAmount(item.balance),
-  }));
+  })), [data, convertAmount]);
 
-  // 커스텀 툴팁
-  const CustomTooltip: React.FC<{
-    active?: boolean;
-    payload?: Array<{ value: number; dataKey: string; color: string }>;
-    label?: string;
-  }> = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-          <p className="font-semibold text-gray-900 mb-2">{label}</p>
-          {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.dataKey === 'income' && '수입: '}
-              {entry.dataKey === 'expense' && '지출: '}
-              {entry.dataKey === 'balance' && '순액: '}
-              <span className="font-semibold">
-                {formatCurrencyForStats(entry.value, currentCurrency)}
-              </span>
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  // 커스텀 툴팁 - useMemo로 메모이제이션
+  const CustomTooltip = useMemo(() => {
+    const TooltipComponent: React.FC<{
+      active?: boolean;
+      payload?: Array<{ value: number; dataKey: string; color: string }>;
+      label?: string;
+    }> = ({ active, payload, label }) => {
+      if (active && payload && payload.length) {
+        return (
+          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <p className="font-semibold text-gray-900 mb-2">{label}</p>
+            {payload.map((entry, index) => (
+              <p key={index} className="text-sm" style={{ color: entry.color }}>
+                {entry.dataKey === 'income' && '수입: '}
+                {entry.dataKey === 'expense' && '지출: '}
+                {entry.dataKey === 'balance' && '순액: '}
+                <span className="font-semibold">
+                  {formatCurrencyForStats(entry.value, currentCurrency)}
+                </span>
+              </p>
+            ))}
+          </div>
+        );
+      }
+      return null;
+    };
+    return TooltipComponent;
+  }, [currentCurrency]);
 
   if (data.length === 0) {
     return (
@@ -130,4 +133,4 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
   );
 };
 
-export default MonthlyTrendChart;
+export default React.memo(MonthlyTrendChart);
