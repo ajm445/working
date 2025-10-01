@@ -4,15 +4,14 @@ import { getKSTDate } from './dateUtils';
 
 /**
  * 주어진 날짜가 오늘인지 확인 (KST/JST 기준)
- * kstToday는 KST 시간을 UTC로 표현하므로 getUTC* 메서드 사용
- * date는 로컬 시간대 기준이므로 get* 메서드 사용
+ * 두 날짜 모두 로컬 시간대 기준이므로 get* 메서드 사용
  */
 export const isToday = (date: Date): boolean => {
   const kstToday = getKSTDate();
 
-  return kstToday.getUTCFullYear() === date.getFullYear() &&
-         kstToday.getUTCMonth() === date.getMonth() &&
-         kstToday.getUTCDate() === date.getDate();
+  return kstToday.getFullYear() === date.getFullYear() &&
+         kstToday.getMonth() === date.getMonth() &&
+         kstToday.getDate() === date.getDate();
 };
 
 /**
