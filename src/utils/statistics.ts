@@ -13,6 +13,7 @@ import type {
 } from '../types/statistics';
 import { CHART_COLORS } from '../types/statistics';
 import { parseTransactionDate } from './calendar';
+import { getKSTDate } from './dateUtils';
 
 /**
  * 월 문자열을 "N월" 형식으로 변환
@@ -40,6 +41,7 @@ const getEnglishWeekday = (dayIndex: number): string => {
 
 /**
  * 기간에 따른 필터링된 거래 내역 반환
+ * KST 기준 오늘부터 지정된 기간 이전까지의 거래를 반환
  */
 export const filterTransactionsByPeriod = (
   transactions: Transaction[],
@@ -47,21 +49,30 @@ export const filterTransactionsByPeriod = (
 ): Transaction[] => {
   if (period === 'all') return transactions;
 
-  const now = new Date();
-  const cutoffDate = new Date();
+  // KST 기준 오늘 날짜 가져오기
+  const kstNow = getKSTDate();
+
+  // KST 기준 오늘 날짜를 로컬 타임존 Date로 변환 (parseTransactionDate와 동일한 기준)
+  const today = new Date(
+    kstNow.getUTCFullYear(),
+    kstNow.getUTCMonth(),
+    kstNow.getUTCDate()
+  );
+
+  const cutoffDate = new Date(today);
 
   switch (period) {
     case '1month':
-      cutoffDate.setMonth(now.getMonth() - 1);
+      cutoffDate.setMonth(today.getMonth() - 1);
       break;
     case '3months':
-      cutoffDate.setMonth(now.getMonth() - 3);
+      cutoffDate.setMonth(today.getMonth() - 3);
       break;
     case '6months':
-      cutoffDate.setMonth(now.getMonth() - 6);
+      cutoffDate.setMonth(today.getMonth() - 6);
       break;
     case '1year':
-      cutoffDate.setFullYear(now.getFullYear() - 1);
+      cutoffDate.setFullYear(today.getFullYear() - 1);
       break;
   }
 

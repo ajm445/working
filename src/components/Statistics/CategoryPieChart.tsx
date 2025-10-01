@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import type { CategoryExpenseData } from '../../types/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrencyForStats } from '../../utils/currency';
 
 interface CategoryPieChartProps {
   data: CategoryExpenseData[];
@@ -45,7 +45,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
           <p className="font-semibold text-gray-900 mb-2">{data.category}</p>
           <p className="text-sm text-gray-600">
-            금액: <span className="font-semibold">{formatCurrency(data.amount, currentCurrency)}</span>
+            금액: <span className="font-semibold">{formatCurrencyForStats(data.amount, currentCurrency)}</span>
           </p>
           <p className="text-sm text-gray-600">
             비율: <span className="font-semibold">{data.percentage.toFixed(1)}%</span>
@@ -105,7 +105,7 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
             <div className="flex items-center gap-3">
               <span className="text-gray-500">{item.percentage.toFixed(1)}%</span>
               <span className="font-semibold text-gray-900">
-                {formatCurrency(item.amount, currentCurrency)}
+                {formatCurrencyForStats(item.amount, currentCurrency)}
               </span>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { AppModeProvider, useAppMode } from './contexts/AppModeContext';
 import type { Transaction, TransactionFormData } from './types';
@@ -15,6 +15,14 @@ const ExpenseTracker: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<'summary' | 'calendar' | 'statistics'>('summary');
   const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  // 폼이 생성될 때 자동으로 스크롤
+  useEffect(() => {
+    if (showAddForm && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showAddForm]);
 
   const addTransaction = (data: TransactionFormData & { amountInKRW: number }): void => {
     const newTransaction: Transaction = {
@@ -55,8 +63,8 @@ const ExpenseTracker: React.FC = () => {
         onCalendarDateClick={handleAddTransactionWithDate}
       />
 
-      {/* Add Transaction Button - 통계 분석 탭에서는 숨김 */}
-      {viewMode !== 'statistics' && (
+      {/* Add Transaction Button - 캘린더 및 통계 분석 탭에서는 숨김 */}
+      {viewMode === 'summary' && (
         <div>
           <button
             onClick={() => handleAddTransactionWithDate()}
@@ -70,14 +78,16 @@ const ExpenseTracker: React.FC = () => {
 
       {/* Add Transaction Form */}
       {showAddForm && (
-        <TransactionForm
-          onSubmit={addTransaction}
-          onCancel={() => {
-            setShowAddForm(false);
-            setPreselectedDate(null);
-          }}
-          initialDate={preselectedDate ?? undefined}
-        />
+        <div ref={formRef}>
+          <TransactionForm
+            onSubmit={addTransaction}
+            onCancel={() => {
+              setShowAddForm(false);
+              setPreselectedDate(null);
+            }}
+            initialDate={preselectedDate ?? undefined}
+          />
+        </div>
       )}
 
       {/* Transaction List - 요약 보기일 때만 표시 */}

@@ -3,7 +3,7 @@ import type { Transaction } from '../../types/transaction';
 import type { StatisticsPeriod } from '../../types/statistics';
 import { generateStatistics } from '../../utils/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrencyForStats } from '../../utils/currency';
 import MonthlyTrendChart from './MonthlyTrendChart';
 import CategoryPieChart from './CategoryPieChart';
 import WeekdayBarChart from './WeekdayBarChart';
@@ -13,7 +13,7 @@ interface StatisticsDashboardProps {
 }
 
 const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions }) => {
-  const [period, setPeriod] = useState<StatisticsPeriod>('6months');
+  const [period, setPeriod] = useState<StatisticsPeriod>('1month');
   const { currentCurrency, exchangeRates } = useCurrency();
 
   // 통계 데이터 생성
@@ -76,13 +76,13 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
             <div>
               <p className="text-sm font-medium text-green-700">총 수입</p>
               <p className="text-2xl font-bold text-green-900 mt-2">
-                {formatCurrency(convertAmount(summary.totalIncome), currentCurrency)}
+                {formatCurrencyForStats(convertAmount(summary.totalIncome), currentCurrency)}
               </p>
             </div>
             <div className="text-4xl">💰</div>
           </div>
           <p className="text-xs text-green-600 mt-2">
-            일평균 {formatCurrency(convertAmount(summary.averageDailyIncome), currentCurrency)}
+            일평균 {formatCurrencyForStats(convertAmount(summary.averageDailyIncome), currentCurrency)}
           </p>
         </div>
 
@@ -92,13 +92,13 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
             <div>
               <p className="text-sm font-medium text-red-700">총 지출</p>
               <p className="text-2xl font-bold text-red-900 mt-2">
-                {formatCurrency(convertAmount(summary.totalExpense), currentCurrency)}
+                {formatCurrencyForStats(convertAmount(summary.totalExpense), currentCurrency)}
               </p>
             </div>
             <div className="text-4xl">💸</div>
           </div>
           <p className="text-xs text-red-600 mt-2">
-            일평균 {formatCurrency(convertAmount(summary.averageDailyExpense), currentCurrency)}
+            일평균 {formatCurrencyForStats(convertAmount(summary.averageDailyExpense), currentCurrency)}
           </p>
         </div>
 
@@ -118,7 +118,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
               <p className={`text-2xl font-bold mt-2 ${
                 summary.totalBalance >= 0 ? 'text-blue-900' : 'text-orange-900'
               }`}>
-                {formatCurrency(convertAmount(summary.totalBalance), currentCurrency)}
+                {formatCurrencyForStats(convertAmount(summary.totalBalance), currentCurrency)}
               </p>
             </div>
             <div className="text-4xl">
@@ -173,7 +173,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
               {summary.mostExpensiveCategory}
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              {formatCurrency(convertAmount(summary.mostExpensiveCategoryAmount), currentCurrency)}
+              {formatCurrencyForStats(convertAmount(summary.mostExpensiveCategoryAmount), currentCurrency)}
             </p>
           </div>
 
@@ -188,7 +188,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
               }
             </p>
             <p className="text-sm text-gray-600 mt-1">
-              {formatCurrency(convertAmount(summary.highestExpenseAmount), currentCurrency)}
+              {formatCurrencyForStats(convertAmount(summary.highestExpenseAmount), currentCurrency)}
             </p>
           </div>
         </div>

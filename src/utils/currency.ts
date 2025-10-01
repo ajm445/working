@@ -104,6 +104,27 @@ export const formatCurrency = (amount: number, currency: CurrencyCode): string =
   }
 };
 
+// 통계 분석용 통화 포맷팅 (심볼을 뒤에 배치)
+export const formatCurrencyForStats = (amount: number, currency: CurrencyCode): string => {
+  const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency);
+
+  if (!currencyInfo) {
+    return `${amount.toLocaleString()}`;
+  }
+
+  // 각 통화별 포맷팅 (심볼을 뒤에)
+  switch (currency) {
+    case 'KRW':
+      return `${Math.round(amount).toLocaleString()}₩`;
+    case 'USD':
+      return `${amount.toFixed(2)}$`;
+    case 'JPY':
+      return `${Math.round(amount).toLocaleString()}¥`;
+    default:
+      return `${amount.toLocaleString()}${currencyInfo.symbol}`;
+  }
+};
+
 // 통화 심볼 가져오기
 export const getCurrencySymbol = (currency: CurrencyCode): string => {
   const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency);

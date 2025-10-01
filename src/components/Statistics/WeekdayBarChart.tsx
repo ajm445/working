@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import type { WeekdayExpenseData } from '../../types/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrencyForStats } from '../../utils/currency';
 
 interface WeekdayBarChartProps {
   data: WeekdayExpenseData[];
@@ -55,10 +55,10 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
         <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
           <p className="font-semibold text-gray-900 mb-2">{label}요일</p>
           <p className="text-sm text-gray-600">
-            평균 지출: <span className="font-semibold">{formatCurrency(convertAmount(data.averageExpense), currentCurrency)}</span>
+            평균 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.averageExpense), currentCurrency)}</span>
           </p>
           <p className="text-sm text-gray-600">
-            총 지출: <span className="font-semibold">{formatCurrency(convertAmount(data.totalExpense), currentCurrency)}</span>
+            총 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.totalExpense), currentCurrency)}</span>
           </p>
           <p className="text-sm text-gray-600">
             거래 수: <span className="font-semibold">{data.transactionCount}건</span>
@@ -94,10 +94,8 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
             tickFormatter={(value) => {
-              // 축약 표시
-              if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-              if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
-              return formatCurrency(value, currentCurrency);
+              // 쉼표로 구분된 숫자만 표시 (단위 없음)
+              return Math.round(value).toLocaleString();
             }}
           />
           <Tooltip content={<CustomTooltip />} />

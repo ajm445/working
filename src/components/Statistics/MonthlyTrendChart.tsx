@@ -12,7 +12,7 @@ import {
 import type { MonthlyTrendData } from '../../types/statistics';
 import { CHART_COLORS } from '../../types/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrencyForStats } from '../../utils/currency';
 
 interface MonthlyTrendChartProps {
   data: MonthlyTrendData[];
@@ -53,7 +53,7 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
               {entry.dataKey === 'expense' && '지출: '}
               {entry.dataKey === 'balance' && '순액: '}
               <span className="font-semibold">
-                {formatCurrency(entry.value, currentCurrency)}
+                {formatCurrencyForStats(entry.value, currentCurrency)}
               </span>
             </p>
           ))}
@@ -88,10 +88,8 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
             tickFormatter={(value) => {
-              // 축약 표시
-              if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-              if (value >= 1000) return `${(value / 1000).toFixed(0)}K`;
-              return formatCurrency(value, currentCurrency);
+              // 쉼표로 구분된 숫자만 표시 (단위 없음)
+              return Math.round(value).toLocaleString();
             }}
           />
           <Tooltip content={<CustomTooltip />} />
