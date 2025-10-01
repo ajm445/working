@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '../../types/transaction';
 import type { CalendarDay as CalendarDayType } from '../../types/calendar';
 import { generateCalendarMonth } from '../../utils/calendar';
+import { getKSTDate } from '../../utils/dateUtils';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import DayDetailModal from './DayDetailModal';
@@ -13,7 +14,7 @@ interface TransactionCalendarProps {
 }
 
 const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions, onDateClick, onMonthChange }) => {
-  const today = new Date();
+  const today = getKSTDate();
   const [currentDate, setCurrentDate] = useState<Date>(today);
   const [selectedDay, setSelectedDay] = useState<CalendarDayType | null>(null);
 
@@ -44,7 +45,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions,
   };
 
   const handleToday = (): void => {
-    const newDate = new Date();
+    const newDate = getKSTDate();
     setCurrentDate(newDate);
     onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
   };

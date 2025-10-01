@@ -1,19 +1,28 @@
 import type { Transaction } from '../types/transaction';
 import type { CalendarDay, CalendarWeek, CalendarMonth, DayTransactionSummary } from '../types/calendar';
+import { getKSTDate } from './dateUtils';
 
 /**
- * 주어진 날짜가 오늘인지 확인
+ * 주어진 날짜가 오늘인지 확인 (KST/JST 기준)
+ * kstToday는 KST 시간을 UTC로 표현하므로 getUTC* 메서드 사용
+ * date는 로컬 시간대 기준이므로 get* 메서드 사용
  */
 export const isToday = (date: Date): boolean => {
-  const today = new Date();
-  return date.toDateString() === today.toDateString();
+  const kstToday = getKSTDate();
+
+  return kstToday.getUTCFullYear() === date.getFullYear() &&
+         kstToday.getUTCMonth() === date.getMonth() &&
+         kstToday.getUTCDate() === date.getDate();
 };
 
 /**
  * 두 날짜가 같은 날인지 확인
+ * 두 날짜 모두 로컬 시간대 기준이므로 get* 메서드 사용
  */
 export const isSameDay = (date1: Date, date2: Date): boolean => {
-  return date1.toDateString() === date2.toDateString();
+  return date1.getFullYear() === date2.getFullYear() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getDate() === date2.getDate();
 };
 
 /**
@@ -82,21 +91,18 @@ export const generateCalendarMonth = (year: number, month: number, transactions:
   const firstDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, ...
   const daysInMonth = lastDay.getDate();
 
-  // 이전 달의 마지막 날들
-  const prevMonth = new Date(year, month - 1, 0);
-  const daysInPrevMonth = prevMonth.getDate();
-
   const weeks: CalendarWeek[] = [];
   let currentWeek: CalendarDay[] = [];
 
   // 이전 달의 날짜들로 첫 주 채우기
   for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-    const date = new Date(year, month - 1, daysInPrevMonth - i);
+    // month의 0일은 이전 달 마지막 날, -1일은 그 전날...
+    const date = new Date(year, month, -i);
     const dayTransactions = getTransactionsForDate(transactions, date);
 
     currentWeek.push({
       date,
-      dayNumber: daysInPrevMonth - i,
+      dayNumber: date.getDate(), // Date 객체에서 직접 날짜 추출
       isCurrentMonth: false,
       isToday: isToday(date),
       transactions: dayTransactions,

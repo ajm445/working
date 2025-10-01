@@ -1,4 +1,16 @@
 /**
+ * KST/JST 시간대 기준으로 현재 날짜를 가져옴 (UTC+9)
+ * 반환된 Date 객체는 내부적으로 KST 시간을 UTC로 저장하므로
+ * getUTCFullYear(), getUTCMonth(), getUTCDate()를 사용해야 함
+ */
+export const getKSTDate = (): Date => {
+  const now = new Date();
+  // 현재 UTC 시간에 9시간을 더해서 KST 시간을 UTC로 표현
+  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstTime;
+};
+
+/**
  * 날짜를 YYYY-MM-DD 형식으로 변환 (로컬 시간대 기준)
  */
 export const formatDateForInput = (date: Date): string => {
@@ -9,10 +21,10 @@ export const formatDateForInput = (date: Date): string => {
 };
 
 /**
- * 오늘 날짜를 YYYY-MM-DD 형식으로 반환
+ * 오늘 날짜를 YYYY-MM-DD 형식으로 반환 (KST/JST 기준)
  */
 export const getTodayDateString = (): string => {
-  return formatDateForInput(new Date());
+  return formatDateForInput(getKSTDate());
 };
 
 /**
@@ -52,14 +64,27 @@ export const isValidDate = (dateString: string): boolean => {
 };
 
 /**
- * 날짜가 미래인지 확인
+ * 날짜가 미래인지 확인 (KST/JST 기준)
  */
 export const isFutureDate = (dateString: string): boolean => {
   if (!isValidDate(dateString)) return false;
   const inputDate = parseInputDate(dateString);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // 시간을 00:00:00으로 설정
-  return inputDate > today;
+  const kstToday = getKSTDate();
+
+  // inputDate는 로컬 시간대, kstToday는 KST를 UTC로 표현
+  const inputYear = inputDate.getFullYear();
+  const inputMonth = inputDate.getMonth();
+  const inputDay = inputDate.getDate();
+
+  const todayYear = kstToday.getUTCFullYear();
+  const todayMonth = kstToday.getUTCMonth();
+  const todayDay = kstToday.getUTCDate();
+
+  if (inputYear > todayYear) return true;
+  if (inputYear < todayYear) return false;
+  if (inputMonth > todayMonth) return true;
+  if (inputMonth < todayMonth) return false;
+  return inputDay > todayDay;
 };
 
 /**

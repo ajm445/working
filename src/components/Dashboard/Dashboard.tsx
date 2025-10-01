@@ -5,6 +5,7 @@ import {
   calculateMonthlyExpense,
   calculateMonthlyBalance
 } from '../../utils/calculations';
+import { getKSTDate } from '../../utils/dateUtils';
 import BalanceCard from './BalanceCard';
 import CurrencySelector from './CurrencySelector';
 import { TransactionCalendar } from '../Calendar';
@@ -24,7 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   currentViewMode = 'summary',
   onCalendarDateClick
 }) => {
-  const today = new Date();
+  const today = getKSTDate();
   const [calendarYear, setCalendarYear] = useState<number>(today.getFullYear());
   const [calendarMonth, setCalendarMonth] = useState<number>(today.getMonth());
 

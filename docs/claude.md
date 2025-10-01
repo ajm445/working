@@ -851,6 +851,12 @@ npm run dev
 
 # 6. 가계부 데이터 초기화 (개발 시)
 # 브라우저 개발자 도구 > Application > Local Storage > 해당 도메인 삭제
+
+# 7. 캘린더 날짜 버그 (해결됨)
+# ✅ 9월 31일 등 존재하지 않는 날짜 생성 버그 수정
+# ✅ KST/JST 시간대(UTC+9) 처리 개선으로 날짜 불일치 해결
+# ✅ 이전 달 날짜 계산 로직 개선 (new Date(year, month, -i) 방식 사용)
+# ✅ 날짜 비교 로직 개선 (toDateString() 대신 개별 필드 비교)
 ```
 
 #### 프로젝트별 주의사항 (업데이트됨)
@@ -944,12 +950,21 @@ export const getDayTransactionSummary = (
 };
 
 // src/utils/dateUtils.ts - 날짜 유틸리티
+export const getKSTDate = (): Date => {
+  // KST/JST 시간대(UTC+9) 기준 현재 날짜 반환
+  // 반환된 Date는 UTC로 저장되므로 getUTC* 메서드 사용 필요
+};
+
 export const formatDateForInput = (date: Date): string => {
   // HTML5 date input용 YYYY-MM-DD 형식 변환
 };
 
 export const formatInputDateToKorean = (dateString: string): string => {
   // YYYY-MM-DD → 한국어 날짜 형식 변환
+};
+
+export const isFutureDate = (dateString: string): boolean => {
+  // KST/JST 기준으로 미래 날짜 여부 정확하게 판단
 };
 ```
 
@@ -1027,7 +1042,8 @@ src/components/Calendar/
    - 📅 최적화된 캘린더 UI: 수입/지출/순액만 표시로 UI 개선 (개선됨)
    - 📅 개선된 금액 표시: K/M 단위 축약 제거, 전체 금액과 쉼표 표시, 통화 단위 후치 (10,000₩)
    - 📅 캘린더에서 직접 특정 날짜에 거래 추가
-   - 📅 정확한 날짜 처리: 로컬 시간대 기준으로 날짜 버그 해결 (수정됨)
+   - 📅 정확한 날짜 처리: KST/JST 시간대(UTC+9) 기준으로 날짜 처리 개선 (수정됨)
+   - 📅 캘린더 날짜 계산 버그 수정: 존재하지 않는 날짜(예: 9월 31일) 생성 방지 (수정됨)
    - 📅 유연한 날짜 선택: 당일 외 과거/미래 날짜 거래 등록
    - 📅 날짜 상세 모달: 일일 거래 내역 상세 보기
    - 📅 한국어 날짜 형식 및 접근성 지원
