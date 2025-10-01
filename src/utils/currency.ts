@@ -91,16 +91,18 @@ export const formatCurrency = (amount: number, currency: CurrencyCode): string =
     return `${amount.toLocaleString()}`;
   }
 
-  // 각 통화별 포맷팅
+  // 금액이 0일 때는 심볼을 앞에, 0이 아닐 때는 뒤에
+  const isZero = amount === 0;
+
   switch (currency) {
     case 'KRW':
-      return `₩${Math.round(amount).toLocaleString()}`;
+      return isZero ? '₩0' : `${Math.round(amount).toLocaleString()}₩`;
     case 'USD':
-      return `$${amount.toFixed(2)}`;
+      return isZero ? '$0' : `${amount.toFixed(2)}$`;
     case 'JPY':
-      return `¥${Math.round(amount).toLocaleString()}`;
+      return isZero ? '¥0' : `${Math.round(amount).toLocaleString()}¥`;
     default:
-      return `${currencyInfo.symbol}${amount.toLocaleString()}`;
+      return isZero ? `${currencyInfo.symbol}0` : `${amount.toLocaleString()}${currencyInfo.symbol}`;
   }
 };
 
@@ -112,16 +114,18 @@ export const formatCurrencyForStats = (amount: number, currency: CurrencyCode): 
     return `${amount.toLocaleString()}`;
   }
 
-  // 각 통화별 포맷팅 (심볼을 뒤에)
+  // 금액이 0일 때는 심볼을 앞에, 0이 아닐 때는 뒤에
+  const isZero = amount === 0;
+
   switch (currency) {
     case 'KRW':
-      return `${Math.round(amount).toLocaleString()}₩`;
+      return isZero ? '₩0' : `${Math.round(amount).toLocaleString()}₩`;
     case 'USD':
-      return `${amount.toFixed(2)}$`;
+      return isZero ? '$0' : `${amount.toFixed(2)}$`;
     case 'JPY':
-      return `${Math.round(amount).toLocaleString()}¥`;
+      return isZero ? '¥0' : `${Math.round(amount).toLocaleString()}¥`;
     default:
-      return `${amount.toLocaleString()}${currencyInfo.symbol}`;
+      return isZero ? `${currencyInfo.symbol}0` : `${amount.toLocaleString()}${currencyInfo.symbol}`;
   }
 };
 
