@@ -31,7 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [calendarMonth, setCalendarMonth] = useState<number>(today.getMonth());
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  React.useEffect(() => {
+  React.useEffect((): (() => void) => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);

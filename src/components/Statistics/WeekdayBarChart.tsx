@@ -121,7 +121,7 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
       <div className="mt-4 p-4 bg-blue-50 rounded-lg">
         <p className="text-sm text-blue-800">
           <span className="font-semibold">💡 생활 패턴 인사이트:</span>{' '}
-          {(() => {
+          {((): string => {
             const maxExpenseDay = sortedData.reduce((max, day) =>
               day.averageExpense > max.averageExpense ? day : max
             , sortedData[0] || { weekday: '없음', averageExpense: 0 });
