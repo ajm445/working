@@ -3,19 +3,20 @@
 ## 📌 문서 정보
 
 - **작성일**: 2025-10-08
-- **목적**: 일본 워킹홀리데이 가계부 앱에 Supabase 데이터베이스 및 소셜 로그인 구현
-- **대상**: Google 및 Kakao 소셜 로그인 기반 사용자 인증 시스템
+- **목적**: 일본 워킹홀리데이 가계부 앱에 Supabase 데이터베이스 및 인증 시스템 구현
+- **대상**: 아이디/비밀번호 로그인, Google 및 LINE 소셜 로그인 기반 사용자 인증 시스템
 
 ---
 
 ## 🎯 프로젝트 목표
 
 1. **Supabase PostgreSQL** 데이터베이스 구축
-2. **Google OAuth** 로그인 구현
-3. **Kakao OAuth** 로그인 구현
-4. **사용자 프로필 관리** 테이블 설계
-5. **Row Level Security (RLS)** 보안 정책 적용
-6. **프론트엔드 인증 시스템** 구현
+2. **아이디/비밀번호 로그인** 구현
+3. **Google OAuth** 소셜 로그인 구현
+4. **LINE OAuth** 소셜 로그인 구현
+5. **사용자 프로필 관리** 테이블 설계
+6. **Row Level Security (RLS)** 보안 정책 적용
+7. **프론트엔드 인증 시스템** 구현
 
 ---
 
@@ -97,78 +98,77 @@
 
 ---
 
-#### **Step 1-3: Kakao OAuth 설정**
+#### **Step 1-3: LINE OAuth 설정**
 
-1. **Kakao Developers 접속**
+1. **LINE Developers Console 접속**
    ```
-   URL: https://developers.kakao.com
+   URL: https://developers.line.biz/console/
    ```
 
-2. **애플리케이션 추가**
+2. **Provider 생성**
    ```
-   경로: 내 애플리케이션 > 애플리케이션 추가하기
+   경로: Providers > Create a new provider
 
    설정 내용:
-   - 앱 이름: 일본워홀가계부
-   - 사업자명: [개인 또는 사업자명]
+   - Provider name: Japan Working Holiday App
    ```
 
-3. **앱 키 확인**
+3. **Channel 생성**
    ```
-   경로: 내 애플리케이션 > [생성한 앱] > 앱 키
+   경로: [생성한 Provider] > Create a LINE Login channel
 
-   ✅ REST API 키: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ✅ JavaScript 키: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ```
-
-4. **플랫폼 설정**
-   ```
-   경로: 내 애플리케이션 > 플랫폼 > Web 플랫폼 등록
-
-   사이트 도메인:
-   - http://localhost:5173
-   - https://[your-domain].com (배포 후)
+   설정 내용:
+   - Channel type: LINE Login
+   - Channel name: 일본워홀가계부
+   - Channel description: 일본 워킹홀리데이를 위한 가계부 앱
+   - App types: Web app
    ```
 
-5. **Redirect URI 등록**
+4. **Channel 기본 설정**
    ```
-   경로: 내 애플리케이션 > 제품 설정 > 카카오 로그인
+   경로: [생성한 Channel] > Basic settings
 
-   Redirect URI 등록:
+   확인할 정보:
+   ✅ Channel ID: xxxxxxxxxx
+   ✅ Channel secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ```
+
+5. **LINE Login 설정**
+   ```
+   경로: [생성한 Channel] > LINE Login
+
+   Callback URL 등록:
    - https://[YOUR-PROJECT-REF].supabase.co/auth/v1/callback
 
    설정:
-   ✅ 카카오 로그인 활성화: ON
-   ✅ OpenID Connect 활성화: ON (권장)
+   ✅ Email address permission: ON (권장)
+   ✅ OpenID Connect: ON (권장)
    ```
 
 6. **동의 항목 설정**
    ```
-   경로: 내 애플리케이션 > 제품 설정 > 카카오 로그인 > 동의 항목
+   경로: [생성한 Channel] > Permissions
 
-   필수 동의:
-   - 닉네임 (필수)
-   - 프로필 사진 (선택)
-   - 카카오계정(이메일) (필수)
-   ```
-
-7. **Client Secret 설정 (보안 강화)**
-   ```
-   경로: 내 애플리케이션 > 제품 설정 > 카카오 로그인 > 보안
-
-   ✅ Client Secret 코드 생성
-   ✅ 상태: 사용함으로 변경
+   필수 권장 항목:
+   - Profile (필수): 사용자 프로필 정보
+   - OpenID Connect (필수): 인증용
+   - Email address (권장): 이메일 정보
    ```
 
-8. **저장할 정보**
+7. **저장할 정보**
    ```
-   ✅ REST API Key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   ✅ Client Secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   ✅ Channel ID: xxxxxxxxxx
+   ✅ Channel Secret: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    ```
+
+**참고사항:**
+- LINE Login은 일본에서 가장 많이 사용되는 소셜 로그인 서비스입니다
+- 일본 워킹홀리데이 사용자를 위해 필수적인 로그인 옵션입니다
+- 이메일 주소는 선택 권한이지만, 사용자 식별을 위해 권장됩니다
 
 ---
 
-#### **Step 1-4: Supabase에 프로바이더 연결**
+#### **Step 1-4: Supabase에 인증 프로바이더 연결**
 
 1. **Google 프로바이더 설정**
    ```
@@ -181,24 +181,30 @@
    ✅ Authorized Client IDs: (비워둠)
    ```
 
-2. **Kakao 프로바이더 설정**
+2. **LINE 프로바이더 설정**
    ```
-   경로: Supabase Dashboard > Authentication > Providers > Kakao
+   경로: Supabase Dashboard > Authentication > Providers > LINE
 
    설정:
-   ✅ Enable Sign in with Kakao: ON
-   ✅ Client ID (REST API Key): [Kakao REST API 키]
-   ✅ Client Secret: [Kakao Client Secret]
+   ✅ Enable Sign in with LINE: ON
+   ✅ Channel ID: [LINE Channel ID]
+   ✅ Channel Secret: [LINE Channel Secret]
    ```
 
-3. **이메일 설정 (선택사항)**
+3. **이메일/아이디 로그인 설정**
    ```
    경로: Supabase Dashboard > Authentication > Providers > Email
 
    설정:
    ✅ Enable Email provider: ON
-   ✅ Confirm email: OFF (개발 단계)
+   ✅ Confirm email: ON (프로덕션 환경 권장, 개발 단계에서는 OFF)
+   ✅ Enable Email Signup: ON (회원가입 허용)
    ```
+
+**참고사항:**
+- Supabase의 이메일 인증은 기본적으로 이메일 주소를 사용하지만, 프론트엔드에서 아이디처럼 활용 가능
+- 사용자명(username) 필드를 profiles 테이블에 추가하여 아이디 기능 구현
+- 이메일 확인을 OFF로 설정하면 개발 단계에서 즉시 로그인 가능
 
 ---
 
@@ -221,7 +227,7 @@ auth.users (
   last_sign_in_at TIMESTAMP,              -- 마지막 로그인 시각
 
   -- 소셜 로그인 메타데이터
-  raw_app_meta_data JSONB,                -- 제공자 정보 (provider: google/kakao)
+  raw_app_meta_data JSONB,                -- 제공자 정보 (provider: google/line/email)
   raw_user_meta_data JSONB                -- 프로필 데이터 (이름, 사진 등)
 )
 ```
@@ -238,13 +244,13 @@ auth.users (
 }
 ```
 
-**raw_user_meta_data 예시 (Kakao 로그인):**
+**raw_user_meta_data 예시 (LINE 로그인):**
 ```json
 {
-  "provider_id": "1234567890",
-  "nickname": "홍길동",
-  "profile_image": "http://k.kakaocdn.net/...",
-  "email": "user@kakao.com"
+  "sub": "U1234567890abcdef",
+  "name": "홍길동",
+  "picture": "https://profile.line-scdn.net/...",
+  "email": "user@example.com"
 }
 ```
 
@@ -267,11 +273,12 @@ CREATE TABLE public.profiles (
 
   -- 기본 정보
   email TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE,                  -- 아이디 (이메일 로그인 시 사용)
   display_name TEXT,                     -- 앱에서 표시될 이름
   avatar_url TEXT,                       -- 프로필 사진 URL
 
   -- 소셜 로그인 제공자 정보
-  provider TEXT CHECK (provider IN ('google', 'kakao', 'email')),
+  provider TEXT CHECK (provider IN ('google', 'line', 'email')),
   provider_id TEXT,                      -- 제공자별 고유 ID (sub, provider_id 등)
 
   -- 앱 설정 (기존 CurrencyContext, AppModeContext 데이터 저장)
@@ -304,6 +311,7 @@ CREATE TABLE public.profiles (
 -- 인덱스 생성 (쿼리 성능 최적화)
 -- ============================================
 CREATE INDEX idx_profiles_email ON public.profiles(email);
+CREATE INDEX idx_profiles_username ON public.profiles(username);
 CREATE INDEX idx_profiles_provider ON public.profiles(provider);
 CREATE INDEX idx_profiles_created_at ON public.profiles(created_at DESC);
 
@@ -312,8 +320,9 @@ CREATE INDEX idx_profiles_created_at ON public.profiles(created_at DESC);
 -- ============================================
 COMMENT ON TABLE public.profiles IS '사용자 프로필 및 앱 설정 정보';
 COMMENT ON COLUMN public.profiles.id IS 'auth.users.id 외래키';
+COMMENT ON COLUMN public.profiles.username IS '사용자 아이디 (이메일 로그인용, 고유값)';
 COMMENT ON COLUMN public.profiles.settings IS '사용자별 앱 설정 (통화, 테마, 언어 등)';
-COMMENT ON COLUMN public.profiles.provider IS '로그인 제공자 (google, kakao, email)';
+COMMENT ON COLUMN public.profiles.provider IS '로그인 제공자 (google, line, email)';
 ```
 
 ---
@@ -375,15 +384,16 @@ BEGIN
       user_avatar := NEW.raw_user_meta_data->>'picture';
       user_provider_id := NEW.raw_user_meta_data->>'sub';
 
-    WHEN 'kakao' THEN
+    WHEN 'line' THEN
       user_name := COALESCE(
-        NEW.raw_user_meta_data->>'nickname',
+        NEW.raw_user_meta_data->>'name',
         SPLIT_PART(NEW.email, '@', 1)
       );
-      user_avatar := NEW.raw_user_meta_data->>'profile_image';
-      user_provider_id := NEW.raw_user_meta_data->>'provider_id';
+      user_avatar := NEW.raw_user_meta_data->>'picture';
+      user_provider_id := NEW.raw_user_meta_data->>'sub';
 
     ELSE
+      -- 이메일 로그인인 경우 (username은 별도로 프론트엔드에서 설정)
       user_name := SPLIT_PART(NEW.email, '@', 1);
       user_avatar := NULL;
       user_provider_id := NULL;
@@ -640,9 +650,10 @@ export interface Database {
         Row: {
           id: string;
           email: string;
+          username: string | null;
           display_name: string | null;
           avatar_url: string | null;
-          provider: 'google' | 'kakao' | 'email' | null;
+          provider: 'google' | 'line' | 'email' | null;
           provider_id: string | null;
           settings: Json;
           is_active: boolean;
@@ -653,9 +664,10 @@ export interface Database {
         Insert: {
           id: string;
           email: string;
+          username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
-          provider?: 'google' | 'kakao' | 'email' | null;
+          provider?: 'google' | 'line' | 'email' | null;
           provider_id?: string | null;
           settings?: Json;
           is_active?: boolean;
@@ -666,9 +678,10 @@ export interface Database {
         Update: {
           id?: string;
           email?: string;
+          username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
-          provider?: 'google' | 'kakao' | 'email' | null;
+          provider?: 'google' | 'line' | 'email' | null;
           provider_id?: string | null;
           settings?: Json;
           is_active?: boolean;
@@ -741,8 +754,10 @@ interface AuthContextType {
   loading: boolean;
 
   // 인증 메서드
+  signInWithEmail: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUpWithEmail: (email: string, password: string, username: string) => Promise<{ error: AuthError | null }>;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
-  signInWithKakao: () => Promise<{ error: AuthError | null }>;
+  signInWithLine: () => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
 
   // 프로필 메서드
@@ -830,6 +845,52 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
   }, []);
 
+  // 이메일/비밀번호 로그인
+  const signInWithEmail = async (
+    email: string,
+    password: string
+  ): Promise<{ error: AuthError | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { error };
+  };
+
+  // 이메일/비밀번호 회원가입
+  const signUpWithEmail = async (
+    email: string,
+    password: string,
+    username: string
+  ): Promise<{ error: AuthError | null }> => {
+    // 1. 사용자 생성
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          username, // 메타데이터에 username 저장
+        },
+      },
+    });
+
+    if (error) return { error };
+
+    // 2. username을 profiles 테이블에 업데이트
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ username })
+        .eq('id', data.user.id);
+
+      if (profileError) {
+        console.error('Failed to update username:', profileError);
+      }
+    }
+
+    return { error: null };
+  };
+
   // Google 로그인
   const signInWithGoogle = async (): Promise<{ error: AuthError | null }> => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -845,10 +906,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  // Kakao 로그인
-  const signInWithKakao = async (): Promise<{ error: AuthError | null }> => {
+  // LINE 로그인
+  const signInWithLine = async (): Promise<{ error: AuthError | null }> => {
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'kakao',
+      provider: 'line',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
       },
@@ -903,8 +964,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session,
     profile,
     loading,
+    signInWithEmail,
+    signUpWithEmail,
     signInWithGoogle,
-    signInWithKakao,
+    signInWithLine,
     signOut,
     updateProfile,
     refreshProfile,
@@ -925,9 +988,54 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
-  const { signInWithGoogle, signInWithKakao } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithLine } = useAuth();
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleEmailLogin = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    setLoading('email');
+    setError(null);
+
+    const { error: signInError } = await signInWithEmail(email, password);
+
+    if (signInError) {
+      setError('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.');
+      console.error('Email login error:', signInError);
+    }
+
+    setLoading(null);
+  };
+
+  const handleEmailSignup = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    setLoading('email');
+    setError(null);
+
+    if (!username.trim()) {
+      setError('아이디를 입력해주세요.');
+      setLoading(null);
+      return;
+    }
+
+    const { error: signUpError } = await signUpWithEmail(email, password, username);
+
+    if (signUpError) {
+      setError('회원가입에 실패했습니다. 다시 시도해주세요.');
+      console.error('Email signup error:', signUpError);
+    } else {
+      setError(null);
+      // 회원가입 성공 메시지
+      alert('회원가입이 완료되었습니다. 로그인해주세요.');
+      setMode('signin');
+    }
+
+    setLoading(null);
+  };
 
   const handleGoogleLogin = async (): Promise<void> => {
     setLoading('google');
@@ -943,15 +1051,15 @@ const LoginPage: React.FC = () => {
     setLoading(null);
   };
 
-  const handleKakaoLogin = async (): Promise<void> => {
-    setLoading('kakao');
+  const handleLineLogin = async (): Promise<void> => {
+    setLoading('line');
     setError(null);
 
-    const { error: signInError } = await signInWithKakao();
+    const { error: signInError } = await signInWithLine();
 
     if (signInError) {
-      setError('카카오 로그인에 실패했습니다. 다시 시도해주세요.');
-      console.error('Kakao login error:', signInError);
+      setError('LINE 로그인에 실패했습니다. 다시 시도해주세요.');
+      console.error('LINE login error:', signInError);
     }
 
     setLoading(null);
@@ -973,6 +1081,30 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
 
+        {/* 탭 전환 */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMode('signin')}
+            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+              mode === 'signin'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            로그인
+          </button>
+          <button
+            onClick={() => setMode('signup')}
+            className={`flex-1 py-2 rounded-lg font-medium transition-all ${
+              mode === 'signup'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            회원가입
+          </button>
+        </div>
+
         {/* 에러 메시지 */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -980,8 +1112,81 @@ const LoginPage: React.FC = () => {
           </div>
         )}
 
+        {/* 이메일/비밀번호 로그인 폼 */}
+        <form onSubmit={mode === 'signin' ? handleEmailLogin : handleEmailSignup} className="space-y-4 mb-6">
+          {mode === 'signup' && (
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                아이디
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="사용할 아이디를 입력하세요"
+                required={mode === 'signup'}
+              />
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              이메일
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="example@email.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              비밀번호
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              placeholder="••••••••"
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading === 'email'}
+            className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading === 'email' ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+            ) : (
+              mode === 'signin' ? '로그인' : '회원가입'
+            )}
+          </button>
+        </form>
+
+        {/* 구분선 */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">또는</span>
+          </div>
+        </div>
+
         {/* 소셜 로그인 버튼 */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Google 로그인 */}
           <button
             onClick={() => void handleGoogleLogin()}
@@ -1013,20 +1218,20 @@ const LoginPage: React.FC = () => {
             <span>Google로 계속하기</span>
           </button>
 
-          {/* Kakao 로그인 */}
+          {/* LINE 로그인 */}
           <button
-            onClick={() => void handleKakaoLogin()}
+            onClick={() => void handleLineLogin()}
             disabled={loading !== null}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#FEE500] rounded-lg font-medium text-[#000000] hover:bg-[#FDD835] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#06C755] rounded-lg font-medium text-white hover:bg-[#05B04A] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading === 'kakao' ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+            {loading === 'line' ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3C6.477 3 2 6.58 2 11c0 2.89 1.953 5.416 4.859 6.816-.206.748-.756 2.76-.868 3.197-.132.514.188.508.396.369.166-.111 2.63-1.745 3.045-2.029C10.23 19.783 11.1 20 12 20c5.523 0 10-3.58 10-8s-4.477-8-10-8z" />
+                <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314" />
               </svg>
             )}
-            <span>카카오로 계속하기</span>
+            <span>LINEで続ける</span>
           </button>
         </div>
 
@@ -1334,10 +1539,12 @@ npm run dev
 # 브라우저에서 테스트
 # 1. http://localhost:5173 접속
 # 2. /login 페이지로 자동 리디렉션 확인
-# 3. Google 로그인 버튼 클릭 → OAuth 플로우 테스트
-# 4. Kakao 로그인 버튼 클릭 → OAuth 플로우 테스트
-# 5. 로그인 후 대시보드 접근 확인
-# 6. 로그아웃 → 다시 /login으로 리디렉션 확인
+# 3. 이메일/비밀번호 회원가입 테스트
+# 4. 이메일/비밀번호 로그인 테스트
+# 5. Google 로그인 버튼 클릭 → OAuth 플로우 테스트
+# 6. LINE 로그인 버튼 클릭 → OAuth 플로우 테스트
+# 7. 로그인 후 대시보드 접근 확인
+# 8. 로그아웃 → 다시 /login으로 리디렉션 확인
 ```
 
 #### **Step 6-2: Supabase Dashboard에서 확인**
@@ -1345,11 +1552,11 @@ npm run dev
 ```
 1. Authentication > Users 탭
    - 새로 가입한 사용자 확인
-   - 프로바이더 정보 확인 (google/kakao)
+   - 프로바이더 정보 확인 (google/line/email)
 
 2. Table Editor > profiles 테이블
    - 자동 생성된 프로필 확인
-   - display_name, avatar_url 등 데이터 확인
+   - username, display_name, avatar_url 등 데이터 확인
 
 3. Logs > Auth Logs
    - 로그인/로그아웃 이벤트 확인
@@ -1365,9 +1572,10 @@ npm run dev
 - [Row Level Security](https://supabase.com/docs/guides/auth/row-level-security)
 - [OAuth Providers](https://supabase.com/docs/guides/auth/social-login)
 
-### **OAuth 설정 가이드**
+### **인증 설정 가이드**
+- [Email/Password 로그인](https://supabase.com/docs/guides/auth/auth-email)
 - [Google OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-google)
-- [Kakao OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-kakao)
+- [LINE OAuth 설정](https://supabase.com/docs/guides/auth/social-login/auth-line)
 
 ### **TypeScript 타입 생성**
 ```bash
@@ -1385,8 +1593,8 @@ npx supabase gen types typescript --project-id [PROJECT_ID] --schema public > sr
 ### **Phase 1: Supabase 설정**
 - [ ] Supabase 프로젝트 생성
 - [ ] Google OAuth 설정 완료
-- [ ] Kakao OAuth 설정 완료
-- [ ] Supabase에 프로바이더 연결
+- [ ] LINE OAuth 설정 완료
+- [ ] Supabase에 인증 프로바이더 연결
 - [ ] 환경변수 파일 생성 (.env.local)
 
 ### **Phase 2: 데이터베이스**
@@ -1417,9 +1625,11 @@ npx supabase gen types typescript --project-id [PROJECT_ID] --schema public > sr
 
 ### **Phase 5: 테스트**
 - [ ] 로컬 개발 서버 실행
+- [ ] 이메일/비밀번호 회원가입 테스트
+- [ ] 이메일/비밀번호 로그인 테스트
 - [ ] Google 로그인 테스트
-- [ ] Kakao 로그인 테스트
-- [ ] 프로필 자동 생성 확인
+- [ ] LINE 로그인 테스트
+- [ ] 프로필 자동 생성 및 username 설정 확인
 - [ ] 로그아웃 테스트
 - [ ] RLS 정책 동작 확인
 
@@ -1436,13 +1646,15 @@ Error: redirect_uri_mismatch
 - Supabase Project URL이 정확히 입력되었는지 확인
 - 형식: `https://[PROJECT-REF].supabase.co/auth/v1/callback`
 
-### **문제 2: Kakao 로그인 실패**
+### **문제 2: LINE 로그인 실패**
 ```
-Error: KOE006 (redirect_uri mismatch)
+Error: redirect_uri mismatch 또는 invalid_request
 ```
 **해결책:**
-- Kakao Developers > 제품 설정 > 카카오 로그인 > Redirect URI 확인
-- Supabase Project URL과 일치하는지 확인
+- LINE Developers Console > Channel 설정 > LINE Login > Callback URL 확인
+- Supabase Project URL이 정확히 입력되었는지 확인
+- 형식: `https://[PROJECT-REF].supabase.co/auth/v1/callback`
+- LINE Channel ID와 Channel Secret이 Supabase에 정확히 입력되었는지 확인
 
 ### **문제 3: 프로필 자동 생성 안됨**
 ```
@@ -1461,6 +1673,25 @@ Error: new row violates row-level security policy
 - RLS 정책이 올바르게 설정되었는지 확인
 - `auth.uid()`가 제대로 동작하는지 확인
 - 개발 단계에서는 일시적으로 RLS 비활성화 후 테스트
+
+### **문제 5: 이메일/비밀번호 로그인 실패**
+```
+Error: Invalid login credentials
+```
+**해결책:**
+- Supabase Dashboard > Authentication > Providers > Email 확인
+- Enable Email provider가 ON인지 확인
+- 이메일 확인 옵션(Confirm email) 설정 확인
+- 비밀번호가 최소 6자 이상인지 확인
+
+### **문제 6: Username 중복 오류**
+```
+Error: duplicate key value violates unique constraint
+```
+**해결책:**
+- profiles 테이블의 username이 UNIQUE 제약조건을 가지고 있음
+- 회원가입 시 이미 사용 중인 아이디인지 확인하는 로직 추가 권장
+- 프론트엔드에서 username 중복 체크 API 구현
 
 ---
 
