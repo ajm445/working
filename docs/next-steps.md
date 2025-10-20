@@ -3,7 +3,18 @@
 ## 📋 현재 프로젝트 상태 (2025년 최신 - 일본 특화 완료)
 
 ### ✅ 완료된 기능
-- **기본 CRUD 기능**: 수입/지출 내역 추가, 조회, 삭제
+- **🔐 Supabase 인증 시스템 (최신 완료!)**:
+  - ✅ 이메일/비밀번호 로그인 및 회원가입
+  - ✅ 선택적 로그인: 로그인 없이도 앱 사용 가능
+  - ✅ 임시 모드: 비로그인 시 로컬 메모리에만 데이터 저장
+  - ✅ 영구 모드: 로그인 시 Supabase PostgreSQL에 데이터 저장
+  - ✅ 실시간 동기화: Supabase Realtime으로 거래 내역 자동 동기화
+  - ✅ Row Level Security (RLS): 사용자별 데이터 격리
+  - ✅ 사용자 프로필 자동 생성 (profiles 테이블)
+  - ✅ AuthContext 및 트랜잭션 서비스 레이어 구현
+  - ⚠️ Google OAuth: 준비 완료 (설정 필요)
+  - ⚠️ LINE OAuth: 미구현 (향후 추가 예정)
+- **기본 CRUD 기능**: 수입/지출 내역 추가, 조회, 삭제 (Supabase 연동)
 - **🗓️ 고급 캘린더 시스템 (최신 완료!)**:
   - ✅ 듀얼 뷰 시스템 (요약 보기 ↔ 캘린더 보기)
   - ✅ 월별 캘린더로 거래 내역 시각화
@@ -36,19 +47,135 @@
   - ⚡ **빠른 입력 기능**: 최소/평균/최대 비용 원클릭 입력
 - ✅ **듀얼 모드 네비게이션**: 상단 탭을 통한 모드 전환
 
-### 🔄 현재 개발 방향 (캘린더 시스템 완료 후 업데이트)
-- **📊 데이터 지속성**: 캘린더 및 일본 특화 데이터 저장 및 LocalStorage 구현이 최우선
-- **📈 통계 및 분석**: 캘린더 기반 월별 생활비 패턴 분석 (차트, 인사이트, 트렌드)
+### 🔄 현재 개발 방향 (Supabase 인증 및 캘린더 시스템 완료 후 업데이트)
+- **🔐 인증 시스템 고도화**: Google/LINE 소셜 로그인, 이메일 인증, 비밀번호 재설정, 2FA (최우선)
+- **📊 통계 및 분석**: 캘린더 기반 월별 생활비 패턴 분석 (차트, 인사이트, 트렌드)
 - **🗓️ 캘린더 시스템 고도화**: 주간/일간 뷰, 거래 직접 편집, 카테고리별 색상 구분
 - **🇯🇵 일본 특화 기능 확장**: 더 많은 일본 지역 (후쿠오카, 삿포로 등) 및 계절별 비용 차이 반영
 - **🌸 사용자 경험**: 일본 워킹홀리데이 체크리스트, 생활 가이드, 절약 팁 제공
 - **🗾 일본어 현지화**: 완전한 일본어 인터페이스 추가
+- **💾 로컬 데이터 마이그레이션**: 비로그인 시 입력한 임시 데이터를 로그인 후 Supabase로 자동 이전
 
 ---
 
+## 🔐 Phase 2-E: 인증 시스템 고도화 (최우선 기능)
+
+### 2-E.1 소셜 로그인 구현
+```typescript
+// 구현해야 할 소셜 로그인 제공자
+const SOCIAL_LOGIN_PROVIDERS = [
+  'google',     // Google OAuth 2.0 (준비 완료, 설정 필요)
+  'line',       // LINE Login (일본 특화 - 미구현)
+  'apple',      // Apple Sign In (향후 고려)
+  'kakao',      // Kakao Login (한국 사용자용 - 향후 고려)
+];
+
+// Google OAuth 설정 필요 사항
+const GOOGLE_OAUTH_SETUP = [
+  'Supabase 대시보드에서 Google OAuth 활성화',
+  'Google Cloud Console에서 OAuth 클라이언트 ID 생성',
+  'Redirect URI 설정: {SUPABASE_URL}/auth/v1/callback',
+  'Client ID 및 Secret을 Supabase에 등록',
+  'AuthContext.tsx의 signInWithGoogle() 함수 테스트',
+];
+
+// LINE OAuth 구현 필요 사항
+const LINE_OAUTH_IMPLEMENTATION = [
+  'LINE Developers Console에서 앱 등록',
+  'Supabase에 LINE OAuth Provider 추가 (커스텀 OAuth)',
+  'LINE Login API 통합',
+  'AuthContext에 signInWithLine() 함수 구현',
+  '일본 사용자를 위한 LINE 우선 로그인 UI',
+];
+```
+
+### 2-E.2 이메일 인증 및 비밀번호 관리
+```typescript
+// 구현해야 할 이메일 인증 기능
+const EMAIL_VERIFICATION = [
+  'email_confirmation',          // 회원가입 시 이메일 인증
+  'email_verification_required', // 인증 전 기능 제한
+  'resend_verification',         // 인증 메일 재전송
+  'custom_email_templates',      // 이메일 템플릿 커스터마이징
+];
+
+// 비밀번호 관리 기능
+const PASSWORD_MANAGEMENT = [
+  'forgot_password',             // 비밀번호 찾기
+  'password_reset',              // 비밀번호 재설정
+  'password_change',             // 로그인 상태에서 비밀번호 변경
+  'password_strength_meter',     // 비밀번호 강도 표시기
+  'password_requirements',       // 비밀번호 요구사항 표시
+];
+```
+
+### 2-E.3 계정 관리 페이지
+```typescript
+// 구현해야 할 계정 관리 기능
+interface AccountManagement {
+  profile: {
+    display_name: string;        // 표시 이름 수정
+    avatar_url: string;          // 프로필 이미지 업로드
+    username: string;            // 사용자명 수정
+  };
+
+  security: {
+    change_password: boolean;    // 비밀번호 변경
+    enable_2fa: boolean;         // 2단계 인증 활성화
+    sessions: Session[];         // 활성 세션 목록
+    logout_all: boolean;         // 모든 디바이스에서 로그아웃
+  };
+
+  preferences: {
+    default_currency: CurrencyCode;  // 기본 통화 설정
+    language: 'ko' | 'ja' | 'en';   // 언어 설정
+    theme: 'light' | 'dark';         // 테마 설정
+  };
+
+  data: {
+    export_data: boolean;        // 데이터 내보내기
+    delete_account: boolean;     // 계정 삭제
+  };
+}
+```
+
+### 2-E.4 로컬 데이터 마이그레이션
+```typescript
+// 비로그인 상태에서 입력한 임시 데이터를 로그인 후 Supabase로 이전
+interface LocalDataMigration {
+  detect_local_data: () => boolean;              // 임시 데이터 감지
+  prompt_migration: () => Promise<boolean>;      // 마이그레이션 확인 모달
+  migrate_transactions: () => Promise<void>;     // 거래 내역 이전
+  clear_local_data: () => void;                  // 로컬 데이터 정리
+  rollback_on_error: () => Promise<void>;        // 오류 시 롤백
+}
+
+// 마이그레이션 시나리오
+const MIGRATION_SCENARIOS = [
+  '비로그인으로 10개 거래 입력 → 로그인 시 자동 감지 → 모달 표시 → 사용자 확인 → Supabase 저장',
+  '마이그레이션 중 오류 발생 → 롤백 → 로컬 데이터 유지 → 재시도 옵션',
+  '마이그레이션 성공 → 로컬 데이터 자동 삭제 → 성공 알림',
+];
+```
+
+### 2-E.5 2단계 인증 (2FA)
+```typescript
+// 2FA 구현 (향후 고려)
+const TWO_FACTOR_AUTH = [
+  'totp_setup',                  // TOTP 앱 설정 (Google Authenticator)
+  'backup_codes',                // 백업 코드 생성
+  'sms_verification',            // SMS 인증 (선택사항)
+  'recovery_options',            // 복구 옵션
+];
+```
+
 ## 🌏 Phase 2: 데이터 지속성 및 고급 기능 (다음 우선 기능)
 
-### ✅ 완료된 Phase 2 작업들 (캘린더 시스템 완료!)
+### ✅ 완료된 Phase 2 작업들 (Supabase 인증 + 캘린더 시스템 완료!)
+- ✅ **🔐 Supabase 인증 시스템**: 이메일/비밀번호 로그인, 선택적 로그인, 실시간 동기화
+- ✅ **🔐 조건부 데이터 저장**: 로그인 시 Supabase, 비로그인 시 로컬 메모리
+- ✅ **🔐 AuthContext 및 서비스 레이어**: transactionService.ts, AuthContext.tsx 구현
+- ✅ **🔐 Row Level Security (RLS)**: 사용자별 데이터 격리 및 보안
 - ✅ **일본 특화 초기비용 계산기**: 16개 일본 전용 카테고리 및 타입 정의 완료
 - ✅ **도쿄/오사카 지역별 차등 시스템**: JapanRegionSelector, 지역별 비용 범위 자동 조정
 - ✅ **일본 특화 컴포넌트**: JapanCostCategoryCard, JapanCostSummary, JapanRegionSelector 완료
@@ -255,6 +382,50 @@ npm install react-i18next i18next
 
 ### 🥇 Highest Priority (1주일 소요)
 
+#### 0. 인증 시스템 고도화 🔐 (최우선)
+```bash
+# 소셜 로그인 구현
+1. Google OAuth 설정 및 테스트
+   - Supabase 대시보드에서 Google OAuth 활성화
+   - Google Cloud Console 설정
+   - AuthContext.tsx의 signInWithGoogle() 함수 테스트
+
+2. LINE Login 구현 (일본 특화)
+   - LINE Developers Console 설정
+   - Supabase Custom OAuth Provider 추가
+   - LINE Login API 통합
+   - 일본 사용자 우선 로그인 UI
+
+3. 이메일 인증 시스템
+   - 회원가입 시 이메일 인증 필수화
+   - 이메일 인증 전 기능 제한
+   - 이메일 재전송 기능
+   - 커스텀 이메일 템플릿 (한국어/일본어)
+
+4. 비밀번호 관리
+   - 비밀번호 찾기/재설정 페이지
+   - 비밀번호 변경 기능 (계정 설정)
+   - 비밀번호 강도 표시기
+   - 비밀번호 요구사항 안내
+
+5. 계정 관리 페이지 생성
+   - 프로필 정보 수정 (이름, 아바타, 사용자명)
+   - 보안 설정 (비밀번호 변경, 세션 관리)
+   - 사용자 설정 (기본 통화, 언어, 테마)
+   - 데이터 관리 (내보내기, 계정 삭제)
+
+6. 로컬 데이터 마이그레이션
+   - 비로그인 시 입력한 임시 데이터 감지
+   - 로그인 후 마이그레이션 확인 모달
+   - Supabase로 자동 이전 기능
+   - 오류 처리 및 롤백
+
+7. 2단계 인증 (2FA) - 향후 고려
+   - TOTP 앱 설정
+   - 백업 코드 생성
+   - 복구 옵션
+```
+
 #### 1. 캘린더 및 일본 특화 데이터 지속성 구현 💾
 ```bash
 # LocalStorage 기반 일본 특화 데이터 저장
@@ -371,14 +542,35 @@ npm install recharts @types/recharts
 
 ## 📂 권장 개발 순서 (업데이트됨)
 
-### Week 1: 캘린더 및 일본 특화 데이터 지속성 구현 (Critical)
-- [ ] useLocalStorage 훅 구현 및 캘린더 시스템 통합
-- [ ] 📅 캘린더 거래 데이터 자동 저장/로드 시스템 (날짜별 매핑)
-- [ ] 🇯🇵 일본 워킹홀리데이 거래 데이터 자동 저장/로드 시스템 (JPY 기준)
-- [ ] 🏙️ 도쿄/오사카 지역별 초기비용 계산 결과 저장 시스템
-- [ ] 💱 JPY 환율 데이터 캐싱 시스템 (KRW↔JPY)
-- [ ] ⚙️ 사용자 설정 저장 (선택한 뷰 모드, 기본 통화, 일본 지역 등)
-- [ ] 📊 캘린더 및 일본 특화 데이터 백업/복원 기능 (JSON/CSV)
+### Week 1: 인증 시스템 고도화 (Critical - 최우선)
+- [ ] 🔐 Google OAuth 설정 및 테스트
+  - [ ] Supabase 대시보드에서 Google OAuth 활성화
+  - [ ] Google Cloud Console 설정 완료
+  - [ ] AuthContext의 signInWithGoogle() 함수 테스트
+  - [ ] Google 로그인 UI 추가 (LoginPage)
+- [ ] 🔐 LINE Login 구현 (일본 특화)
+  - [ ] LINE Developers Console 설정
+  - [ ] Supabase Custom OAuth Provider 추가
+  - [ ] LINE Login API 통합
+  - [ ] AuthContext에 signInWithLine() 구현
+  - [ ] LINE 우선 로그인 UI (일본 사용자용)
+- [ ] 📧 이메일 인증 시스템
+  - [ ] 회원가입 시 이메일 인증 필수화
+  - [ ] 이메일 인증 전 기능 제한 로직
+  - [ ] 이메일 재전송 기능
+  - [ ] 커스텀 이메일 템플릿 (한국어/일본어)
+- [ ] 🔑 비밀번호 관리
+  - [ ] 비밀번호 찾기/재설정 페이지 구현
+  - [ ] 비밀번호 변경 기능 (계정 설정)
+  - [ ] 비밀번호 강도 표시기
+- [ ] ⚙️ 계정 관리 페이지
+  - [ ] 프로필 정보 수정 UI
+  - [ ] 보안 설정 UI
+  - [ ] 사용자 설정 UI (기본 통화, 언어)
+- [ ] 💾 로컬 데이터 마이그레이션
+  - [ ] 임시 데이터 감지 로직
+  - [ ] 마이그레이션 확인 모달
+  - [ ] Supabase 자동 이전 기능
 
 ### Week 2: 캘린더 기반 통계 및 분석 시스템
 - [ ] Recharts 라이브러리 통합 (캘린더 기반 차트)
@@ -485,24 +677,31 @@ npm install -D vitest @testing-library/react @testing-library/jest-dom
 - ✅ **🏷️ 한일 병기 시스템**: 모든 일본 관련 내용에 일본어 동시 표시
 - ✅ **📋 7개 카테고리 그룹**: 출국전준비, 입국후정착, 주거, 교통, 교육, 생활, 비상
 
-### 🔥 다음 최우선 작업 (캘린더 시스템 완료 후 로드맵)
-1. **📊 캘린더 및 일본 특화 데이터 지속성 구현** - LocalStorage 기반 데이터 저장
-2. **📈 캘린더 기반 통계 및 차트 시스템** - 월별/요일별 분석 및 시각화
-3. **🗓️ 캘린더 시스템 고도화** - 주간/일간 뷰, 거래 직접 편집, 카테고리별 색상
-4. **🇯🇵 일본 지역 확장** - 후쿠오카, 삿포로, 나고야 등 추가 지역
-5. **🌸 일본어 현지화** - 완전한 일본어 인터페이스 구현
-6. **📱 일본 생활 가이드 통합** - 체크리스트, 절약 팁, 현지 정보
+### 🔥 다음 최우선 작업 (Supabase 인증 + 캘린더 시스템 완료 후 로드맵)
+1. **🔐 인증 시스템 고도화** - Google/LINE 소셜 로그인, 이메일 인증, 비밀번호 관리, 계정 설정 (최우선)
+2. **💾 로컬 데이터 마이그레이션** - 비로그인 시 입력한 임시 데이터를 로그인 후 Supabase로 자동 이전
+3. **📈 캘린더 기반 통계 및 차트 시스템** - 월별/요일별 분석 및 시각화
+4. **🗓️ 캘린더 시스템 고도화** - 주간/일간 뷰, 거래 직접 편집, 카테고리별 색상
+5. **🇯🇵 일본 지역 확장** - 후쿠오카, 삿포로, 나고야 등 추가 지역
+6. **🌸 일본어 현지화** - 완전한 일본어 인터페이스 구현
+7. **📱 일본 생활 가이드 통합** - 체크리스트, 절약 팁, 현지 정보
 
-### ⚠️ 기술적 고려사항 (캘린더 시스템 완료 후)
-- **📊 캘린더 및 일본 특화 데이터 지속성**: 현재 메모리 기반에서 LocalStorage 구현이 최우선
+### ⚠️ 기술적 고려사항 (Supabase 인증 + 캘린더 시스템 완료 후)
+- **🔐 인증 시스템 고도화**: Google/LINE OAuth, 이메일 인증, 비밀번호 관리, 2FA 구현이 최우선
+- **💾 로컬 데이터 마이그레이션**: 비로그인 시 입력한 임시 데이터를 로그인 후 Supabase로 자동 이전
+- **🔒 보안 강화**: RLS 정책 검증, API 키 보호, XSS/CSRF 방어, 세션 관리
 - **🗓️ 캘린더 성능 최적화**: 대용량 거래 데이터 처리 및 캘린더 렌더링 최적화
 - **📈 통계 차트 성능**: Recharts 기반 실시간 차트 렌더링 및 데이터 처리 최적화
 - **💱 JPY 환율 API 최적화**: KRW↔JPY 중심의 비용 효율성 및 캐싱 전략 개선
 - **🌸 사용자 경험**: 캘린더 + 일본 특화 두 모드 간 일관된 경험 및 일본어 현지화
 - **🗾 확장성**: 더 많은 일본 지역, 캘린더 뷰 모드, 계절별 카테고리 추가를 위한 구조 설계
-- **🏗️ 타입 안전성**: calendar.ts, japanCost.ts 타입 시스템 확장 및 인터페이스 개선
+- **🏗️ 타입 안전성**: calendar.ts, japanCost.ts, database.ts 타입 시스템 확장 및 인터페이스 개선
 
-### 🎉 Phase 2B 달성 성과 (캘린더 시스템 완료!)
+### 🎉 Phase 2E 달성 성과 (Supabase 인증 + 캘린더 시스템 완료!)
+- ✅ **🔐 Supabase 인증 시스템**: 이메일/비밀번호 로그인, 선택적 로그인, 실시간 동기화 완전 구현
+- ✅ **🔐 조건부 데이터 저장**: 로그인 시 Supabase PostgreSQL, 비로그인 시 로컬 메모리
+- ✅ **🔐 Row Level Security (RLS)**: 사용자별 데이터 격리 및 보안 완전 구현
+- ✅ **🔐 실시간 동기화**: Supabase Realtime으로 거래 내역 자동 동기화
 - ✅ **🗓️ 고급 캘린더 시스템**: 월별 시각화, 날짜별 거래 관리, 듀얼 뷰가 완벽히 동작
 - ✅ **📊 스마트 월별 계산**: 요약 보기(현재 달) / 캘린더 보기(선택한 달) 자동 전환 완료
 - ✅ **🎨 최적화된 UI/UX**: 캘린더 레이아웃 문제 해결, 금액 표시 형식 개선 완료
@@ -510,11 +709,20 @@ npm install -D vitest @testing-library/react @testing-library/jest-dom
 - ✅ **🇯🇵 일본 특화 이중 모드 시스템**: 가계부와 일본 워킹홀리데이 특화 초기비용 계산기가 완벽히 동작
 - ✅ **🏙️ 도쿄/오사카 지역별 데이터**: 실제 일본 워킹홀리데이 준비자들이 사용 가능한 현실적이고 세밀한 데이터
 - ✅ **💱 JPY 실시간 통화 변환**: 모든 일본 관련 계산이 실시간 JPY 환율로 정확히 표시
-- ✅ **🏗️ 모듈화된 아키텍처**: 캘린더 + 일본 지역 확장 및 기능 추가가 용이한 모듈화된 구조
+- ✅ **🏗️ 모듈화된 아키텍처**: 인증 + 캘린더 + 일본 지역 확장 및 기능 추가가 용이한 모듈화된 구조
 - ✅ **🏷️ 한일 병기 시스템**: 일본 워킹홀리데이에 필요한 모든 용어를 한국어-일본어로 제공
 - ✅ **📋 16개 일본 특화 카테고리**: 재류카드, 국민건강보험 등 일본 고유 항목 완전 구현
 - ✅ **🎯 7개 체계적 그룹 분류**: 출국 전부터 현지 정착까지 단계별 비용 관리
 
+### ⚠️ 미완성 항목 (다음 개발 우선순위)
+- ⚠️ **Google OAuth**: 코드는 준비되었으나 Supabase 및 Google Cloud Console 설정 필요
+- ⚠️ **LINE Login**: 미구현 (일본 특화 기능으로 향후 추가 필요)
+- ⚠️ **이메일 인증**: 회원가입 시 이메일 인증 시스템 미구현
+- ⚠️ **비밀번호 관리**: 비밀번호 찾기/재설정 페이지 미구현
+- ⚠️ **계정 관리 페이지**: 프로필 수정, 보안 설정, 데이터 관리 페이지 미구현
+- ⚠️ **로컬 데이터 마이그레이션**: 비로그인 시 입력한 임시 데이터를 로그인 후 자동 이전 기능 미구현
+- ⚠️ **2단계 인증 (2FA)**: TOTP, 백업 코드 등 미구현 (향후 고려)
+
 ---
 
-*이 문서는 2025년 현재 프로젝트 상태를 반영하여 업데이트되었습니다. Phase 2B (고급 캘린더 시스템)가 완료되어 이제 캘린더 기반 데이터 지속성과 통계/차트 시스템 구현에 집중할 수 있습니다.*
+*이 문서는 2025년 현재 프로젝트 상태를 반영하여 업데이트되었습니다. Phase 2E (Supabase 인증 + 고급 캘린더 시스템)가 완료되어 이제 인증 시스템 고도화 (소셜 로그인, 이메일 인증, 계정 관리)에 집중할 수 있습니다.*

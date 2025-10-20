@@ -5,18 +5,21 @@
 일본 워킹홀리데이를 하는 사람들을 위한 전용 관리 웹앱입니다. 일본 현지 생활비 관리와 도쿄/오사카 지역별 초기비용 계산을 하나의 앱에서 제공합니다.
 
 ### 주요 기능
-- ✅ **🔐 사용자 인증 시스템 (NEW!)**
+- ✅ **🔐 사용자 인증 시스템 (UPDATED!)**
   - ✅ Supabase 기반 사용자 인증 (이메일/비밀번호)
   - ✅ 자동 로그인 상태 유지 (세션 관리)
-  - ✅ Google/LINE 소셜 로그인 준비 완료 (현재 ID/PW만 활성화)
-  - ✅ 보호된 라우트 (ProtectedRoute) - 미인증 시 로그인 페이지로 리디렉션
+  - ✅ Google OAuth 준비 완료 (현재 ID/PW만 활성화)
+  - ✅ **선택적 로그인 시스템**: 로그인 없이도 가계부 사용 가능 (NEW!)
+  - ✅ **임시 모드**: 비로그인 상태에서 로컬 메모리에만 데이터 저장 (NEW!)
   - ✅ 사용자 프로필 자동 생성 및 관리
-- ✅ **💾 Supabase 데이터베이스 연동 (NEW!)**
+  - ✅ 로그인/로그아웃 버튼 UI 개선
+- ✅ **💾 Supabase 데이터베이스 연동 (UPDATED!)**
   - ✅ PostgreSQL 기반 거래 내역 저장
   - ✅ 사용자별 데이터 분리 (Row Level Security)
   - ✅ 실시간 동기화 (Supabase Realtime)
   - ✅ CRUD 서비스 레이어 구현
   - ✅ TypeScript 타입 안전성 보장
+  - ✅ **조건부 데이터 저장**: 로그인 시 Supabase, 비로그인 시 로컬 메모리 (NEW!)
 - ✅ **이중 모드 시스템**: 가계부와 일본 특화 초기비용 계산기 전환
 - ✅ **📅 고급 가계부 관리 시스템 (UPDATED!)**
   - ✅ 오늘 날짜 표시: Dashboard 상단에 현재 날짜 표시
@@ -431,13 +434,19 @@ export interface TransactionFormData {
 
 ### 1. 프로젝트 설정 (현재 상태)
 
-#### 현재 프로젝트 구조 (일본 특화 + 캘린더 업데이트)
+#### 현재 프로젝트 구조 (Supabase 인증 + 일본 특화 + 캘린더 완료)
 ```bash
 src/
-├── App.tsx                   # 메인 애플리케이션 컴포넌트 (이중 모드 지원)
+├── App.tsx                   # 라우팅 설정 (BrowserRouter, AuthProvider)
+├── MainApp.tsx              # 메인 애플리케이션 컴포넌트 (이중 모드 지원)
 ├── main.tsx                 # React 앱 진입점
 ├── index.css                # Tailwind CSS 및 글로벌 스타일
 ├── components/              # 재사용 가능한 컴포넌트
+│   ├── Auth/                # 🔐 인증 관련 컴포넌트 (UPDATED!)
+│   │   ├── LoginPage.tsx        # 로그인/회원가입 페이지 (이메일/비밀번호)
+│   │   ├── AuthCallback.tsx     # OAuth 콜백 처리 (Google)
+│   │   ├── ProtectedRoute.tsx   # 보호된 라우트 (미사용)
+│   │   └── index.ts
 │   ├── ui/                  # 기본 UI 컴포넌트
 │   │   ├── Button.tsx
 │   │   └── index.ts
@@ -479,6 +488,7 @@ src/
 │       ├── ModeNavigation.tsx
 │       └── index.ts
 ├── contexts/                # React Context
+│   ├── AuthContext.tsx      # 🔐 인증 상태 관리 (NEW!)
 │   ├── CurrencyContext.tsx  # 통화 상태 관리
 │   └── AppModeContext.tsx   # 앱 모드 상태 관리
 ├── hooks/                   # 커스텀 훅
@@ -493,6 +503,7 @@ src/
 ├── types/                   # TypeScript 타입 정의
 │   ├── index.ts            # 타입 배럴 익스포트
 │   ├── common.ts           # 공통 타입
+│   ├── database.ts         # 🔐 Supabase 데이터베이스 타입 (NEW!)
 │   ├── currency.ts         # 통화 관련 타입
 │   ├── transaction.ts      # 거래 관련 타입 (날짜 필드 추가)
 │   ├── calendar.ts         # 📅 캘린더 관련 타입
@@ -502,6 +513,10 @@ src/
 ├── data/                   # 정적 데이터
 │   ├── initialCostCategories.ts  # 기존 범용 카테고리 (미사용)
 │   └── japanCostCategories.ts    # 🇯🇵 일본 특화 카테고리 데이터
+├── services/               # 🔐 서비스 레이어 (NEW!)
+│   └── transactionService.ts    # 거래 CRUD 및 실시간 구독
+├── lib/                    # 🔐 외부 라이브러리 설정 (NEW!)
+│   └── supabase.ts             # Supabase 클라이언트 초기화
 └── constants/              # 상수
     └── routes.ts           # 라우트 상수
 ```
@@ -1087,6 +1102,111 @@ src/components/Calendar/
 - **직관적 UX**: 통화 변경 및 모드 전환 시 부드러운 애니메이션 효과
 - **일관된 디자인**: 두 모드 모두 동일한 디자인 시스템 사용
 
+### 7. 🔐 선택적 로그인 시스템 (✅ NEW! 완료)
+- **비로그인 모드 (임시 모드)**:
+  - 로그인 없이 즉시 가계부 사용 가능
+  - 데이터는 로컬 메모리에만 저장 (새로고침 시 소실)
+  - 거래 ID는 `local-${timestamp}` 형식으로 생성
+  - 노란색 경고 배너로 임시 모드 안내
+  - 각 거래 추가 시 경고 알림 표시
+
+- **로그인 모드 (영구 모드)**:
+  - Supabase PostgreSQL 데이터베이스에 영구 저장
+  - Supabase Realtime으로 실시간 동기화
+  - Row Level Security(RLS)로 사용자별 데이터 격리
+  - 거래 ID는 UUID로 자동 생성
+  - 다중 디바이스 간 데이터 동기화
+
+- **헤더 UI 변화**:
+  - 비로그인: "로그인하여 데이터를 저장하세요" + "로그인 / 회원가입" 버튼
+  - 로그인: 사용자 프로필 정보 + "로그아웃" 버튼
+
+- **라우팅 구조**:
+  - `/` : 메인 앱 (로그인 선택사항)
+  - `/login` : 로그인/회원가입 페이지
+  - `/auth/callback` : OAuth 콜백 처리
+
+#### 🔐 선택적 로그인 시스템 기술 구현
+```typescript
+// src/MainApp.tsx - 조건부 데이터 저장 로직
+const addTransaction = async (data: TransactionFormData) => {
+  const newTransaction = {
+    type: data.type,
+    amount: parseFloat(data.amount),
+    category: data.category,
+    description: data.description,
+    date: formatInputDateToKorean(data.date),
+    currency: data.currency,
+    amountInKRW: data.amountInKRW,
+  };
+
+  if (user) {
+    // 로그인 상태: Supabase에 저장
+    const { data: addedTransaction, error } =
+      await transactionService.addTransaction(newTransaction, user.id);
+
+    if (error) {
+      alert('거래 내역 추가에 실패했습니다.');
+    }
+    // 실시간 구독으로 자동 업데이트되므로 수동 추가 불필요
+  } else {
+    // 비로그인 상태: 로컬 메모리에만 저장
+    const localTransaction: Transaction = {
+      id: `local-${Date.now()}-${Math.random()}`, // 임시 ID
+      ...newTransaction,
+    };
+
+    setTransactions((prev) => [localTransaction, ...prev]);
+    alert('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\\n새로고침 시 데이터가 사라집니다.');
+  }
+};
+
+// src/services/transactionService.ts - Supabase CRUD 서비스
+export const addTransaction = async (
+  transaction: Omit<LocalTransaction, 'id'>,
+  userId: string
+): Promise<{ data: LocalTransaction | null; error: Error | null }> => {
+  try {
+    const insertData: TransactionInsert = mapLocalToSupabase(transaction, userId);
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([insertData] as never)  // 타입 회피
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) throw new Error('No data returned');
+
+    return { data: mapSupabaseToLocal(data as DBTransaction), error: null };
+  } catch (error) {
+    return { data: null, error: error as Error };
+  }
+};
+
+// 실시간 구독
+export const subscribeToTransactions = (
+  userId: string,
+  callback: (payload: RealtimePayload) => void
+): { unsubscribe: () => void } => {
+  const subscription = supabase
+    .channel('transactions-changes')
+    .on(
+      'postgres_changes' as never,
+      {
+        event: '*',
+        schema: 'public',
+        table: 'transactions',
+        filter: `user_id=eq.${userId}`,
+      } as never,
+      callback as never
+    )
+    .subscribe();
+
+  return subscription;
+};
+```
+
 ## 🎯 프로젝트 현재 상태 요약
 
 ### ✅ 완료된 작업
@@ -1133,14 +1253,33 @@ src/components/Calendar/
    - 📊 통계 전용 금액 표기: formatCurrencyForStats 함수로 차별화된 포맷 (100,000₩)
    - 📊 성능 최적화: React.memo, useMemo, useCallback으로 렌더링 최적화 (NEW!)
    - 📊 정확한 환율 계산: KRW → USD/JPY 변환 로직 수정 (곱셈 연산) (NEW!)
-12. **앱 모드 관리**: AppModeContext를 통한 전역 상태 관리
-13. **향상된 통화 변환**: useCurrencyConverter 훅을 통한 유연한 변환
+12. **🔐 Supabase 인증 및 데이터베이스 (UPDATED! 완료)**:
+   - 🔐 이메일/비밀번호 인증 시스템 구현
+   - 🔐 Google OAuth 2.0 준비 완료
+   - 🔐 선택적 로그인: 로그인 없이도 앱 사용 가능 (NEW!)
+   - 🔐 임시 모드: 비로그인 시 로컬 메모리에만 데이터 저장 (NEW!)
+   - 🔐 영구 모드: 로그인 시 Supabase에 데이터 저장 및 실시간 동기화 (NEW!)
+   - 🔐 사용자 프로필 자동 생성 (profiles 테이블)
+   - 🔐 Row Level Security (RLS) 정책으로 사용자별 데이터 격리
+   - 🔐 실시간 거래 내역 동기화 (Supabase Realtime)
+   - 🔐 트랜잭션 서비스 레이어 (transactionService.ts)
+   - 🔐 TypeScript 타입 안전성 (database.ts)
+13. **앱 모드 관리**: AppModeContext를 통한 전역 상태 관리
+14. **향상된 통화 변환**: useCurrencyConverter 훅을 통한 유연한 변환
 
 ### 🔄 진행 중인 작업
 - 현재 모든 기본 기능 구현 완료
+- Supabase 인증 및 선택적 로그인 시스템 완료
 - 사용자가 직접 서버 실행하여 테스트 가능한 상태
 
 ### 📝 향후 개발 권장사항
+0. **🔐 인증 시스템 고도화**:
+   - 소셜 로그인 확장 (LINE, Apple 등)
+   - 이메일 인증 기능 추가
+   - 비밀번호 재설정 기능
+   - 2단계 인증 (2FA) 추가
+   - 로컬 데이터 → Supabase 마이그레이션 기능 (로그인 시 임시 데이터 자동 저장)
+   - 계정 설정 페이지 (프로필 편집, 비밀번호 변경 등)
 1. **📅 캘린더 시스템 고도화**:
    - 주간 뷰 및 일간 뷰 추가 (현재는 월간 뷰만 지원)
    - 캘린더에서 거래 직접 편집/삭제 기능
