@@ -96,11 +96,23 @@ const LoginPage: React.FC = () => {
     setLoading(null);
   };
 
+  const handleGoHome = (): void => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+        {/* 홈으로 가기 버튼 */}
+        <button
+          onClick={handleGoHome}
+          className="absolute top-4 left-4 text-indigo-600 hover:text-indigo-800 flex items-center gap-2 transition-colors text-sm"
+        >
+          ← 홈으로
+        </button>
+
         {/* 로고 및 타이틀 */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 mt-4">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">✈️</span>
           </div>
@@ -269,11 +281,11 @@ const LoginPage: React.FC = () => {
         {/* 약관 동의 */}
         <p className="mt-6 text-xs text-center text-gray-500">
           로그인하면{' '}
-          <a href="#" className="text-indigo-600 hover:underline">
+          <a href="/terms" className="text-indigo-600 hover:underline">
             서비스 약관
           </a>
           과{' '}
-          <a href="#" className="text-indigo-600 hover:underline">
+          <a href="/privacy" className="text-indigo-600 hover:underline">
             개인정보 처리방침
           </a>
           에 동의하는 것으로 간주됩니다.
