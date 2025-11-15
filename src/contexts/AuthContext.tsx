@@ -97,9 +97,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     );
 
+    // 페이지를 떠날 때 자동 로그아웃
+    const handleBeforeUnload = (): void => {
+      // localStorage에서 Supabase 세션 데이터를 직접 삭제
+      // Supabase는 'sb-'로 시작하는 키에 세션 정보를 저장함
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('sb-')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // 비동기 signOut도 호출 (완료되지 않을 수 있지만 시도)
+      void supabase.auth.signOut();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     // 클린업
     return (): void => {
       subscription.unsubscribe();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
