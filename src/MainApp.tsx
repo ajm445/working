@@ -56,7 +56,7 @@ const ExpenseTracker: React.FC = () => {
         console.log('Real-time update:', payload);
 
         // INSERT 이벤트
-        if (payload.eventType === 'INSERT') {
+        if (payload.eventType === 'INSERT' && payload.new) {
           const newTransaction = transactionService.mapSupabaseToLocal(
             payload.new
           );
@@ -64,7 +64,7 @@ const ExpenseTracker: React.FC = () => {
         }
 
         // UPDATE 이벤트
-        if (payload.eventType === 'UPDATE') {
+        if (payload.eventType === 'UPDATE' && payload.new) {
           const updatedTransaction = transactionService.mapSupabaseToLocal(
             payload.new
           );
@@ -76,7 +76,7 @@ const ExpenseTracker: React.FC = () => {
         }
 
         // DELETE 이벤트
-        if (payload.eventType === 'DELETE') {
+        if (payload.eventType === 'DELETE' && payload.old) {
           setTransactions((prev) =>
             prev.filter((t) => t.id !== payload.old.id)
           );

@@ -155,7 +155,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ username } as never)
+        // @ts-expect-error - Supabase type inference issue, will be fixed with CLI generated types
+        .update({ username })
         .eq('id', data.user.id);
 
       if (profileError) {
@@ -214,7 +215,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const { error } = await supabase
         .from('profiles')
-        .update(updates as never)
+        // @ts-expect-error - Supabase type inference issue, will be fixed with CLI generated types
+        .update(updates)
         .eq('id', user.id);
 
       if (error) throw error;

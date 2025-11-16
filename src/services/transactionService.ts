@@ -1,6 +1,11 @@
 import { supabase } from '../lib/supabase';
-import type { TransactionInsert, TransactionUpdate, Transaction as DBTransaction } from '../types/database';
+import type {
+  TransactionInsert,
+  TransactionUpdate,
+  Transaction as DBTransaction
+} from '../types/database';
 import type { Transaction as LocalTransaction } from '../types/transaction';
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // Supabase Transaction을 Local Transaction으로 변환
 export const mapSupabaseToLocal = (dbTransaction: DBTransaction): LocalTransaction => {
@@ -72,7 +77,8 @@ export const addTransaction = async (
 
     const { data, error } = await supabase
       .from('transactions')
-      .insert([insertData] as never)
+      // @ts-expect-error - Supabase type inference issue, will be fixed with CLI generated types
+      .insert([insertData])
       .select()
       .single();
 
@@ -111,7 +117,8 @@ export const updateTransaction = async (
 
     const { data, error } = await supabase
       .from('transactions')
-      .update(updateData as never)
+      // @ts-expect-error - Supabase type inference issue, will be fixed with CLI generated types
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -150,32 +157,23 @@ export const deleteTransaction = async (
 };
 
 /**
- * 실시간 구독 페이로드 타입
- */
-interface RealtimePayload {
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
-  new: DBTransaction;
-  old: { id: string };
-}
-
-/**
  * 실시간 거래 내역 구독
  */
 export const subscribeToTransactions = (
   userId: string,
-  callback: (payload: RealtimePayload) => void
+  callback: (payload: RealtimePostgresChangesPayload<DBTransaction>) => void
 ): { unsubscribe: () => void } => {
   const subscription = supabase
     .channel('transactions-changes')
     .on(
-      'postgres_changes' as never,
+      'postgres_changes',
       {
         event: '*',
         schema: 'public',
         table: 'transactions',
         filter: `user_id=eq.${userId}`,
-      } as never,
-      callback as never
+      },
+      callback
     )
     .subscribe();
 
