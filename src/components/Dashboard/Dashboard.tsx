@@ -8,6 +8,7 @@ import {
 import { getKSTDate } from '../../utils/dateUtils';
 import BalanceCard from './BalanceCard';
 import CurrencySelector from './CurrencySelector';
+import CurrentTimeDisplay from './CurrentTimeDisplay';
 import { TransactionCalendar } from '../Calendar';
 import { StatisticsDashboard } from '../Statistics';
 
@@ -29,15 +30,6 @@ const Dashboard: React.FC<DashboardProps> = ({
   const today = getKSTDate();
   const [calendarYear, setCalendarYear] = useState<number>(today.getFullYear());
   const [calendarMonth, setCalendarMonth] = useState<number>(today.getMonth());
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  React.useEffect((): (() => void) => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const handleViewModeChange = (mode: ViewMode): void => {
     onViewModeChange?.(mode);
@@ -56,38 +48,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   const totalExpense = calculateMonthlyExpense(transactions, displayYear, displayMonth);
   const balance = calculateMonthlyBalance(transactions, displayYear, displayMonth);
 
-  // 오늘 날짜 포맷팅
-  const formatTodayDate = (): string => {
-    return today.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long'
-    });
-  };
-
-  // 현재 시간 포맷팅 (am/pm)
-  const formatTime = (date: Date): string => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'pm' : 'am';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
-  };
-
   return (
     <div>
-      {/* 오늘 날짜 및 시간 표시 */}
-      <div className="mb-6 text-center">
-        <div className="inline-flex items-center gap-4 px-4 py-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-          <span className="text-lg font-semibold text-indigo-800">
-            오늘: {formatTodayDate()}
-          </span>
-          <span className="text-lg font-semibold text-indigo-600">
-            {formatTime(currentTime)}
-          </span>
-        </div>
-      </div>
+      {/* 오늘 날짜 및 시간 표시 - 1분마다 업데이트 */}
+      <CurrentTimeDisplay updateInterval={60000} />
 
       <CurrencySelector />
 

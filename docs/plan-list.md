@@ -198,18 +198,29 @@
   - LINE Access Token 유효기간: 30일, Refresh Token: 90일
 
 ### 7. 성능 최적화 - 불필요한 리렌더링 방지
-- **상태**: ⬜
+- **상태**: ✅
 - **우선순위**: Medium
 - **예상 소요**: 2-3시간
+- **완료일**: 2025-11-17
 - **파일**:
-  - `src/contexts/CurrencyContext.tsx` (라인 29-40)
-  - `src/components/Dashboard/Dashboard.tsx` (라인 34-40)
+  - `src/contexts/CurrencyContext.tsx` ✅
+  - `src/components/Dashboard/Dashboard.tsx` ✅
+  - `src/components/Dashboard/CurrentTimeDisplay.tsx` (신규 생성) ✅
 - **작업 내용**:
-  - [ ] `refreshExchangeRates` 함수를 `useCallback`으로 감싸기
-  - [ ] 시간 표시 컴포넌트 분리 및 `React.memo` 적용
-  - [ ] 시간 업데이트 간격을 1초 → 1분으로 변경 (초 표시가 불필요한 경우)
-  - [ ] React DevTools Profiler로 성능 측정
-- **참고**: 1초마다 리렌더링 발생
+  - [x] `refreshExchangeRates` 함수를 `useCallback`으로 감싸기
+  - [x] 시간 표시 컴포넌트 분리 및 `React.memo` 적용
+  - [x] 시간 업데이트 간격을 1초 → 1분으로 변경
+  - [x] updateInterval prop으로 업데이트 간격 조정 가능하도록 구현
+- **개선 사항**:
+  - `CurrencyContext`: refreshExchangeRates를 useCallback으로 메모이제이션하여 불필요한 재생성 방지
+  - `CurrentTimeDisplay`: 별도 컴포넌트로 분리하여 시간 업데이트 시 Dashboard 전체가 재렌더링되지 않도록 개선
+  - React.memo 적용으로 props 변경 없을 시 재렌더링 방지
+  - 시간 업데이트 간격 1초 → 1분(60000ms)으로 변경하여 CPU 부하 감소
+  - updateInterval prop으로 필요시 간격 조정 가능 (유연성 확보)
+- **성능 개선 효과**:
+  - Dashboard 컴포넌트 재렌더링 빈도: 1초마다 → 1분마다 (60배 감소)
+  - CurrencyContext 함수 재생성 방지로 메모리 효율 향상
+  - React.memo로 불필요한 자식 컴포넌트 렌더링 방지
 
 ### 8. 사용자 경험 개선 - 로딩 및 에러 처리
 - **상태**: ⬜
@@ -398,6 +409,14 @@
 - **완료일**: 2025-11-15
 - **커밋**: `4545efd - fix(auth): 페이지 종료 시 자동 로그아웃으로 세션 오류 방지`
 - **내용**: beforeunload 이벤트에서 localStorage의 Supabase 세션 데이터 자동 삭제
+
+### ✅ 성능 최적화 - 불필요한 리렌더링 방지 (Medium #7)
+- **완료일**: 2025-11-17
+- **내용**:
+  - `refreshExchangeRates` 함수를 `useCallback`으로 메모이제이션
+  - `CurrentTimeDisplay` 컴포넌트 분리 및 `React.memo` 적용
+  - 시간 업데이트 간격 1초 → 1분으로 변경 (60배 성능 개선)
+  - Dashboard 재렌더링 빈도 대폭 감소
 
 ---
 

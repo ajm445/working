@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import type { CurrencyCode } from '../types/currency';
 import { DEFAULT_CURRENCY } from '../types/currency';
@@ -26,7 +26,8 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
   const [isLoadingRates, setIsLoadingRates] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
-  const refreshExchangeRates = async (): Promise<void> => {
+  // useCallback으로 메모이제이션하여 불필요한 재생성 방지
+  const refreshExchangeRates = useCallback(async (): Promise<void> => {
     setIsLoadingRates(true);
     try {
       const rates = await fetchExchangeRates();
@@ -37,12 +38,12 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     } finally {
       setIsLoadingRates(false);
     }
-  };
+  }, []);
 
   // 컴포넌트 마운트 시 환율 정보 로드
   useEffect((): void => {
     refreshExchangeRates();
-  }, []);
+  }, [refreshExchangeRates]);
 
   // 1시간마다 자동으로 환율 정보 갱신
   useEffect((): (() => void) => {
@@ -51,7 +52,7 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
     }, 60 * 60 * 1000); // 1시간
 
     return (): void => clearInterval(interval);
-  }, []);
+  }, [refreshExchangeRates]);
 
   const value: CurrencyContextType = {
     currentCurrency,
