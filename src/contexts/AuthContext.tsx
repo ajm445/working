@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
@@ -42,40 +42,91 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const fetchingProfileRef = useRef<string | null>(null);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
+  const isInitializing = useRef<boolean>(true);
 
-  // 프로필 데이터 가져오기
-  const fetchProfile = async (userId: string): Promise<void> => {
+  // 프로필 데이터 가져오기 (중복 호출 방지)
+  const fetchProfile = async (userId: string, force: boolean = false): Promise<void> => {
+    // 같은 사용자의 프로필을 이미 가져왔으면 무시 (force가 아닐 경우)
+    if (!force && lastFetchedUserIdRef.current === userId) {
+      console.log('✅ Profile already fetched for user:', userId);
+      return;
+    }
+
+    // 같은 userId로 이미 가져오는 중이면 무시
+    if (fetchingProfileRef.current === userId) {
+      console.log('⏳ Profile fetch already in progress for user:', userId);
+      return;
+    }
+
+    fetchingProfileRef.current = userId;
+
     try {
+      console.log('🔍 Fetching profile for user:', userId);
+      const startTime = Date.now();
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
+      const elapsed = Date.now() - startTime;
+      console.log(`⏱️ Profile fetch took ${elapsed}ms`);
+
+      if (error) {
+        console.error('❌ Profile fetch error:', error);
+        // 에러가 있어도 계속 진행 (프로필 없이도 앱 사용 가능하도록)
+        setProfile(null);
+        lastFetchedUserIdRef.current = userId; // 반복 시도 방지
+      } else if (data) {
+        console.log('✅ Profile fetched successfully:', data.email);
+        setProfile(data);
+        lastFetchedUserIdRef.current = userId;
+      } else {
+        console.warn('⚠️ No profile data returned');
+        setProfile(null);
+        lastFetchedUserIdRef.current = userId;
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('💥 Unexpected error fetching profile:', error);
       setProfile(null);
+      lastFetchedUserIdRef.current = userId; // 반복 시도 방지
+    } finally {
+      console.log('🔓 Profile fetch completed, releasing lock');
+      fetchingProfileRef.current = null;
     }
   };
 
   // 초기 세션 확인
   useEffect(() => {
+    let isMounted = true;
+
     // 현재 세션 가져오기
     const initializeAuth = async (): Promise<void> => {
       try {
+        console.log('🚀 Initializing auth...');
         const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
+        console.log('📦 Session loaded:', currentSession?.user?.email || 'No session');
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
+          console.log('👤 User found, fetching profile...');
           await fetchProfile(currentSession.user.id);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('❌ Error initializing auth:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          console.log('✅ Auth initialization complete');
+          isInitializing.current = false;
+          setLoading(false);
+        }
       }
     };
 
@@ -84,39 +135,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // 인증 상태 변경 리스너
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, currentSession) => {
+        if (!isMounted) return;
+
+        console.log('📢 Auth state changed:', _event, currentSession?.user?.email, 'isInitializing:', isInitializing.current);
+
+        // 초기화 중에는 모든 이벤트 무시 (initializeAuth에서 처리함)
+        if (isInitializing.current) {
+          console.log('⏭️ Ignoring event during initialization:', _event);
+          return;
+        }
+
+        // INITIAL_SESSION 이벤트는 무시 (initializeAuth에서 이미 처리함)
+        if (_event === 'INITIAL_SESSION') {
+          console.log('⏭️ Ignoring INITIAL_SESSION (already handled in init)');
+          return;
+        }
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          await fetchProfile(currentSession.user.id);
+          // SIGNED_IN 이벤트일 때만 프로필 가져오기
+          if (_event === 'SIGNED_IN') {
+            console.log('🔑 User signed in, fetching profile');
+            await fetchProfile(currentSession.user.id);
+          }
         } else {
           setProfile(null);
+          lastFetchedUserIdRef.current = null;
         }
 
         setLoading(false);
       }
     );
 
-    // 페이지를 떠날 때 자동 로그아웃
-    const handleBeforeUnload = (): void => {
-      // localStorage에서 Supabase 세션 데이터를 직접 삭제
-      // Supabase는 'sb-'로 시작하는 키에 세션 정보를 저장함
-      Object.keys(localStorage).forEach((key) => {
-        if (key.startsWith('sb-')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      // 비동기 signOut도 호출 (완료되지 않을 수 있지만 시도)
-      void supabase.auth.signOut();
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
     // 클린업
     return (): void => {
+      isMounted = false;
       subscription.unsubscribe();
-      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 

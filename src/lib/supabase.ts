@@ -16,10 +16,18 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     // 세션 자동 갱신
     autoRefreshToken: true,
-    // 세션 지속성 (localStorage 사용)
+    // 세션 지속성 활성화
     persistSession: true,
-    // 이메일 확인 없이 로그인 허용
+    // 세션 저장 위치: sessionStorage (탭 종료 시 자동 삭제)
+    // - 탭 새로고침: 세션 유지 ✅
+    // - 탭 전환: 세션 유지 ✅
+    // - 탭 종료: 세션 자동 삭제 (자동 로그아웃) ✅
+    // - 브라우저 종료: 모든 탭 닫힘 → 세션 자동 삭제 ✅
+    storage: window.sessionStorage,
+    // OAuth 콜백 URL에서 세션 감지
     detectSessionInUrl: true,
+    // 세션 저장 키
+    storageKey: 'supabase.auth.token',
   },
 });
 
