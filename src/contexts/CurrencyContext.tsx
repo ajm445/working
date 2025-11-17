@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import type { ReactNode } from 'react';
 import type { CurrencyCode } from '../types/currency';
 import { DEFAULT_CURRENCY } from '../types/currency';
@@ -35,6 +36,10 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
       setLastUpdated(new Date().toLocaleString('ko-KR'));
     } catch (error) {
       console.error('환율 갱신 실패:', error);
+      // 사용자에게 환율 API 실패 알림
+      toast.error('환율 정보를 가져오는데 실패했습니다. 기본 환율이 적용됩니다.', {
+        duration: 4000,
+      });
     } finally {
       setIsLoadingRates(false);
     }

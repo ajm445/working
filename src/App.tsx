@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { AppModeProvider } from './contexts/AppModeContext';
@@ -13,6 +14,43 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
+        {/* Toast 알림 컴포넌트 */}
+        <Toaster
+          position="top-center"
+          reverseOrder={false}
+          gutter={8}
+          toastOptions={{
+            // 기본 옵션
+            duration: 3000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+              padding: '16px',
+              borderRadius: '8px',
+            },
+            // 성공 메시지
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
+              },
+            },
+            // 에러 메시지
+            error: {
+              duration: 4000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
+              },
+            },
+            // 경고 메시지
+            loading: {
+              duration: Infinity,
+            },
+          }}
+        />
+
         <Routes>
           {/* 로그인 페이지 */}
           <Route path="/login" element={<LoginPage />} />

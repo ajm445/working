@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
@@ -61,7 +62,7 @@ const LoginPage: React.FC = () => {
     } else {
       setError(null);
       // 회원가입 성공 메시지
-      alert('회원가입이 완료되었습니다. 로그인해주세요.');
+      toast.success('회원가입이 완료되었습니다. 로그인해주세요.');
       setMode('signin');
     }
 

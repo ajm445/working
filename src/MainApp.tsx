@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { useAppMode } from './contexts/AppModeContext';
 import type { Transaction, TransactionFormData } from './types';
@@ -116,9 +117,10 @@ const ExpenseTracker: React.FC = () => {
 
       if (error) {
         console.error('Failed to add transaction:', error);
-        alert('거래 내역 추가에 실패했습니다.');
+        toast.error('거래 내역 추가에 실패했습니다.');
       } else if (addedTransaction) {
         // 실시간 구독으로 자동 업데이트되므로 수동으로 추가하지 않음
+        toast.success('거래 내역이 추가되었습니다.');
         setShowAddForm(false);
         setPreselectedDate(null);
       }
@@ -134,7 +136,10 @@ const ExpenseTracker: React.FC = () => {
       setPreselectedDate(null);
 
       // 알림: 로그인하지 않으면 데이터가 저장되지 않음
-      alert('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\n새로고침 시 데이터가 사라집니다.');
+      toast('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\n새로고침 시 데이터가 사라집니다.', {
+        icon: '⚠️',
+        duration: 4000,
+      });
     }
   };
 
@@ -153,12 +158,15 @@ const ExpenseTracker: React.FC = () => {
 
       if (error) {
         console.error('Failed to delete transaction:', error);
-        alert('거래 내역 삭제에 실패했습니다.');
+        toast.error('거래 내역 삭제에 실패했습니다.');
+      } else {
+        toast.success('거래 내역이 삭제되었습니다.');
       }
       // 실시간 구독으로 자동 업데이트되므로 수동으로 제거하지 않음
     } else {
       // 비로그인 상태거나 로컬 데이터면 로컬에서만 삭제
       setTransactions((prev) => prev.filter((t) => t.id !== id));
+      toast.success('거래 내역이 삭제되었습니다.');
     }
   };
 

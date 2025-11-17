@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import type { TransactionFormData } from '../../types';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, SUPPORTED_CURRENCIES } from '../../types';
 import { convertToKRW, getCurrencySymbol } from '../../utils/currency';
@@ -43,23 +44,23 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
 
     // 필수 필드 검증
     if (!formData.amount || !formData.category || !formData.description || !formData.date) {
-      alert('모든 필드를 입력해 주세요.');
+      toast.error('모든 필드를 입력해 주세요.');
       return;
     }
 
     // 날짜 유효성 검증
     if (!isValidDate(formData.date)) {
-      alert('올바른 날짜를 입력해 주세요.');
+      toast.error('올바른 날짜를 입력해 주세요.');
       return;
     }
 
     if (isFutureDate(formData.date)) {
-      alert('미래 날짜는 선택할 수 없습니다.');
+      toast.error('미래 날짜는 선택할 수 없습니다.');
       return;
     }
 
     if (isTooOldDate(formData.date)) {
-      alert('너무 오래된 날짜입니다. 최근 10년 이내의 날짜를 선택해 주세요.');
+      toast.error('너무 오래된 날짜입니다. 최근 10년 이내의 날짜를 선택해 주세요.');
       return;
     }
 
@@ -83,7 +84,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
       });
     } catch (error) {
       console.error('환율 변환 실패:', error);
-      alert('환율 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      toast.error('환율 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
     }
   };
 
