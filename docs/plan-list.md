@@ -137,22 +137,65 @@
 
 ## 🟡 Medium Priority (1개월 내 조치)
 
-### 6. LINE 로그인 기능 완성 또는 제거
+### 6. LINE 소셜 로그인 구현 (Supabase Edge Functions 활용)
 - **상태**: ⬜
 - **우선순위**: Medium
-- **예상 소요**: 1-2시간
+- **예상 소요**: 6-8시간
+- **구현 방식**: Supabase Edge Functions를 통한 커스텀 OAuth 통합
 - **파일**:
-  - `src/contexts/AuthContext.tsx` (라인 185-193)
-  - `src/components/Auth/LoginPage.tsx`
+  - `supabase/functions/line-auth/` (신규 - Edge Function)
+  - `supabase/functions/line-callback/` (신규 - Edge Function)
+  - `src/contexts/AuthContext.tsx` (라인 241-250 수정)
+  - `src/components/Auth/LoginPage.tsx` (LINE 버튼 활성화)
+  - `supabase/migrations/` (신규 - line_user_id 컬럼 추가)
 - **작업 내용**:
-  - 옵션 A: LINE 로그인 구현
-    - [ ] Supabase에서 LINE OAuth 설정
-    - [ ] `provider: 'google'`을 `provider: 'line'`으로 변경
-    - [ ] 테스트 및 검증
-  - 옵션 B: 미구현 기능 제거
-    - [ ] UI에서 LINE 로그인 버튼 제거
-    - [ ] `signInWithLine` 함수 제거
-- **참고**: 현재 LINE 로그인이 Google로 대체되어 있어 혼란 가능성
+  - [ ] LINE Developers Console에서 LINE Login 채널 생성
+    - [ ] 채널 ID 및 Channel Secret 발급
+    - [ ] Callback URL 설정: `https://[project-id].supabase.co/functions/v1/line-callback`
+    - [ ] 이메일 권한 신청 (선택사항)
+  - [ ] Supabase Edge Function 생성 (`line-auth`)
+    - [ ] LINE Authorization URL로 리디렉션 처리
+    - [ ] state 및 nonce 파라미터 생성 (CSRF/Replay 공격 방지)
+    - [ ] 사용자를 LINE 로그인 페이지로 안내
+  - [ ] Supabase Edge Function 생성 (`line-callback`)
+    - [ ] LINE OAuth 콜백 처리
+    - [ ] Authorization Code → Access Token 교환
+    - [ ] LINE 사용자 정보 조회 (User ID, 이름, 프로필 이미지, 이메일)
+    - [ ] Supabase Auth에 사용자 생성 또는 기존 계정 연동
+    - [ ] `supabase.auth.admin.createUser()` 또는 identity linking 활용
+    - [ ] 세션 토큰 생성 및 클라이언트로 반환
+  - [ ] 데이터베이스 스키마 업데이트
+    - [ ] `profiles` 테이블에 `line_user_id` 컬럼 추가 (TEXT, NULLABLE)
+    - [ ] LINE 연동 사용자 식별용 인덱스 생성
+    - [ ] Migration 파일 작성 및 적용
+  - [ ] 프론트엔드 통합
+    - [ ] `AuthContext.tsx`의 `signInWithLine` 함수 구현
+    - [ ] LINE Edge Function 호출 로직 추가
+    - [ ] `LoginPage.tsx`의 LINE 로그인 버튼 활성화
+    - [ ] 로딩 상태 및 에러 처리 추가
+  - [ ] 환경 변수 설정
+    - [ ] Supabase Secrets에 `LINE_CHANNEL_ID` 추가
+    - [ ] Supabase Secrets에 `LINE_CHANNEL_SECRET` 추가
+    - [ ] 로컬 개발용 `.env` 파일 설정
+  - [ ] 테스트 및 검증
+    - [ ] 로컬 환경에서 LINE 로그인 테스트
+    - [ ] 프로덕션 배포 및 실제 LINE 계정으로 테스트
+    - [ ] 에러 케이스 처리 확인 (인증 실패, 네트워크 오류 등)
+- **기술 스택**:
+  - **LINE Login API v2.1**: OAuth 2.0 + OpenID Connect 기반
+  - **Supabase Edge Functions**: Deno runtime 기반 서버리스 함수
+  - **Supabase Auth Admin API**: 사용자 생성 및 세션 관리
+  - **Identity Linking**: 여러 OAuth 제공자를 하나의 계정에 연동
+- **계정 관리 전략**:
+  - LINE User ID를 `profiles.line_user_id`에 저장
+  - 같은 이메일의 Google/LINE 계정 자동 연동 가능
+  - 하나의 Supabase 계정에 여러 OAuth 제공자 연결 지원
+  - RLS 정책 및 세션 관리는 Supabase Auth가 자동 처리
+- **참고**:
+  - Supabase는 LINE을 기본 OAuth 제공자로 지원하지 않으므로 Edge Functions로 커스텀 구현 필요
+  - 일본 시장 타겟팅에 필수적인 기능 (일본 사용자의 90% 이상이 LINE 사용)
+  - Google OAuth와 동일한 사용자 경험 및 보안 수준 제공
+  - LINE Access Token 유효기간: 30일, Refresh Token: 90일
 
 ### 7. 성능 최적화 - 불필요한 리렌더링 방지
 - **상태**: ⬜
