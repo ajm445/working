@@ -81,7 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setProfile(null);
         lastFetchedUserIdRef.current = userId; // 반복 시도 방지
       } else if (data) {
-        console.log('✅ Profile fetched successfully:', data.email);
+        console.log('✅ Profile fetched successfully');
         setProfile(data);
         lastFetchedUserIdRef.current = userId;
       } else {

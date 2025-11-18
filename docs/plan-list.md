@@ -309,17 +309,37 @@
   - 오프라인 환경에서도 제한적 사용 가능
 
 ### 11. 빌드 및 배포 최적화
-- **상태**: ⬜
+- **상태**: ✅
 - **우선순위**: Medium
 - **예상 소요**: 1-2시간
-- **파일**: `vite.config.ts`
+- **완료일**: 2025-11-18
+- **파일**:
+  - `vite.config.ts` ✅
+  - `.env.development` (신규) ✅
+  - `.env.production` (신규) ✅
+  - `package.json` ✅
+  - `tsconfig.app.json` ✅
 - **작업 내용**:
-  - [ ] 프로덕션 빌드 시 console.log 제거 설정
-  - [ ] 코드 스플리팅 (manualChunks) 설정
-  - [ ] 소스맵을 프로덕션에서 비활성화
-  - [ ] 빌드 크기 분석 (`vite-bundle-visualizer`)
-  - [ ] 환경별 설정 분리 (.env.production, .env.development)
-- **참고**: 현재 기본 빌드 설정 사용 중
+  - [x] 프로덕션 빌드 시 console.log 제거 설정 (Terser)
+  - [x] 코드 스플리팅 (manualChunks) 설정 - 6개 벤더 청크 분리
+  - [x] 소스맵을 프로덕션에서 비활성화
+  - [x] 빌드 크기 분석 (`rollup-plugin-visualizer`) - dist/stats.html 생성
+  - [x] Gzip 압축 플러그인 추가 (`vite-plugin-compression`)
+  - [x] 환경별 설정 파일 생성 (.env.production, .env.development)
+  - [x] 빌드 스크립트 개선 (prebuild, postbuild, build:analyze)
+  - [x] 테스트 파일 빌드 제외 (tsconfig.app.json)
+- **빌드 최적화 결과**:
+  - **코드 스플리팅**: 6개 청크로 분리 (react-vendor, ui-vendor, chart-vendor, supabase-vendor, utils-vendor, main)
+  - **최대 청크**: chart-vendor (337KB → gzip: 96.91KB)
+  - **총 빌드 크기**: ~776KB (gzip: ~228KB)
+  - **프로덕션**: console.log 자동 제거, 소스맵 비활성화
+  - **Gzip 압축**: 10KB 이상 파일 자동 압축
+  - **분석 도구**: dist/stats.html에서 번들 크기 시각화
+- **개선 효과**:
+  - 초기 로딩 속도 향상 (청크 분리로 병렬 다운로드)
+  - 캐싱 효율성 향상 (벤더 라이브러리 별도 청크)
+  - 프로덕션 보안 강화 (console.log 제거)
+  - 빌드 크기 투명성 (시각화 도구)
 
 ---
 
@@ -488,6 +508,17 @@
   - 기본 환율 업데이트 (2025년 1월 기준)
   - Toast 알림으로 환율 출처 안내
   - 네트워크 오류 시에도 서비스 지속 가능
+
+### ✅ 빌드 및 배포 최적화 (Medium #11)
+- **완료일**: 2025-11-18
+- **내용**:
+  - 코드 스플리팅: 6개 벤더 청크 분리
+  - 프로덕션 console.log 자동 제거 (Terser)
+  - Gzip 압축 플러그인 추가
+  - 번들 크기 분석 도구 (dist/stats.html)
+  - 환경별 설정 파일 (.env.development, .env.production)
+  - 빌드 스크립트 개선 (prebuild, postbuild, build:analyze)
+  - 총 빌드 크기: ~776KB → gzip: ~228KB (70% 압축)
   - 성공/에러/경고 메시지에 각각 다른 스타일 적용
   - 환율 API 실패 시 사용자 친화적 알림
   - 거래 추가/삭제 성공 시 피드백 추가
