@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import type { TransactionFormData } from '../../types';
+import type { TransactionFormData, Transaction } from '../../types';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, SUPPORTED_CURRENCIES } from '../../types';
 import { convertToKRW, getCurrencySymbol } from '../../utils/currency';
 import { useCurrency } from '../../hooks/useCurrency';
@@ -9,17 +9,28 @@ import {
   isValidDate,
   isFutureDate,
   isTooOldDate,
-  formatInputDateToKorean
+  formatInputDateToKorean,
+  formatDateForInput
 } from '../../utils/dateUtils';
 
 interface TransactionFormProps {
   onSubmit: (data: TransactionFormData & { amountInKRW: number }) => void;
   onCancel: () => void;
   initialDate?: string | undefined; // 초기 날짜 설정 (YYYY-MM-DD 형식)
+  editingTransaction?: Transaction | null; // 수정할 거래 내역
+  onUpdate?: ((id: string, data: TransactionFormData & { amountInKRW: number }) => void) | undefined;
 }
 
-const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, initialDate }) => {
+const TransactionForm: React.FC<TransactionFormProps> = ({
+  onSubmit,
+  onCancel,
+  initialDate,
+  editingTransaction,
+  onUpdate
+}) => {
   const { currentCurrency } = useCurrency();
+  const isEditMode = !!editingTransaction;
+
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: '',
     category: '',
@@ -29,15 +40,29 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
     date: initialDate || getTodayDateString(), // 초기 날짜가 제공되면 사용, 아니면 오늘 날짜
   });
 
-  // initialDate가 변경될 때 폼 데이터 업데이트
+  // editingTransaction이 변경될 때 폼 데이터 업데이트
   useEffect(() => {
-    if (initialDate) {
+    if (editingTransaction) {
+      setFormData({
+        amount: String(editingTransaction.amount),
+        category: editingTransaction.category,
+        description: editingTransaction.description,
+        type: editingTransaction.type,
+        currency: editingTransaction.currency,
+        date: formatDateForInput(new Date(editingTransaction.date)),
+      });
+    }
+  }, [editingTransaction]);
+
+  // initialDate가 변경될 때 폼 데이터 업데이트 (편집 모드가 아닐 때만)
+  useEffect(() => {
+    if (initialDate && !editingTransaction) {
       setFormData(prev => ({
         ...prev,
         date: initialDate,
       }));
     }
-  }, [initialDate]);
+  }, [initialDate, editingTransaction]);
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -68,20 +93,29 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
       const amount = parseFloat(formData.amount);
       const amountInKRW = await convertToKRW(amount, formData.currency);
 
-      onSubmit({
-        ...formData,
-        amountInKRW,
-      });
+      if (isEditMode && editingTransaction && onUpdate) {
+        // 수정 모드
+        onUpdate(editingTransaction.id, {
+          ...formData,
+          amountInKRW,
+        });
+      } else {
+        // 추가 모드
+        onSubmit({
+          ...formData,
+          amountInKRW,
+        });
 
-      // 폼 초기화 (날짜는 오늘로 리셋)
-      setFormData({
-        amount: '',
-        category: '',
-        description: '',
-        type: 'expense',
-        currency: currentCurrency,
-        date: getTodayDateString(),
-      });
+        // 폼 초기화 (날짜는 오늘로 리셋)
+        setFormData({
+          amount: '',
+          category: '',
+          description: '',
+          type: 'expense',
+          currency: currentCurrency,
+          date: getTodayDateString(),
+        });
+      }
     } catch (error) {
       console.error('환율 변환 실패:', error);
       toast.error('환율 변환 중 오류가 발생했습니다. 다시 시도해 주세요.');
@@ -102,7 +136,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-      <h3 className="text-lg font-semibold mb-4">새 내역 추가</h3>
+      <h3 className="text-lg font-semibold mb-4">
+        {isEditMode ? '내역 수정' : '새 내역 추가'}
+      </h3>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -223,7 +259,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({ onSubmit, onCancel, i
             type="submit"
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
           >
-            추가하기
+            {isEditMode ? '수정하기' : '추가하기'}
           </button>
           <button
             type="button"

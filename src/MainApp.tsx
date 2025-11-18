@@ -20,6 +20,7 @@ const ExpenseTracker: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<'summary' | 'calendar' | 'statistics'>('summary');
   const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   // 거래 내역 로드
@@ -92,10 +93,10 @@ const ExpenseTracker: React.FC = () => {
 
   // 폼이 생성되거나 날짜가 변경될 때 자동으로 스크롤
   useEffect((): void => {
-    if (showAddForm && formRef.current) {
+    if ((showAddForm || editingTransaction) && formRef.current) {
       formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [showAddForm, preselectedDate]);
+  }, [showAddForm, preselectedDate, editingTransaction]);
 
   const addTransaction = async (
     data: TransactionFormData & { amountInKRW: number }
@@ -151,6 +152,45 @@ const ExpenseTracker: React.FC = () => {
     setShowAddForm(true);
   };
 
+  const updateTransaction = async (
+    id: string,
+    data: TransactionFormData & { amountInKRW: number }
+  ): Promise<void> => {
+    const updatedData = {
+      type: data.type,
+      amount: parseFloat(data.amount),
+      category: data.category,
+      description: data.description,
+      date: formatInputDateToKorean(data.date),
+      currency: data.currency,
+      amountInKRW: data.amountInKRW,
+    };
+
+    // 로그인 상태면 Supabase에 업데이트
+    if (user && !id.startsWith('local-')) {
+      const { data: updatedTransaction, error } =
+        await transactionService.updateTransaction(id, updatedData);
+
+      if (error) {
+        console.error('Failed to update transaction:', error);
+        toast.error('거래 내역 수정에 실패했습니다.');
+      } else if (updatedTransaction) {
+        // 실시간 구독으로 자동 업데이트되므로 수동으로 수정하지 않음
+        toast.success('거래 내역이 수정되었습니다.');
+        setEditingTransaction(null);
+      }
+    } else {
+      // 비로그인 상태거나 로컬 데이터면 로컬에서만 수정
+      setTransactions((prev) =>
+        prev.map((t) =>
+          t.id === id ? { ...t, ...updatedData } : t
+        )
+      );
+      setEditingTransaction(null);
+      toast.success('거래 내역이 수정되었습니다.');
+    }
+  };
+
   const deleteTransaction = async (id: string): Promise<void> => {
     // 로그인 상태면 Supabase에서 삭제
     if (user && !id.startsWith('local-')) {
@@ -168,6 +208,11 @@ const ExpenseTracker: React.FC = () => {
       setTransactions((prev) => prev.filter((t) => t.id !== id));
       toast.success('거래 내역이 삭제되었습니다.');
     }
+  };
+
+  const handleEditTransaction = (transaction: Transaction): void => {
+    setEditingTransaction(transaction);
+    setShowAddForm(false); // 추가 폼이 열려있으면 닫기
   };
 
   // 로딩 상태 표시
@@ -211,6 +256,8 @@ const ExpenseTracker: React.FC = () => {
         onViewModeChange={setViewMode}
         currentViewMode={viewMode}
         onCalendarDateClick={handleAddTransactionWithDate}
+        onDeleteTransaction={deleteTransaction}
+        onEditTransaction={handleEditTransaction}
       />
 
       {/* Add Transaction Button - 캘린더 및 통계 분석 탭에서는 숨김 */}
@@ -226,16 +273,19 @@ const ExpenseTracker: React.FC = () => {
         </div>
       )}
 
-      {/* Add Transaction Form */}
-      {showAddForm && (
+      {/* Add/Edit Transaction Form */}
+      {(showAddForm || editingTransaction) && (
         <div ref={formRef}>
           <TransactionForm
             onSubmit={addTransaction}
             onCancel={() => {
               setShowAddForm(false);
               setPreselectedDate(null);
+              setEditingTransaction(null);
             }}
             initialDate={preselectedDate ?? undefined}
+            editingTransaction={editingTransaction}
+            onUpdate={updateTransaction}
           />
         </div>
       )}

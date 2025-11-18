@@ -11,9 +11,17 @@ interface TransactionCalendarProps {
   transactions: Transaction[];
   onDateClick?: ((date?: Date) => void) | undefined;
   onMonthChange?: ((year: number, month: number) => void) | undefined;
+  onDeleteTransaction?: ((id: string) => void) | undefined;
+  onEditTransaction?: ((transaction: Transaction) => void) | undefined;
 }
 
-const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions, onDateClick, onMonthChange }) => {
+const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
+  transactions,
+  onDateClick,
+  onMonthChange,
+  onDeleteTransaction,
+  onEditTransaction
+}) => {
   const today = getKSTDate();
   const [currentDate, setCurrentDate] = useState<Date>(today);
   const [selectedDay, setSelectedDay] = useState<CalendarDayType | null>(null);
@@ -97,6 +105,8 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({ transactions,
           day={selectedDay}
           onClose={handleCloseModal}
           onAddTransaction={onDateClick}
+          onDeleteTransaction={onDeleteTransaction}
+          onEditTransaction={onEditTransaction}
         />
       )}
     </div>

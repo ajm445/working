@@ -19,13 +19,17 @@ interface DashboardProps {
   onViewModeChange?: (mode: ViewMode) => void;
   currentViewMode?: ViewMode;
   onCalendarDateClick?: ((date?: Date) => void) | undefined;
+  onDeleteTransaction?: ((id: string) => void) | undefined;
+  onEditTransaction?: ((transaction: Transaction) => void) | undefined;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
   transactions,
   onViewModeChange,
   currentViewMode = 'summary',
-  onCalendarDateClick
+  onCalendarDateClick,
+  onDeleteTransaction,
+  onEditTransaction
 }) => {
   const today = getKSTDate();
   const [calendarYear, setCalendarYear] = useState<number>(today.getFullYear());
@@ -139,6 +143,8 @@ const Dashboard: React.FC<DashboardProps> = ({
           transactions={transactions}
           onDateClick={onCalendarDateClick}
           onMonthChange={handleCalendarMonthChange}
+          onDeleteTransaction={onDeleteTransaction}
+          onEditTransaction={onEditTransaction}
         />
       )}
 
