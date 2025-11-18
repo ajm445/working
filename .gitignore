@@ -12,10 +12,12 @@ dist
 dist-ssr
 *.local
 
-# Environment variables
+# Environment variables (모든 .env 파일 제외, .example만 허용)
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
 
 # Build analysis
 dist/stats.html
