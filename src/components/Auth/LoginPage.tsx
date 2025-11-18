@@ -108,6 +108,7 @@ const LoginPage: React.FC = () => {
         <button
           onClick={handleGoHome}
           className="absolute top-4 left-4 text-indigo-600 hover:text-indigo-800 flex items-center gap-2 transition-colors text-sm"
+          aria-label="홈페이지로 돌아가기"
         >
           ← 홈으로
         </button>
@@ -126,7 +127,7 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* 탭 전환 */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6" role="tablist" aria-label="로그인 방식 선택">
           <button
             onClick={() => setMode('signin')}
             className={`flex-1 py-2 rounded-lg font-medium transition-all ${
@@ -134,6 +135,9 @@ const LoginPage: React.FC = () => {
                 ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            role="tab"
+            aria-selected={mode === 'signin'}
+            aria-controls="login-form"
           >
             로그인
           </button>
@@ -144,6 +148,9 @@ const LoginPage: React.FC = () => {
                 ? 'bg-indigo-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
+            role="tab"
+            aria-selected={mode === 'signup'}
+            aria-controls="login-form"
           >
             회원가입
           </button>
@@ -151,13 +158,23 @@ const LoginPage: React.FC = () => {
 
         {/* 에러 메시지 */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div
+            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+            role="alert"
+            aria-live="polite"
+          >
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
 
         {/* 이메일/비밀번호 로그인 폼 */}
-        <form onSubmit={mode === 'signin' ? handleEmailLogin : handleEmailSignup} className="space-y-4 mb-6">
+        <form
+          id="login-form"
+          onSubmit={mode === 'signin' ? handleEmailLogin : handleEmailSignup}
+          className="space-y-4 mb-6"
+          role="tabpanel"
+          aria-label={mode === 'signin' ? '로그인 폼' : '회원가입 폼'}
+        >
           {mode === 'signup' && (
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
@@ -210,9 +227,13 @@ const LoginPage: React.FC = () => {
             type="submit"
             disabled={loading === 'email'}
             className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={mode === 'signin' ? '이메일로 로그인' : '이메일로 회원가입'}
           >
             {loading === 'email' ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
+                <span className="sr-only">로딩 중...</span>
+              </>
             ) : (
               mode === 'signin' ? '로그인' : '회원가입'
             )}
@@ -235,10 +256,14 @@ const LoginPage: React.FC = () => {
           <button
             onClick={() => void handleGoogleLogin()}
             disabled={loading !== null}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:bg-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Google 계정으로 로그인"
           >
             {loading === 'google' ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+              <>
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-700 rounded-full animate-spin" />
+                <span className="sr-only">Google 로그인 중...</span>
+              </>
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
