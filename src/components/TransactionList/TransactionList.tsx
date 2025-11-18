@@ -5,11 +5,13 @@ import TransactionItem from './TransactionItem';
 interface TransactionListProps {
   transactions: Transaction[];
   onDeleteTransaction: (id: string) => void;
+  onEditTransaction?: ((transaction: Transaction) => void) | undefined;
 }
 
 const TransactionList: React.FC<TransactionListProps> = ({
   transactions,
-  onDeleteTransaction
+  onDeleteTransaction,
+  onEditTransaction
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm">
@@ -36,6 +38,7 @@ const TransactionList: React.FC<TransactionListProps> = ({
               key={transaction.id}
               transaction={transaction}
               onDelete={onDeleteTransaction}
+              onEdit={onEditTransaction}
             />
           ))
         )}

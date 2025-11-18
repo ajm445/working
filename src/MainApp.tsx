@@ -295,6 +295,7 @@ const ExpenseTracker: React.FC = () => {
         <TransactionList
           transactions={transactions}
           onDeleteTransaction={deleteTransaction}
+          onEditTransaction={handleEditTransaction}
         />
       )}
     </div>
