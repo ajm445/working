@@ -1,3 +1,4 @@
+
 import React from 'react';
 import type { CalendarDay } from '../../types/calendar';
 import type { Transaction } from '../../types/transaction';

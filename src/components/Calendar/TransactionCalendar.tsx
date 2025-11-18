@@ -40,6 +40,25 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
     onMonthChange?.(currentDate.getFullYear(), currentDate.getMonth());
   }, [onMonthChange]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // transactions가 변경될 때 selectedDay 업데이트 (거래 추가/삭제/수정 시)
+  useEffect(() => {
+    if (selectedDay) {
+      // calendarData의 모든 week를 순회하여 같은 날짜의 업데이트된 데이터 찾기
+      let updatedDay: CalendarDayType | undefined;
+      for (const week of calendarData.weeks) {
+        updatedDay = week.days.find(
+          (day) => day.date.getTime() === selectedDay.date.getTime()
+        );
+        if (updatedDay) break;
+      }
+
+      // 거래 내역 수가 변경되었을 때만 업데이트 (무한 루프 방지)
+      if (updatedDay && updatedDay.transactions.length !== selectedDay.transactions.length) {
+        setSelectedDay(updatedDay);
+      }
+    }
+  }, [transactions, calendarData, selectedDay]);
+
   const handlePrevMonth = (): void => {
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     setCurrentDate(newDate);
