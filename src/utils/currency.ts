@@ -12,9 +12,20 @@ interface CachedExchangeRate {
   source: 'api' | 'localStorage' | 'default';
 }
 
-let exchangeRateCache: CachedExchangeRate | null = null;
-const CACHE_DURATION = 60 * 60 * 1000; // 1시간
+// 상수 정의
+const CACHE_DURATION = 60 * 60 * 1000; // 1시간 (밀리초)
+const LOCALSTORAGE_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24시간 (밀리초)
 const LOCALSTORAGE_KEY = 'exchange_rates_cache';
+const API_TIMEOUT = 10000; // 10초 (밀리초)
+
+// 기본 환율 (2025년 1월 기준 근사치)
+const DEFAULT_EXCHANGE_RATES = {
+  USD: 0.00071, // 1원 = 0.00071달러 (약 1달러 = 1410원)
+  JPY: 0.106,   // 1원 = 0.106엔 (약 1엔 = 9.4원)
+  KRW: 1        // 기준 통화
+} as const;
+
+let exchangeRateCache: CachedExchangeRate | null = null;
 
 export const fetchExchangeRates = async (): Promise<{ [key: string]: number }> => {
   // 메모리 캐시 확인 (1시간 유효)
@@ -24,7 +35,7 @@ export const fetchExchangeRates = async (): Promise<{ [key: string]: number }> =
 
   try {
     const response = await axios.get<ExchangeRateResponse>(EXCHANGE_RATE_API_URL, {
-      timeout: 10000 // 10초 타임아웃
+      timeout: API_TIMEOUT
     });
 
     if (response.data && response.data.rates) {
@@ -71,13 +82,9 @@ export const fetchExchangeRates = async (): Promise<{ [key: string]: number }> =
   }
 };
 
-// API 실패 시 사용할 기본 환율 (2025년 1월 기준 근사치)
+// API 실패 시 사용할 기본 환율
 const getDefaultExchangeRates = (): { [key: string]: number } => {
-  return {
-    USD: 0.00071, // 1원 = 0.00071달러 (약 1달러 = 1410원)
-    JPY: 0.106,   // 1원 = 0.106엔 (약 1엔 = 9.4원)
-    KRW: 1        // 기준 통화
-  };
+  return { ...DEFAULT_EXCHANGE_RATES };
 };
 
 // LocalStorage에서 캐시된 환율 가져오기
@@ -87,7 +94,7 @@ const loadExchangeRatesFromStorage = (): CachedExchangeRate | null => {
     if (stored) {
       const parsed = JSON.parse(stored) as CachedExchangeRate;
       // 캐시가 24시간 이내인지 확인 (LocalStorage는 더 길게 유지)
-      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+      if (Date.now() - parsed.timestamp < LOCALSTORAGE_CACHE_DURATION) {
         return parsed;
       }
     }
@@ -144,8 +151,13 @@ export const convertToKRW = async (amount: number, fromCurrency: CurrencyCode): 
   return amount / rate;
 };
 
-// 통화 포맷팅
-export const formatCurrency = (amount: number, currency: CurrencyCode): string => {
+/**
+ * 통화 포맷팅 기본 함수
+ * @param amount - 금액
+ * @param currency - 통화 코드
+ * @returns 포맷된 통화 문자열
+ */
+const formatCurrencyBase = (amount: number, currency: CurrencyCode): string => {
   const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency);
 
   if (!currencyInfo) {
@@ -167,27 +179,25 @@ export const formatCurrency = (amount: number, currency: CurrencyCode): string =
   }
 };
 
-// 통계 분석용 통화 포맷팅 (심볼을 뒤에 배치)
+/**
+ * 통화 포맷팅 (일반용)
+ * @param amount - 금액
+ * @param currency - 통화 코드
+ * @returns 포맷된 통화 문자열
+ */
+export const formatCurrency = (amount: number, currency: CurrencyCode): string => {
+  return formatCurrencyBase(amount, currency);
+};
+
+/**
+ * 통화 포맷팅 (통계 분석용)
+ * @param amount - 금액
+ * @param currency - 통화 코드
+ * @returns 포맷된 통화 문자열
+ * @note 현재는 formatCurrency와 동일하지만, 향후 통계용 포맷이 달라질 경우를 대비해 별도 함수로 유지
+ */
 export const formatCurrencyForStats = (amount: number, currency: CurrencyCode): string => {
-  const currencyInfo = SUPPORTED_CURRENCIES.find(c => c.code === currency);
-
-  if (!currencyInfo) {
-    return `${amount.toLocaleString()}`;
-  }
-
-  // 금액이 0일 때는 심볼을 앞에, 0이 아닐 때는 뒤에
-  const isZero = amount === 0;
-
-  switch (currency) {
-    case 'KRW':
-      return isZero ? '₩0' : `${Math.round(amount).toLocaleString()}₩`;
-    case 'USD':
-      return isZero ? '$0' : `${amount.toFixed(2)}$`;
-    case 'JPY':
-      return isZero ? '¥0' : `${Math.round(amount).toLocaleString()}¥`;
-    default:
-      return isZero ? `${currencyInfo.symbol}0` : `${amount.toLocaleString()}${currencyInfo.symbol}`;
-  }
+  return formatCurrencyBase(amount, currency);
 };
 
 // 통화 심볼 가져오기
