@@ -312,22 +312,21 @@
 - **상태**: ✅
 - **우선순위**: Medium
 - **예상 소요**: 1-2시간
-- **완료일**: 2025-11-18
+- **완료일**: 2025-11-18 (업데이트: 2025-11-20)
 - **파일**:
   - `vite.config.ts` ✅
-  - `.env.development` (신규) ✅
-  - `.env.production` (신규) ✅
   - `package.json` ✅
   - `tsconfig.app.json` ✅
+  - `public/_redirects` ✅
 - **작업 내용**:
   - [x] 프로덕션 빌드 시 console.log 제거 설정 (Terser)
   - [x] 코드 스플리팅 (manualChunks) 설정 - 6개 벤더 청크 분리
   - [x] 소스맵을 프로덕션에서 비활성화
   - [x] 빌드 크기 분석 (`rollup-plugin-visualizer`) - dist/stats.html 생성
   - [x] Gzip 압축 플러그인 추가 (`vite-plugin-compression`)
-  - [x] 환경별 설정 파일 생성 (.env.production, .env.development)
   - [x] 빌드 스크립트 개선 (prebuild, postbuild, build:analyze)
   - [x] 테스트 파일 빌드 제외 (tsconfig.app.json)
+  - [x] SPA 라우팅 설정 (`public/_redirects`)
 - **빌드 최적화 결과**:
   - **코드 스플리팅**: 6개 청크로 분리 (react-vendor, ui-vendor, chart-vendor, supabase-vendor, utils-vendor, main)
   - **최대 청크**: chart-vendor (337KB → gzip: 96.91KB)
@@ -340,6 +339,15 @@
   - 캐싱 효율성 향상 (벤더 라이브러리 별도 청크)
   - 프로덕션 보안 강화 (console.log 제거)
   - 빌드 크기 투명성 (시각화 도구)
+- **환경 변수 관리**:
+  - **로컬 개발**: `.env` 파일 사용 (Git에서 제외)
+  - **배포 환경**: 플랫폼의 Environment Variables 사용
+  - **Render 배포 설정**:
+    - Static Site 선택
+    - Build Command: `npm run build`
+    - Publish Directory: `dist`
+    - Environment Variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 설정
+  - **참고**: Vite는 빌드 타임에 `import.meta.env.VITE_*` 환경 변수를 번들에 포함시킴
 
 ---
 
