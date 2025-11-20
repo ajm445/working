@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, signInWithEmail, signUpWithEmail, signInWithGoogle, signInWithLine } = useAuth();
+  const { user, loading: authLoading, signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth();
 
   // 이미 로그인된 사용자는 메인 페이지로 리디렉션
   useEffect(() => {
