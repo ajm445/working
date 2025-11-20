@@ -84,17 +84,21 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
+      onClick={onClose}
     >
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+      <div
+        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* 모달 헤더 */}
-        <div className="px-6 py-4 border-b bg-gray-50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b bg-gray-50">
           <div className="flex items-center justify-between">
             <div>
-              <h3 id="modal-title" className="text-lg font-bold text-gray-900">
+              <h3 id="modal-title" className="text-base sm:text-lg font-bold text-gray-900">
                 {formatDate(day.date)}
               </h3>
               {day.isToday && (
@@ -105,10 +109,10 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              className="p-2 sm:p-3 hover:bg-gray-200 active:bg-gray-300 rounded-lg transition-colors touch-manipulation"
               aria-label="닫기"
             >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -116,7 +120,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
         </div>
 
         {/* 모달 내용 */}
-        <div className="p-6 overflow-y-auto max-h-[60vh]">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[65vh] sm:max-h-[60vh]">
           {summary.hasTransactions ? (
             <div className="space-y-6">
               {/* 일일 요약 */}
@@ -184,16 +188,16 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                             </div>
                           )}
                         </div>
-                        {/* 수정/삭제 버튼 */}
+                        {/* 수정/삭제 버튼 - 모바일 터치 개선 */}
                         <div className="flex gap-1">
                           {onEditTransaction && (
                             <button
                               onClick={() => handleEdit(transaction)}
-                              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              className="p-3 text-gray-400 hover:text-blue-600 active:text-blue-700 hover:bg-blue-50 active:bg-blue-100 rounded-lg transition-colors touch-manipulation"
                               aria-label={`${transaction.description} 거래 내역 수정`}
                               title="수정"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                               </svg>
                             </button>
@@ -201,11 +205,11 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                           {onDeleteTransaction && (
                             <button
                               onClick={() => handleDelete(transaction.id)}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-3 text-gray-400 hover:text-red-600 active:text-red-700 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation"
                               aria-label={`${transaction.description} 거래 내역 삭제`}
                               title="삭제"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
@@ -230,16 +234,16 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
           )}
         </div>
 
-        {/* 모달 푸터 */}
-        <div className="px-6 py-4 border-t bg-gray-50">
-          <div className="flex gap-3">
+        {/* 모달 푸터 - 모바일 개선 */}
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {onAddTransaction && (
               <button
                 onClick={() => {
                   onAddTransaction(day.date);
                   onClose();
                 }}
-                className="flex-1 md:flex-none px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="w-full sm:flex-1 md:flex-none px-6 py-3 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors touch-manipulation text-sm sm:text-base"
                 aria-label={`${formatDate(day.date)}에 거래 내역 추가`}
               >
                 ➕ 이 날짜에 내역 추가
@@ -247,7 +251,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
             )}
             <button
               onClick={onClose}
-              className="flex-1 md:flex-none px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="w-full sm:flex-1 md:flex-none px-6 py-3 sm:py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 active:bg-gray-800 transition-colors touch-manipulation text-sm sm:text-base"
               aria-label="모달 닫기"
             >
               닫기

@@ -32,19 +32,19 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
   const { summary } = statistics;
 
   return (
-    <div className="space-y-6">
-      {/* 헤더 및 기간 선택 */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-4 md:space-y-6">
+      {/* 헤더 및 기간 선택 - 모바일 개선 */}
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">📊 통계 분석</h2>
-            <p className="text-sm text-gray-500 mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">📊 통계 분석</h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               거래 내역을 다양한 관점에서 분석합니다
             </p>
           </div>
 
-          {/* 기간 선택 버튼 */}
-          <div className="flex gap-2 flex-wrap">
+          {/* 기간 선택 버튼 - 모바일 개선 */}
+          <div className="flex gap-2 flex-wrap justify-start sm:justify-end">
             {[
               { value: '1month' as StatisticsPeriod, label: '1개월' },
               { value: '3months' as StatisticsPeriod, label: '3개월' },
@@ -55,10 +55,10 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
               <button
                 key={option.value}
                 onClick={() => setPeriod(option.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors touch-manipulation ${
                   period === option.value
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300'
                 }`}
               >
                 {option.label}
@@ -68,10 +68,10 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
         </div>
       </div>
 
-      {/* 요약 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 요약 카드 - 모바일 간격 개선 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* 총 수입 */}
-        <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow">
+        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 sm:p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-green-700">총 수입</p>
@@ -87,7 +87,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
         </div>
 
         {/* 총 지출 */}
-        <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg shadow">
+        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 sm:p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-red-700">총 지출</p>
@@ -103,7 +103,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
         </div>
 
         {/* 순액 */}
-        <div className={`bg-gradient-to-br p-6 rounded-lg shadow ${
+        <div className={`bg-gradient-to-br p-4 sm:p-6 rounded-lg shadow ${
           summary.totalBalance >= 0
             ? 'from-blue-50 to-blue-100'
             : 'from-orange-50 to-orange-100'
@@ -133,7 +133,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
         </div>
 
         {/* 거래 수 */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg shadow">
+        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 sm:p-6 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-purple-700">총 거래</p>
@@ -149,18 +149,18 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions 
         </div>
       </div>
 
-      {/* 차트들 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* 차트들 - 모바일 간격 개선 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         <MonthlyTrendChart data={statistics.monthlyTrend} />
         <CategoryPieChart data={statistics.categoryExpense} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:gap-6">
         <WeekdayBarChart data={statistics.weekdayExpense} />
       </div>
 
-      {/* 추가 인사이트 */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      {/* 추가 인사이트 - 모바일 간격 개선 */}
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
           💡 주요 인사이트
         </h3>

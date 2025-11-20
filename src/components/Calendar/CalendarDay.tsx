@@ -31,9 +31,10 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
   return (
     <div
       className={`
-        relative min-h-[100px] p-2 border cursor-pointer transition-all duration-200
+        relative min-h-[100px] md:min-h-[120px] p-2 md:p-3 border cursor-pointer transition-all duration-200
+        touch-manipulation active:scale-95
         ${day.isCurrentMonth
-          ? 'bg-white hover:bg-gray-50 border-gray-200'
+          ? 'bg-white hover:bg-gray-50 active:bg-gray-100 border-gray-200'
           : 'bg-gray-50 border-gray-100 text-gray-400'
         }
         ${day.isToday
@@ -47,6 +48,9 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
         hover:shadow-md
       `}
       onClick={() => onDayClick?.(day)}
+      role="button"
+      tabIndex={0}
+      aria-label={`${day.dayNumber}일 ${summary.hasTransactions ? `거래 ${summary.transactionCount}건` : ''}`}
     >
       {/* 날짜 */}
       <div className={`

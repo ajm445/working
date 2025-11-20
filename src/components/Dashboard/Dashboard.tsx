@@ -105,7 +105,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <CurrencySelector />
 
       {/* 잔액 카드들 - 항상 표시 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
         <BalanceCard
           title="총 수입"
           amount={totalIncome}
@@ -128,21 +128,21 @@ const Dashboard: React.FC<DashboardProps> = ({
         />
       </div>
 
-      {/* 뷰 모드 선택 탭 */}
-      <div className="bg-white rounded-xl shadow-sm border mb-6 overflow-hidden">
+      {/* 뷰 모드 선택 탭 - 모바일 개선 */}
+      <div className="bg-white rounded-xl shadow-sm border mb-4 md:mb-6 overflow-hidden">
         <div className="grid grid-cols-3">
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
-              px-4 py-4 text-sm font-medium transition-colors
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors touch-manipulation
               ${currentViewMode === 'summary'
                 ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>📊</span>
+            <div className="flex items-center justify-center gap-1 sm:gap-2">
+              <span className="text-base sm:text-lg">📊</span>
               <span className="hidden sm:inline">요약 보기</span>
               <span className="sm:hidden">요약</span>
             </div>
@@ -150,15 +150,15 @@ const Dashboard: React.FC<DashboardProps> = ({
           <button
             onClick={() => handleViewModeChange('calendar')}
             className={`
-              px-4 py-4 text-sm font-medium transition-colors border-l
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l touch-manipulation
               ${currentViewMode === 'calendar'
                 ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>📅</span>
+            <div className="flex items-center justify-center gap-1 sm:gap-2">
+              <span className="text-base sm:text-lg">📅</span>
               <span className="hidden sm:inline">캘린더 보기</span>
               <span className="sm:hidden">캘린더</span>
             </div>
@@ -166,15 +166,15 @@ const Dashboard: React.FC<DashboardProps> = ({
           <button
             onClick={() => handleViewModeChange('statistics')}
             className={`
-              px-4 py-4 text-sm font-medium transition-colors border-l
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l touch-manipulation
               ${currentViewMode === 'statistics'
                 ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>📈</span>
+            <div className="flex items-center justify-center gap-1 sm:gap-2">
+              <span className="text-base sm:text-lg">📈</span>
               <span className="hidden sm:inline">통계 분석</span>
               <span className="sm:hidden">통계</span>
             </div>

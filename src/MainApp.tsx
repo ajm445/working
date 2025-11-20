@@ -25,22 +25,26 @@ const ExpenseTracker: React.FC = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
-  // 거래 내역 로드
+  // 거래 내역 로드 및 로그아웃 시 초기화
   useEffect(() => {
     const loadTransactions = async (): Promise<void> => {
-      // 로그인 안 된 상태면 빈 배열로 시작 (로컬 메모리만 사용)
+      // 로그인 안 된 상태면 빈 배열로 초기화 (로그아웃 시 즉시 UI 업데이트)
       if (!user) {
+        console.log('🔄 User logged out, clearing transactions');
+        setTransactions([]);
         setLoading(false);
         return;
       }
 
       // 로그인 상태면 Supabase에서 로드
+      console.log('📥 User logged in, loading transactions');
       setLoading(true);
       const { data, error } = await transactionService.fetchTransactions();
 
       if (error) {
         console.error('Failed to load transactions:', error);
       } else if (data) {
+        console.log(`✅ Loaded ${data.length} transactions`);
         setTransactions(data);
       }
 

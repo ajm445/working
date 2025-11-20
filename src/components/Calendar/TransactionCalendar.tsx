@@ -3,6 +3,7 @@ import type { Transaction } from '../../types/transaction';
 import type { CalendarDay as CalendarDayType } from '../../types/calendar';
 import { generateCalendarMonth } from '../../utils/calendar';
 import { getKSTDate } from '../../utils/dateUtils';
+import { useSwipe } from '../../hooks/useSwipe';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import DayDetailModal from './DayDetailModal';
@@ -25,6 +26,25 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
   const today = getKSTDate();
   const [currentDate, setCurrentDate] = useState<Date>(today);
   const [selectedDay, setSelectedDay] = useState<CalendarDayType | null>(null);
+
+  // 월 네비게이션 핸들러 (useSwipe 전에 선언)
+  const handlePrevMonth = (): void => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
+  };
+
+  const handleNextMonth = (): void => {
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
+  };
+
+  // 터치 제스처 지원 (모바일 최적화)
+  const swipeHandlers = useSwipe(
+    handleNextMonth,  // 왼쪽 스와이프 = 다음 달
+    handlePrevMonth   // 오른쪽 스와이프 = 이전 달
+  );
 
   // 현재 표시 중인 달의 캘린더 데이터 생성
   const calendarData = useMemo(() => {
@@ -59,18 +79,6 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
     }
   }, [transactions, calendarData, selectedDay]);
 
-  const handlePrevMonth = (): void => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    setCurrentDate(newDate);
-    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
-  };
-
-  const handleNextMonth = (): void => {
-    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    setCurrentDate(newDate);
-    onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
-  };
-
   const handleToday = (): void => {
     const newDate = getKSTDate();
     setCurrentDate(newDate);
@@ -96,11 +104,13 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
         onToday={handleToday}
       />
 
-      {/* 캘린더 그리드 */}
-      <CalendarGrid
-        calendarData={calendarData}
-        onDayClick={handleDayClick}
-      />
+      {/* 캘린더 그리드 - 터치 제스처 지원 */}
+      <div ref={swipeHandlers}>
+        <CalendarGrid
+          calendarData={calendarData}
+          onDayClick={handleDayClick}
+        />
+      </div>
 
       {/* 캘린더 사용법 안내 */}
       <div className="bg-blue-50 rounded-lg p-4">
@@ -111,6 +121,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
             <ul className="space-y-1 text-xs">
               <li>• 각 날짜를 클릭하면 해당 날의 상세 거래 내역을 볼 수 있습니다</li>
               <li>• 녹색 숫자는 수입, 빨간색 숫자는 지출을 나타냅니다</li>
+              <li>• <span className="font-semibold">모바일:</span> 캘린더를 좌우로 스와이프하여 월을 변경할 수 있습니다</li>
               <li>• 상세 모달에서 "이 날짜에 내역 추가" 버튼으로 특정 날짜에 거래를 등록할 수 있습니다</li>
               <li>• 내역 추가하기로 새 거래를 등록하면 자동으로 캘린더에 표시됩니다</li>
             </ul>

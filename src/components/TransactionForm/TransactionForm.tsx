@@ -239,6 +239,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
             </label>
             <input
               type="number"
+              inputMode="decimal"
               value={formData.amount}
               onChange={(e) => handleInputChange('amount', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
