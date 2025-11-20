@@ -552,16 +552,64 @@
   - 설치 완료 후 `npm run test:e2e` 실행으로 테스트 가능
   - 총 4개 테스트 파일, 약 30개 이상의 테스트 케이스 작성
 
-### 18. 모바일 UX 개선
-- **상태**: ⬜
+### ✅ 18. 모바일 UX 개선
+- **상태**: ✅
+- **완료일**: 2025-11-20
 - **우선순위**: Low
-- **예상 소요**: 3-4시간
+- **실제 소요**: ~4시간
+- **파일**:
+  - `src/hooks/useSwipe.ts` (신규) ✅
+  - `src/components/TransactionForm/TransactionForm.tsx` ✅
+  - `src/components/Calendar/TransactionCalendar.tsx` ✅
+  - `src/components/Calendar/CalendarDay.tsx` ✅
+  - `src/components/Calendar/DayDetailModal.tsx` ✅
+  - `src/components/Dashboard/Dashboard.tsx` ✅
+  - `src/components/Statistics/StatisticsDashboard.tsx` ✅
+  - `src/MainApp.tsx` (버그 수정) ✅
+  - `src/contexts/CurrencyContext.tsx` (버그 수정) ✅
 - **작업 내용**:
-  - [ ] 터치 제스처 지원 (스와이프로 월 변경)
-  - [ ] 모바일 키보드 최적화 (inputmode 속성)
-  - [ ] PWA 기능 추가 (선택)
-  - [ ] 모바일 성능 테스트 및 최적화
-- **참고**: 현재 반응형 디자인은 구현됨
+  - [x] 터치 제스처 지원 (스와이프로 월 변경)
+    - useSwipe 커스텀 훅 생성 (83줄)
+    - 좌우 스와이프로 캘린더 월 변경 기능
+    - 최소 스와이프 거리 50px 설정
+    - TouchEvent API 활용
+  - [x] 모바일 키보드 최적화 (inputmode 속성)
+    - TransactionForm의 amount 입력에 inputMode="decimal" 추가
+    - 모바일에서 숫자 키패드 자동 표시
+  - [x] 모바일 반응형 디자인 개선
+    - 터치 영역 개선: CalendarDay 최소 100px 높이 (데스크톱 120px)
+    - touch-manipulation CSS로 300ms 탭 딜레이 제거
+    - active:scale-95로 시각적 터치 피드백 추가
+    - 모바일 버튼 크기 증가 (p-3, text-xs sm:text-sm)
+    - 간격 조정 (gap-4 md:gap-6, p-4 sm:p-6)
+    - DayDetailModal 높이 90vh → 65vh로 스크롤 개선
+    - 모달 외부 클릭으로 닫기 기능 추가
+  - [ ] PWA 기능 추가 (선택사항 - 미구현)
+  - [x] 모바일 성능 테스트 및 최적화
+  - [x] 버그 수정:
+    - 로그아웃 시 UI 업데이트 버그 수정 (MainApp.tsx)
+    - 환율 정보 중복 토스트 알림 방지 (CurrencyContext.tsx)
+- **개선 결과**:
+  - **터치 제스처**: 캘린더 좌우 스와이프로 월 변경 가능
+  - **키보드 최적화**: 숫자 입력 시 모바일 숫자 키패드 표시
+  - **터치 영역**: 최소 44x44px 터치 타겟 준수 (접근성)
+  - **시각적 피드백**: active 상태로 터치 반응 명확화
+  - **반응형 개선**: 모바일/태블릿/데스크톱 모두 최적화
+  - **UI 버그 수정**: 로그아웃 시 즉시 UI 업데이트
+  - **중복 토스트 방지**: useRef와 고유 ID로 중복 알림 제거
+- **기술 구현**:
+  - **useSwipe 훅**: TouchEvent API로 스와이프 감지
+  - **touch-manipulation**: CSS로 터치 지연 제거
+  - **active 스타일**: active: 의사 클래스로 터치 피드백
+  - **ARIA 속성**: role, aria-label, tabIndex로 접근성 향상
+  - **useRef 활용**: isInitialLoad 추적으로 중복 방지
+  - **Toast ID**: 고유 ID로 react-hot-toast 중복 방지
+- **참고**:
+  - 기존 반응형 디자인 개선 완료
+  - PWA는 선택사항으로 미구현 (향후 과제)
+  - 모바일 터치 UX 대폭 향상
+  - TypeScript 타입 검사 통과 (빌드 오류 수정)
+  - 모든 주요 컴포넌트에 모바일 최적화 적용
 
 ---
 
