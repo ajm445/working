@@ -442,16 +442,58 @@
   - 새로고침 시 메모리 캐시는 초기화되지만 LocalStorage 캐시는 유지됨
   - 네트워크 오류 시에도 최근 24시간 이내 환율 사용 가능
 
-### 16. 성능 모니터링 도구 통합
-- **상태**: ⬜
+### ✅ 16. 성능 모니터링 도구 통합
+- **상태**: ✅
+- **완료일**: 2025-11-20
 - **우선순위**: Low
-- **예상 소요**: 2-3시간
+- **실제 소요**: 2.5시간
+- **파일**:
+  - `src/contexts/AnalyticsContext.tsx` (신규) ✅
+  - `src/hooks/useAnalyticsEvent.ts` (신규) ✅
+  - `src/types/analytics.ts` (신규) ✅
+  - `docs/google-analytics-setup.md` (신규) ✅
+  - `src/App.tsx` ✅
+  - `src/MainApp.tsx` ✅
+  - `src/components/Navigation/ModeNavigation.tsx` ✅
+  - `.env.example` ✅
 - **작업 내용**:
-  - [ ] Sentry 설치 및 설정 (에러 추적)
-  - [ ] Google Analytics 또는 Vercel Analytics 추가
-  - [ ] 성능 메트릭 수집 (Core Web Vitals)
-  - [ ] 사용자 행동 분석 설정
-- **참고**: 현재 모니터링 도구 없음
+  - [x] Google Analytics 4 (GA4) 패키지 설치 (react-ga4)
+  - [x] AnalyticsContext 생성 및 GA 초기화 로직 구현
+  - [x] 커스텀 이벤트 추적 훅 (useAnalyticsEvent) 구현
+  - [x] 주요 사용자 액션에 이벤트 추적 추가:
+    - 거래 추가/삭제 (add_transaction, delete_transaction)
+    - 뷰 전환 (view_summary, view_calendar, view_statistics)
+    - 앱 모드 전환 (switch_mode)
+    - 인증 (login, logout, signup)
+    - 통화 변경 (change_currency)
+    - 캘린더 네비게이션 (navigate_month, select_date)
+    - 통계 기간 변경 (change_period)
+  - [x] 환경 변수 설정 (VITE_GA_MEASUREMENT_ID)
+  - [x] Google Analytics 설정 가이드 문서 작성
+  - [x] README에 GA4 정보 추가
+  - [x] 타입 검사 및 빌드 테스트 통과
+- **기술 스택**:
+  - **react-ga4**: React용 Google Analytics 4 라이브러리
+  - **TypeScript 타입 안전성**: GAEventParams, GAEventCategory, GAEventAction 타입 정의
+  - **Context API**: AnalyticsProvider로 전역 상태 관리
+  - **커스텀 훅**: 20개 이상의 이벤트 추적 함수 제공
+- **추적되는 이벤트**:
+  - 거래 관련: add_transaction, delete_transaction
+  - 네비게이션: view_summary, view_calendar, view_statistics, switch_mode
+  - 통화 관련: change_currency, refresh_exchange_rate
+  - 인증 관련: login, logout, signup, login_attempt
+  - 캘린더 관련: navigate_month, select_date, view_day_detail
+  - 통계 관련: change_period, view_chart
+  - 초기비용 계산기: calculate_cost, change_region
+- **개발 모드 디버깅**:
+  - 브라우저 콘솔에서 모든 이벤트 로그 확인 가능
+  - "✅ Google Analytics 초기화 완료" 메시지
+  - "📊 GA 이벤트" 로그로 각 이벤트 추적 확인
+- **참고**:
+  - Google Analytics 설정 방법은 `docs/google-analytics-setup.md` 참고
+  - 개발 환경에서는 테스트 모드 자동 활성화
+  - 프로덕션 배포 시 환경 변수 필수 설정
+  - GDPR 준수 (IP 익명화 자동 적용)
 
 ### ✅ 17. E2E 테스트 작성
 - **상태**: ✅ (브라우저 설치 진행 중)

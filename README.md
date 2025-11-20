@@ -66,6 +66,9 @@
 - **Prettier** - 코드 포맷팅
 - **TypeScript ESLint** - TypeScript 린팅
 
+### 분석 및 모니터링
+- **Google Analytics 4** - 사용자 행동 분석 및 성능 메트릭
+
 ## 🚀 시작하기
 
 ### 사전 요구사항
@@ -91,12 +94,15 @@
    ```bash
    cp .env.example .env
    ```
-   `.env` 파일을 열고 실제 Supabase 값으로 변경:
+   `.env` 파일을 열고 실제 값으로 변경:
    ```env
    VITE_SUPABASE_URL=https://your-project.supabase.co
    VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+   VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
    VITE_APP_ENV=development
    ```
+
+   > **Google Analytics 설정 방법**은 [docs/google-analytics-setup.md](docs/google-analytics-setup.md)를 참고하세요.
 
 4. **개발 서버 실행**
    ```bash

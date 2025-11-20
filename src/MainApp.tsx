@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from './contexts/AuthContext';
 import { useAppMode } from './contexts/AppModeContext';
+import { useAnalyticsEvent } from './hooks/useAnalyticsEvent';
 import type { Transaction, TransactionFormData } from './types';
 import Dashboard from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
@@ -15,6 +16,7 @@ import * as transactionService from './services/transactionService';
 // Expense Tracker Component (기존 가계부 기능)
 const ExpenseTracker: React.FC = () => {
   const { user } = useAuth();
+  const { trackAddTransaction, trackDeleteTransaction, trackViewChange } = useAnalyticsEvent();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -122,6 +124,8 @@ const ExpenseTracker: React.FC = () => {
       } else if (addedTransaction) {
         // 실시간 구독으로 자동 업데이트되므로 수동으로 추가하지 않음
         toast.success('거래 내역이 추가되었습니다.');
+        // Google Analytics 이벤트 추적
+        trackAddTransaction(data.type, data.currency, data.amountInKRW);
         setShowAddForm(false);
         setPreselectedDate(null);
       }
@@ -133,6 +137,8 @@ const ExpenseTracker: React.FC = () => {
       };
 
       setTransactions((prev) => [localTransaction, ...prev]);
+      // Google Analytics 이벤트 추적
+      trackAddTransaction(data.type, data.currency, data.amountInKRW);
       setShowAddForm(false);
       setPreselectedDate(null);
 
@@ -192,6 +198,9 @@ const ExpenseTracker: React.FC = () => {
   };
 
   const deleteTransaction = async (id: string): Promise<void> => {
+    // 삭제할 거래 정보 저장 (이벤트 추적용)
+    const transactionToDelete = transactions.find((t) => t.id === id);
+
     // 로그인 상태면 Supabase에서 삭제
     if (user && !id.startsWith('local-')) {
       const { error } = await transactionService.deleteTransaction(id);
@@ -201,12 +210,20 @@ const ExpenseTracker: React.FC = () => {
         toast.error('거래 내역 삭제에 실패했습니다.');
       } else {
         toast.success('거래 내역이 삭제되었습니다.');
+        // Google Analytics 이벤트 추적
+        if (transactionToDelete) {
+          trackDeleteTransaction(transactionToDelete.type, transactionToDelete.currency);
+        }
       }
       // 실시간 구독으로 자동 업데이트되므로 수동으로 제거하지 않음
     } else {
       // 비로그인 상태거나 로컬 데이터면 로컬에서만 삭제
       setTransactions((prev) => prev.filter((t) => t.id !== id));
       toast.success('거래 내역이 삭제되었습니다.');
+      // Google Analytics 이벤트 추적
+      if (transactionToDelete) {
+        trackDeleteTransaction(transactionToDelete.type, transactionToDelete.currency);
+      }
     }
   };
 
@@ -253,7 +270,10 @@ const ExpenseTracker: React.FC = () => {
       {/* Dashboard - 뷰 모드 상태를 내부에서 관리 */}
       <Dashboard
         transactions={transactions}
-        onViewModeChange={setViewMode}
+        onViewModeChange={(newMode) => {
+          setViewMode(newMode);
+          trackViewChange(newMode);
+        }}
         currentViewMode={viewMode}
         onCalendarDateClick={handleAddTransactionWithDate}
         onDeleteTransaction={deleteTransaction}
@@ -307,6 +327,7 @@ const MainApp: React.FC = () => {
   const navigate = useNavigate();
   const { currentMode, isTransitioning } = useAppMode();
   const { user, profile, signOut } = useAuth();
+  const { trackLogout } = useAnalyticsEvent();
 
   const getPageTitle = (): { title: string; subtitle: string } => {
     switch (currentMode) {
@@ -327,6 +348,7 @@ const MainApp: React.FC = () => {
 
   const handleSignOut = async (): Promise<void> => {
     await signOut();
+    trackLogout();
   };
 
   const handleGoToLogin = (): void => {

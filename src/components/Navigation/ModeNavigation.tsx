@@ -1,9 +1,11 @@
 import React from 'react';
 import { useAppMode } from '../../contexts/AppModeContext';
+import { useAnalyticsEvent } from '../../hooks/useAnalyticsEvent';
 import type { AppMode } from '../../contexts/AppModeContext';
 
 const ModeNavigation: React.FC = () => {
   const { currentMode, setCurrentMode, isTransitioning } = useAppMode();
+  const { trackModeSwitch } = useAnalyticsEvent();
 
   const modes: { key: AppMode; label: string; icon: string; description: string }[] = [
     {
@@ -27,7 +29,10 @@ const ModeNavigation: React.FC = () => {
           {modes.map((mode) => (
             <button
               key={mode.key}
-              onClick={() => setCurrentMode(mode.key)}
+              onClick={() => {
+                setCurrentMode(mode.key);
+                trackModeSwitch(mode.key === 'expense-tracker' ? 'budget' : 'initial-cost');
+              }}
               disabled={isTransitioning}
               className={`flex-1 px-6 py-4 text-center transition-all duration-200 border-b-2 ${
                 currentMode === mode.key
