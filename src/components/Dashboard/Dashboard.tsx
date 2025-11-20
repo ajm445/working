@@ -12,17 +12,49 @@ import CurrentTimeDisplay from './CurrentTimeDisplay';
 import { TransactionCalendar } from '../Calendar';
 import { StatisticsDashboard } from '../Statistics';
 
+/**
+ * 대시보드 뷰 모드 타입
+ * - summary: 요약 보기 (현재 달 기준 수입/지출/잔액)
+ * - calendar: 캘린더 보기 (월별 거래 내역 캘린더 형식)
+ * - statistics: 통계 분석 (차트 및 분석 데이터)
+ */
 type ViewMode = 'summary' | 'calendar' | 'statistics';
 
+/**
+ * Dashboard 컴포넌트의 Props 정의
+ */
 interface DashboardProps {
+  /** 전체 거래 내역 배열 */
   transactions: Transaction[];
+  /** 뷰 모드 변경 시 호출되는 콜백 함수 */
   onViewModeChange?: (mode: ViewMode) => void;
+  /** 현재 선택된 뷰 모드 (기본값: 'summary') */
   currentViewMode?: ViewMode;
+  /** 캘린더에서 날짜 클릭 시 호출되는 콜백 함수 */
   onCalendarDateClick?: ((date?: Date) => void) | undefined;
+  /** 거래 삭제 시 호출되는 콜백 함수 */
   onDeleteTransaction?: ((id: string) => void) | undefined;
+  /** 거래 수정 시 호출되는 콜백 함수 */
   onEditTransaction?: ((transaction: Transaction) => void) | undefined;
 }
 
+/**
+ * 대시보드 메인 컴포넌트
+ *
+ * 가계부의 메인 화면으로, 수입/지출/잔액 요약, 캘린더 뷰, 통계 분석을 제공합니다.
+ * 세 가지 뷰 모드(요약/캘린더/통계) 간 전환이 가능합니다.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <Dashboard
+ *   transactions={transactions}
+ *   currentViewMode="summary"
+ *   onViewModeChange={setViewMode}
+ *   onCalendarDateClick={handleDateClick}
+ * />
+ * ```
+ */
 const Dashboard: React.FC<DashboardProps> = ({
   transactions,
   onViewModeChange,
@@ -35,10 +67,23 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [calendarYear, setCalendarYear] = useState<number>(today.getFullYear());
   const [calendarMonth, setCalendarMonth] = useState<number>(today.getMonth());
 
+  /**
+   * 뷰 모드 변경 핸들러
+   *
+   * @param mode - 변경할 뷰 모드
+   */
   const handleViewModeChange = (mode: ViewMode): void => {
     onViewModeChange?.(mode);
   };
 
+  /**
+   * 캘린더 월 변경 핸들러
+   *
+   * 캘린더 뷰에서 월을 변경할 때 호출되며, 내부 상태를 업데이트합니다.
+   *
+   * @param year - 변경할 연도
+   * @param month - 변경할 월 (0-11)
+   */
   const handleCalendarMonthChange = (year: number, month: number): void => {
     setCalendarYear(year);
     setCalendarMonth(month);

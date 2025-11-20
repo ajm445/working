@@ -13,14 +13,38 @@ import {
   formatDateForInput
 } from '../../utils/dateUtils';
 
+/**
+ * TransactionForm 컴포넌트의 Props 정의
+ */
 interface TransactionFormProps {
+  /** 폼 제출 시 호출되는 콜백 함수 */
   onSubmit: (data: TransactionFormData & { amountInKRW: number }) => void;
+  /** 취소 버튼 클릭 시 호출되는 콜백 함수 */
   onCancel: () => void;
-  initialDate?: string | undefined; // 초기 날짜 설정 (YYYY-MM-DD 형식)
-  editingTransaction?: Transaction | null; // 수정할 거래 내역
+  /** 초기 날짜 설정 (YYYY-MM-DD 형식, 선택사항) */
+  initialDate?: string | undefined;
+  /** 수정할 거래 내역 (편집 모드에서 사용) */
+  editingTransaction?: Transaction | null;
+  /** 거래 수정 시 호출되는 콜백 함수 (편집 모드에서 사용) */
   onUpdate?: ((id: string, data: TransactionFormData & { amountInKRW: number }) => void) | undefined;
 }
 
+/**
+ * 거래 내역 추가/수정 폼 컴포넌트
+ *
+ * 사용자가 수입 또는 지출 거래를 추가하거나 수정할 수 있는 폼을 제공합니다.
+ * 다중 통화 지원, 날짜 검증, 환율 변환 기능을 포함합니다.
+ *
+ * @component
+ * @example
+ * ```tsx
+ * <TransactionForm
+ *   onSubmit={handleAddTransaction}
+ *   onCancel={handleCancel}
+ *   initialDate="2025-11-20"
+ * />
+ * ```
+ */
 const TransactionForm: React.FC<TransactionFormProps> = ({
   onSubmit,
   onCancel,
@@ -64,6 +88,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   }, [initialDate, editingTransaction]);
 
+  /**
+   * 폼 제출 핸들러
+   *
+   * 입력 데이터의 유효성을 검증하고, 환율 변환 후 부모 컴포넌트에 전달합니다.
+   * 편집 모드인 경우 onUpdate를, 추가 모드인 경우 onSubmit 콜백을 호출합니다.
+   *
+   * @param e - 폼 제출 이벤트
+   */
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
@@ -122,6 +154,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }
   };
 
+  /**
+   * 폼 입력 필드 변경 핸들러
+   *
+   * 폼 데이터를 업데이트하며, 거래 타입 변경 시 카테고리를 자동으로 초기화합니다.
+   *
+   * @param field - 변경할 필드명
+   * @param value - 새로운 값
+   */
   const handleInputChange = (field: keyof TransactionFormData, value: string): void => {
     setFormData(prev => ({
       ...prev,
