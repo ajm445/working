@@ -50,7 +50,7 @@ const ExpenseTracker: React.FC = () => {
     void loadTransactions();
   }, [user]);
 
-  // 실시간 구독 설정
+  // 실시간 구독 설정 (다른 브라우저/탭에서의 변경사항 감지용)
   useEffect(() => {
     if (!user) return;
 
@@ -59,15 +59,25 @@ const ExpenseTracker: React.FC = () => {
       (payload) => {
         console.log('Real-time update:', payload);
 
-        // INSERT 이벤트
+        // INSERT 이벤트 - 중복 방지를 위해 이미 존재하는지 확인
         if (payload.eventType === 'INSERT' && payload.new) {
+          console.log('🔴 Realtime INSERT event:', payload.new);
           const newTransaction = transactionService.mapSupabaseToLocal(
             payload.new
           );
-          setTransactions((prev) => [newTransaction, ...prev]);
+          setTransactions((prev) => {
+            // 이미 존재하는 거래인지 확인 (중복 방지)
+            const exists = prev.some((t) => t.id === newTransaction.id);
+            if (exists) {
+              console.log('⚠️ Transaction already exists, skipping INSERT');
+              return prev;
+            }
+            console.log('✅ Adding from Realtime:', newTransaction.id);
+            return [newTransaction, ...prev];
+          });
         }
 
-        // UPDATE 이벤트
+        // UPDATE 이벤트 - 항상 최신 데이터로 업데이트
         if (payload.eventType === 'UPDATE' && payload.new) {
           const updatedTransaction = transactionService.mapSupabaseToLocal(
             payload.new
@@ -79,11 +89,15 @@ const ExpenseTracker: React.FC = () => {
           );
         }
 
-        // DELETE 이벤트
+        // DELETE 이벤트 - 이미 삭제되었을 수 있으므로 확인 후 삭제
         if (payload.eventType === 'DELETE' && payload.old) {
-          setTransactions((prev) =>
-            prev.filter((t) => t.id !== payload.old.id)
-          );
+          setTransactions((prev) => {
+            const filtered = prev.filter((t) => t.id !== payload.old.id);
+            if (filtered.length === prev.length) {
+              console.log('Transaction already deleted, skipping DELETE');
+            }
+            return filtered;
+          });
         }
       }
     );
@@ -115,19 +129,34 @@ const ExpenseTracker: React.FC = () => {
 
     // 로그인 상태면 Supabase에 저장
     if (user) {
+      console.log('🔵 Adding transaction to Supabase...', newTransaction);
+
       const { data: addedTransaction, error } =
         await transactionService.addTransaction(newTransaction, user.id);
 
+      console.log('🔵 Supabase response:', { addedTransaction, error });
+
       if (error) {
-        console.error('Failed to add transaction:', error);
+        console.error('❌ Failed to add transaction:', error);
         toast.error('거래 내역 추가에 실패했습니다.');
       } else if (addedTransaction) {
-        // 실시간 구독으로 자동 업데이트되므로 수동으로 추가하지 않음
+        console.log('✅ Transaction added, updating UI:', addedTransaction);
+
+        // 즉시 UI 업데이트 (Realtime 이벤트를 기다리지 않음)
+        setTransactions((prev) => {
+          console.log('📝 Current transactions:', prev.length);
+          const updated = [addedTransaction, ...prev];
+          console.log('📝 Updated transactions:', updated.length);
+          return updated;
+        });
+
         toast.success('거래 내역이 추가되었습니다.');
         // Google Analytics 이벤트 추적
         trackAddTransaction(data.type, data.currency, data.amountInKRW);
         setShowAddForm(false);
         setPreselectedDate(null);
+      } else {
+        console.warn('⚠️ No transaction returned from Supabase');
       }
     } else {
       // 비로그인 상태면 로컬 메모리에만 저장
@@ -181,7 +210,10 @@ const ExpenseTracker: React.FC = () => {
         console.error('Failed to update transaction:', error);
         toast.error('거래 내역 수정에 실패했습니다.');
       } else if (updatedTransaction) {
-        // 실시간 구독으로 자동 업데이트되므로 수동으로 수정하지 않음
+        // 즉시 UI 업데이트 (Realtime 이벤트를 기다리지 않음)
+        setTransactions((prev) =>
+          prev.map((t) => (t.id === id ? updatedTransaction : t))
+        );
         toast.success('거래 내역이 수정되었습니다.');
         setEditingTransaction(null);
       }
@@ -203,11 +235,18 @@ const ExpenseTracker: React.FC = () => {
 
     // 로그인 상태면 Supabase에서 삭제
     if (user && !id.startsWith('local-')) {
+      // 먼저 UI에서 즉시 제거 (낙관적 업데이트)
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+
       const { error } = await transactionService.deleteTransaction(id);
 
       if (error) {
         console.error('Failed to delete transaction:', error);
         toast.error('거래 내역 삭제에 실패했습니다.');
+        // 삭제 실패 시 다시 추가 (롤백)
+        if (transactionToDelete) {
+          setTransactions((prev) => [transactionToDelete, ...prev]);
+        }
       } else {
         toast.success('거래 내역이 삭제되었습니다.');
         // Google Analytics 이벤트 추적
@@ -215,7 +254,6 @@ const ExpenseTracker: React.FC = () => {
           trackDeleteTransaction(transactionToDelete.type, transactionToDelete.currency);
         }
       }
-      // 실시간 구독으로 자동 업데이트되므로 수동으로 제거하지 않음
     } else {
       // 비로그인 상태거나 로컬 데이터면 로컬에서만 삭제
       setTransactions((prev) => prev.filter((t) => t.id !== id));

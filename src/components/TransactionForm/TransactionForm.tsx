@@ -98,6 +98,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
    */
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
+    console.log('🟡 TransactionForm handleSubmit called');
 
     // 필수 필드 검증
     if (!formData.amount || !formData.category || !formData.description || !formData.date) {
@@ -127,12 +128,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
       if (isEditMode && editingTransaction && onUpdate) {
         // 수정 모드
+        console.log('🟡 Calling onUpdate');
         onUpdate(editingTransaction.id, {
           ...formData,
           amountInKRW,
         });
       } else {
         // 추가 모드
+        console.log('🟡 Calling onSubmit with data:', { ...formData, amountInKRW });
         onSubmit({
           ...formData,
           amountInKRW,
