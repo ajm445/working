@@ -238,15 +238,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return { error };
   };
 
-  // LINE 로그인
+  // LINE 로그인 (현재 미사용)
   const signInWithLine = async (): Promise<{ error: AuthError | null }> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google', // LINE은 아직 지원되지 않으므로 Google로 대체
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return { error };
+    // 향후 LINE 로그인을 구현할 경우 여기에 로직 추가
+    console.warn('LINE login is not implemented yet.');
+    return { error: null };
   };
 
   // 로그아웃

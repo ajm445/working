@@ -83,18 +83,8 @@ const LoginPage: React.FC = () => {
     setLoading(null);
   };
 
-  const handleLineLogin = async (): Promise<void> => {
-    setLoading('line');
-    setError(null);
-
-    const { error: signInError } = await signInWithLine();
-
-    if (signInError) {
-      setError('LINE 로그인에 실패했습니다. 다시 시도해주세요.');
-      console.error('LINE login error:', signInError);
-    }
-
-    setLoading(null);
+  const handleLineLogin = (): void => {
+    alert('준비중입니다.');
   };
 
   const handleGoHome = (): void => {
