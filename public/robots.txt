@@ -1,0 +1,41 @@
+# 일본 워킹홀리데이 가계부 - Robots.txt
+
+# 모든 검색 엔진 봇 허용
+User-agent: *
+
+# 크롤링 허용 페이지
+Allow: /
+Allow: /login
+Allow: /terms
+Allow: /privacy
+
+# 크롤링 차단 페이지 (인증 콜백, API, 비공개 페이지)
+Disallow: /auth/
+Disallow: /api/
+Disallow: /*.json$
+
+# Sitemap 위치
+Sitemap: https://your-domain.com/sitemap.xml
+
+# 크롤링 딜레이 (초 단위) - 서버 부하 방지
+Crawl-delay: 1
+
+# 특정 봇에 대한 규칙 (선택사항)
+# Google 봇
+User-agent: Googlebot
+Allow: /
+
+# Bing 봇
+User-agent: Bingbot
+Allow: /
+
+# Naver 봇
+User-agent: Yeti
+Allow: /
+
+# 악의적인 봇 차단 (선택사항)
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
