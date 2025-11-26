@@ -108,11 +108,11 @@ const InitialCostCalculator: React.FC = () => {
       )}
 
       {/* Required Categories */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-red-500">⚠️</span>
-          <h2 className="text-xl font-bold text-gray-900">필수 준비 비용</h2>
-          <span className="text-sm text-gray-500">必須準備費用</span>
+          <span className="text-red-500 dark:text-red-400">⚠️</span>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">필수 준비 비용</h2>
+          <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">必須準備費用</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {requiredCategories.map(category => {
@@ -139,14 +139,14 @@ const InitialCostCalculator: React.FC = () => {
           if (!group) return null;
 
           return (
-            <div key={groupType} className="bg-white rounded-xl shadow-sm p-6">
+            <div key={groupType} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 transition-colors duration-300">
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-blue-500">{group.icon}</span>
-                <h2 className="text-xl font-bold text-gray-900">{group.name}</h2>
-                <span className="text-sm text-gray-500">{group.nameJp}</span>
-                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">선택사항</span>
+                <span className="text-blue-500 dark:text-blue-400">{group.icon}</span>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white transition-colors duration-300">{group.name}</h2>
+                <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">{group.nameJp}</span>
+                <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full transition-colors duration-300">선택사항</span>
               </div>
-              <p className="text-sm text-gray-600 mb-4">{group.description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 transition-colors duration-300">{group.description}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {categories.map(category => {
                   const currentAmount = costItems.find(item => item.categoryId === category.id)?.amount || 0;

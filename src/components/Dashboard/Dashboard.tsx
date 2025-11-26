@@ -129,15 +129,15 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* 뷰 모드 선택 탭 - 모바일 개선 */}
-      <div className="bg-white rounded-xl shadow-sm border mb-4 md:mb-6 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 mb-4 md:mb-6 overflow-hidden transition-colors duration-300">
         <div className="grid grid-cols-3">
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
               px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors touch-manipulation
               ${currentViewMode === 'summary'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
@@ -150,10 +150,10 @@ const Dashboard: React.FC<DashboardProps> = ({
           <button
             onClick={() => handleViewModeChange('calendar')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l touch-manipulation
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
               ${currentViewMode === 'calendar'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
@@ -166,10 +166,10 @@ const Dashboard: React.FC<DashboardProps> = ({
           <button
             onClick={() => handleViewModeChange('statistics')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l touch-manipulation
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
               ${currentViewMode === 'statistics'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50 active:bg-gray-100'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >

@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { AppModeProvider } from './contexts/AppModeContext';
 import { AnalyticsProvider } from './contexts/AnalyticsContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { LoginPage, AuthCallback } from './components/Auth';
 import { TermsOfService, PrivacyPolicy } from './components/Legal';
 
@@ -14,10 +15,11 @@ import MainApp from './MainApp';
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <AnalyticsProvider>
-        <AuthProvider>
-          {/* Toast 알림 컴포넌트 */}
-          <Toaster
+      <ThemeProvider>
+        <AnalyticsProvider>
+          <AuthProvider>
+            {/* Toast 알림 컴포넌트 */}
+            <Toaster
           position="top-center"
           reverseOrder={false}
           gutter={8}
@@ -77,8 +79,9 @@ const App: React.FC = () => {
           {/* 기본 리디렉션 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        </AuthProvider>
-      </AnalyticsProvider>
+          </AuthProvider>
+        </AnalyticsProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 };

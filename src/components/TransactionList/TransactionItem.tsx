@@ -20,25 +20,25 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete
   };
 
   return (
-    <div className="p-4 hover:bg-gray-50 transition-colors">
+    <div className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-            transaction.type === 'income' ? 'bg-green-100' : 'bg-red-100'
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
+            transaction.type === 'income' ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
           }`}>
-            <span className={`${
-              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+            <span className={`transition-colors duration-300 ${
+              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
               {transaction.type === 'income' ? '➕' : '➖'}
             </span>
           </div>
           <div className="flex-1">
-            <p className="font-medium text-gray-900">{transaction.description}</p>
-            <p className="text-sm text-gray-500">
+            <p className="font-medium text-gray-900 dark:text-white transition-colors duration-300">{transaction.description}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
               {transaction.category} • {transaction.date}
             </p>
             {transaction.currency !== 'KRW' && (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">
                 원화: {formatCurrency(transaction.amountInKRW, 'KRW')}
               </p>
             )}
@@ -46,18 +46,18 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className={`font-semibold ${
-              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+            <p className={`font-semibold transition-colors duration-300 ${
+              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
               {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, transaction.currency)}
             </p>
-            <p className="text-xs text-gray-400">{transaction.currency}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">{transaction.currency}</p>
           </div>
           <div className="flex gap-1">
             {onEdit && (
               <button
                 onClick={handleEdit}
-                className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-colors"
                 aria-label={`${transaction.description} 거래 내역 수정`}
                 title="수정"
               >
@@ -68,7 +68,7 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete
             )}
             <button
               onClick={handleDelete}
-              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full transition-colors"
               aria-label={`${transaction.description} 거래 내역 삭제`}
               title="삭제"
             >

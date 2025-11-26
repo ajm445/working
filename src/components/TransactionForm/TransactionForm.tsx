@@ -178,8 +178,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const currencySymbol = getCurrencySymbol(formData.currency);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-      <h3 className="text-lg font-semibold mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 transition-colors duration-300">
+      <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white transition-colors duration-300">
         {isEditMode ? '내역 수정' : '새 내역 추가'}
       </h3>
 
@@ -187,15 +187,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* 구분 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">구분</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">구분</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => handleInputChange('type', 'income')}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                   formData.type === 'income'
-                    ? 'bg-green-100 text-green-800 border-2 border-green-300'
-                    : 'bg-gray-100 text-gray-700 border-2 border-transparent'
+                    ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border-2 border-green-300 dark:border-green-600'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-transparent'
                 }`}
               >
                 수입
@@ -205,8 +205,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
                 onClick={() => handleInputChange('type', 'expense')}
                 className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
                   formData.type === 'expense'
-                    ? 'bg-red-100 text-red-800 border-2 border-red-300'
-                    : 'bg-gray-100 text-gray-700 border-2 border-transparent'
+                    ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border-2 border-red-300 dark:border-red-600'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-2 border-transparent'
                 }`}
               >
                 지출
@@ -216,11 +216,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
           {/* 통화 선택 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">통화</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">통화</label>
             <select
               value={formData.currency}
               onChange={(e) => handleInputChange('currency', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             >
               {SUPPORTED_CURRENCIES.map(currency => (
                 <option key={currency.code} value={currency.code}>
@@ -234,7 +234,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* 금액 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
               금액 ({currencySymbol})
             </label>
             <input
@@ -242,7 +242,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               inputMode="decimal"
               value={formData.amount}
               onChange={(e) => handleInputChange('amount', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
               placeholder="0.00"
               step="0.01"
               min="0"
@@ -251,11 +251,11 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
           {/* 카테고리 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">카테고리</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">카테고리</label>
             <select
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
             >
               <option value="">카테고리 선택</option>
               {categories.map(category => (
@@ -268,16 +268,16 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 
           {/* 날짜 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">날짜</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">날짜</label>
             <input
               type="date"
               value={formData.date}
               onChange={(e) => handleInputChange('date', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
               max={getTodayDateString()} // 오늘 이후 날짜 선택 방지
             />
             {formData.date && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
                 선택된 날짜: {formatInputDateToKorean(formData.date)}
               </div>
             )}
@@ -287,12 +287,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <div className="mb-4">
           {/* 설명 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">설명</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">설명</label>
             <input
               type="text"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
               placeholder="간단한 설명"
             />
           </div>
@@ -301,14 +301,14 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <div className="flex gap-2">
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+            className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
           >
             {isEditMode ? '수정하기' : '추가하기'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+            className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
           >
             취소
           </button>

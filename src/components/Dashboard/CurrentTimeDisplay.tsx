@@ -42,11 +42,11 @@ const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInte
 
   return (
     <div className="mb-6 text-center">
-      <div className="inline-flex items-center gap-4 px-4 py-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-        <span className="text-lg font-semibold text-indigo-800">
+      <div className="inline-flex items-center gap-4 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors duration-300">
+        <span className="text-lg font-semibold text-indigo-800 dark:text-indigo-300 transition-colors duration-300">
           오늘: {formatTodayDate()}
         </span>
-        <span className="text-lg font-semibold text-indigo-600">
+        <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 transition-colors duration-300">
           {formatTime(currentTime)}
         </span>
       </div>

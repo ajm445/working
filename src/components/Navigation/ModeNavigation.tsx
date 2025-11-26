@@ -23,7 +23,7 @@ const ModeNavigation: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white shadow-sm border-b">
+    <div className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4">
         <div className="flex">
           {modes.map((mode) => (
@@ -36,8 +36,8 @@ const ModeNavigation: React.FC = () => {
               disabled={isTransitioning}
               className={`flex-1 px-6 py-4 text-center transition-all duration-200 border-b-2 ${
                 currentMode === mode.key
-                  ? 'border-indigo-500 text-indigo-600 bg-indigo-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                  ? 'border-indigo-500 dark:border-indigo-400 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
+                  : 'border-transparent text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700'
               } ${
                 isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
               }`}
@@ -47,7 +47,7 @@ const ModeNavigation: React.FC = () => {
                   <span className="text-lg">{mode.icon}</span>
                   <span className="font-medium">{mode.label}</span>
                 </div>
-                <span className="text-xs text-gray-500 hidden sm:block">
+                <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block transition-colors duration-300">
                   {mode.description}
                 </span>
               </div>

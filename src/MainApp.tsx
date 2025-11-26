@@ -10,6 +10,7 @@ import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { InitialCostCalculator } from './components/InitialCostCalculator';
 import { ModeNavigation } from './components/Navigation';
+import ThemeToggle from './components/ui/ThemeToggle';
 import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
 
@@ -279,8 +280,8 @@ const ExpenseTracker: React.FC = () => {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">거래 내역을 불러오는 중...</p>
+          <div className="w-16 h-16 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin mx-auto mb-4 transition-colors duration-300" />
+          <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">거래 내역을 불러오는 중...</p>
         </div>
       </div>
     );
@@ -290,18 +291,18 @@ const ExpenseTracker: React.FC = () => {
     <div className="space-y-8">
       {/* 비로그인 상태 안내 */}
       {!user && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 rounded-xl p-4 transition-colors duration-300">
           <div className="flex items-start gap-3">
             <span className="text-2xl">⚠️</span>
             <div>
-              <h3 className="font-semibold text-yellow-900 mb-1">
+              <h3 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1 transition-colors duration-300">
                 임시 모드로 사용 중입니다
               </h3>
-              <p className="text-sm text-yellow-800 mb-2">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-2 transition-colors duration-300">
                 현재 로그인하지 않아 입력한 데이터가 저장되지 않습니다.
                 새로고침하면 모든 데이터가 사라집니다.
               </p>
-              <p className="text-sm text-yellow-800">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 transition-colors duration-300">
                 💡 <strong>로그인</strong>하여 데이터를 안전하게 저장하세요!
               </p>
             </div>
@@ -327,7 +328,7 @@ const ExpenseTracker: React.FC = () => {
         <div>
           <button
             onClick={() => handleAddTransactionWithDate()}
-            className="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+            className="w-full md:w-auto bg-indigo-600 dark:bg-indigo-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors flex items-center justify-center gap-2"
           >
             <span>➕</span>
             내역 추가하기
@@ -398,25 +399,28 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-gray-800 shadow-sm transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors duration-300">
                 <span className="text-white font-bold">
                   {currentMode === 'initial-cost-calculator' ? '✈️' : '💰'}
                 </span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-                <p className="text-gray-600 text-sm">{subtitle}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">{title}</h1>
+                <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">{subtitle}</p>
               </div>
             </div>
 
-            {/* 사용자 프로필 또는 로그인 버튼 */}
+            {/* 테마 토글 및 사용자 프로필 또는 로그인 버튼 */}
             <div className="flex items-center gap-3">
+              {/* 다크 모드 토글 버튼 */}
+              <ThemeToggle />
+
               {user ? (
                 // 로그인된 상태
                 <>
@@ -428,12 +432,12 @@ const MainApp: React.FC = () => {
                     />
                   )}
                   <div className="hidden sm:block text-right">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white transition-colors duration-300">
                       {profile?.display_name || profile?.email}
                     </p>
                     <button
                       onClick={() => void handleSignOut()}
-                      className="text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                     >
                       로그아웃
                     </button>
@@ -442,12 +446,12 @@ const MainApp: React.FC = () => {
               ) : (
                 // 로그인 안 된 상태
                 <div className="flex items-center gap-2">
-                  <div className="hidden sm:block text-sm text-gray-600 mr-2">
+                  <div className="hidden sm:block text-sm text-gray-600 dark:text-gray-300 mr-2 transition-colors duration-300">
                     로그인하여 데이터를 저장하세요
                   </div>
                   <button
                     onClick={handleGoToLogin}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors text-sm"
+                    className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm"
                   >
                     로그인 / 회원가입
                   </button>
