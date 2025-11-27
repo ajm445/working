@@ -85,6 +85,12 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
     onMonthChange?.(newDate.getFullYear(), newDate.getMonth());
   };
 
+  const handleYearMonthSelect = (year: number, month: number): void => {
+    const newDate = new Date(year, month, 1);
+    setCurrentDate(newDate);
+    onMonthChange?.(year, month);
+  };
+
   const handleDayClick = (day: CalendarDayType): void => {
     setSelectedDay(day);
   };
@@ -102,6 +108,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
         onPrevMonth={handlePrevMonth}
         onNextMonth={handleNextMonth}
         onToday={handleToday}
+        onYearMonthSelect={handleYearMonthSelect}
       />
 
       {/* 캘린더 그리드 - 터치 제스처 지원 */}
@@ -113,17 +120,18 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
       </div>
 
       {/* 캘린더 사용법 안내 */}
-      <div className="bg-blue-50 rounded-lg p-4">
+      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 transition-colors duration-300">
         <div className="flex items-start gap-3">
-          <div className="text-blue-500 mt-0.5">💡</div>
-          <div className="text-sm text-blue-800">
+          <div className="text-blue-500 dark:text-blue-400 mt-0.5">💡</div>
+          <div className="text-sm text-blue-800 dark:text-blue-200 transition-colors duration-300">
             <p className="font-medium mb-1">캘린더 사용법</p>
             <ul className="space-y-1 text-xs">
+              <li>• <span className="font-semibold">연도/월 빠른 이동:</span> 상단의 "예시: 2025년 11월"을 클릭하면 원하는 연도와 월로 바로 이동할 수 있습니다</li>
+              <li>• <span className="font-semibold">화살표 버튼:</span> 좌우 화살표로 이전/다음 달로 이동할 수 있습니다</li>
+              <li>• <span className="font-semibold">모바일:</span> 캘린더를 좌우로 스와이프하여 월을 변경할 수 있습니다</li>
               <li>• 각 날짜를 클릭하면 해당 날의 상세 거래 내역을 볼 수 있습니다</li>
               <li>• 녹색 숫자는 수입, 빨간색 숫자는 지출을 나타냅니다</li>
-              <li>• <span className="font-semibold">모바일:</span> 캘린더를 좌우로 스와이프하여 월을 변경할 수 있습니다</li>
               <li>• 상세 모달에서 "이 날짜에 내역 추가" 버튼으로 특정 날짜에 거래를 등록할 수 있습니다</li>
-              <li>• 내역 추가하기로 새 거래를 등록하면 자동으로 캘린더에 표시됩니다</li>
             </ul>
           </div>
         </div>
