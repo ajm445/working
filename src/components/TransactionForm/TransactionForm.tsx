@@ -174,6 +174,55 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     }));
   };
 
+  /**
+   * 금액 입력 핸들러 (쉼표 포맷팅)
+   *
+   * 입력된 숫자에 천 단위 쉼표를 자동으로 추가합니다.
+   *
+   * @param value - 입력된 금액 문자열
+   */
+  const handleAmountChange = (value: string): void => {
+    // 숫자와 소수점만 허용
+    const numericValue = value.replace(/[^\d.]/g, '');
+
+    // 소수점이 두 개 이상인 경우 방지
+    const parts = numericValue.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+
+    // 소수점 이하 자릿수 제한 (2자리)
+    if (parts[1] && parts[1].length > 2) {
+      return;
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      amount: numericValue,
+    }));
+  };
+
+  /**
+   * 금액을 쉼표가 포함된 형식으로 표시
+   *
+   * @param value - 원본 금액 문자열
+   * @returns 쉼표가 포함된 금액 문자열
+   */
+  const formatAmountDisplay = (value?: string): string => {
+    if (!value) return '';
+
+    const parts = value.split('.');
+    const integerPart = parts[0] ?? '';
+    const decimalPart = parts[1];
+
+    // 천 단위 쉼표 추가
+    const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    return decimalPart !== undefined && decimalPart !== ''
+      ? `${formattedInteger}.${decimalPart}`
+      : formattedInteger;
+  };
+
   const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const currencySymbol = getCurrencySymbol(formData.currency);
 
@@ -238,14 +287,12 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               금액 ({currencySymbol})
             </label>
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
-              value={formData.amount}
-              onChange={(e) => handleInputChange('amount', e.target.value)}
+              value={formatAmountDisplay(formData.amount)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
               placeholder="0.00"
-              step="0.01"
-              min="0"
             />
           </div>
 
