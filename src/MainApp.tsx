@@ -158,8 +158,7 @@ const ExpenseTracker: React.FC = () => {
         toast.success('거래 내역이 추가되었습니다.');
         // Google Analytics 이벤트 추적
         trackAddTransaction(data.type, data.currency, data.amountInKRW);
-        setShowAddForm(false);
-        setPreselectedDate(null);
+        // 폼 닫기는 TransactionForm 내부에서 사용자 확인 후 처리
       } else {
         console.warn('⚠️ No transaction returned from Supabase');
       }
@@ -173,8 +172,7 @@ const ExpenseTracker: React.FC = () => {
       setTransactions((prev) => [localTransaction, ...prev]);
       // Google Analytics 이벤트 추적
       trackAddTransaction(data.type, data.currency, data.amountInKRW);
-      setShowAddForm(false);
-      setPreselectedDate(null);
+      // 폼 닫기는 TransactionForm 내부에서 사용자 확인 후 처리
 
       // 알림: 로그인하지 않으면 데이터가 저장되지 않음
       toast('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\n새로고침 시 데이터가 사라집니다.', {

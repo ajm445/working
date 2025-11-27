@@ -12,13 +12,14 @@ import {
   formatInputDateToKorean,
   formatDateForInput
 } from '../../utils/dateUtils';
+import ConfirmDialog from '../ui/ConfirmDialog';
 
 /**
  * TransactionForm 컴포넌트의 Props 정의
  */
 interface TransactionFormProps {
   /** 폼 제출 시 호출되는 콜백 함수 */
-  onSubmit: (data: TransactionFormData & { amountInKRW: number }) => void;
+  onSubmit: (data: TransactionFormData & { amountInKRW: number }) => Promise<void>;
   /** 취소 버튼 클릭 시 호출되는 콜백 함수 */
   onCancel: () => void;
   /** 초기 날짜 설정 (YYYY-MM-DD 형식, 선택사항) */
@@ -54,6 +55,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
 }) => {
   const { currentCurrency } = useCurrency();
   const isEditMode = !!editingTransaction;
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const [formData, setFormData] = useState<TransactionFormData>({
     amount: '',
@@ -136,20 +138,13 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       } else {
         // 추가 모드
         console.log('🟡 Calling onSubmit with data:', { ...formData, amountInKRW });
-        onSubmit({
+        await onSubmit({
           ...formData,
           amountInKRW,
         });
 
-        // 폼 초기화 (날짜는 오늘로 리셋)
-        setFormData({
-          amount: '',
-          category: '',
-          description: '',
-          type: 'expense',
-          currency: currentCurrency,
-          date: getTodayDateString(),
-        });
+        // 사용자에게 계속 추가할지 묻기 (커스텀 모달)
+        setShowConfirmDialog(true);
       }
     } catch (error) {
       console.error('환율 변환 실패:', error);
@@ -226,7 +221,46 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
   const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const currencySymbol = getCurrencySymbol(formData.currency);
 
+  // 확인 모달 - 계속 추가할지 확인
+  const handleConfirmContinue = (): void => {
+    setShowConfirmDialog(false);
+    // 폼 초기화하되 날짜는 유지 (같은 날짜에 연속 입력 가능)
+    setFormData({
+      amount: '',
+      category: '',
+      description: '',
+      type: 'expense',
+      currency: currentCurrency,
+      date: formData.date, // 현재 날짜 유지
+    });
+  };
+
+  const handleConfirmClose = (): void => {
+    setShowConfirmDialog(false);
+    // 폼 초기화 (날짜는 오늘로 리셋) 및 폼 닫기
+    setFormData({
+      amount: '',
+      category: '',
+      description: '',
+      type: 'expense',
+      currency: currentCurrency,
+      date: getTodayDateString(),
+    });
+    onCancel(); // 폼 닫기
+  };
+
   return (
+    <>
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        title="내역이 추가되었습니다!"
+        message="계속해서 내역을 추가하시겠습니까?"
+        confirmText="네, 계속 추가"
+        cancelText="아니오, 닫기"
+        onConfirm={handleConfirmContinue}
+        onCancel={handleConfirmClose}
+        confirmButtonClass="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white dark:bg-green-500 dark:hover:bg-green-600"
+      />
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8 transition-colors duration-300">
       <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white transition-colors duration-300">
         {isEditMode ? '내역 수정' : '새 내역 추가'}
@@ -362,6 +396,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         </div>
       </form>
     </div>
+    </>
   );
 };
 

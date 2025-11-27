@@ -249,13 +249,6 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                 ➕ 이 날짜에 내역 추가
               </button>
             )}
-            <button
-              onClick={onClose}
-              className="w-full sm:flex-1 md:flex-none px-6 py-3 sm:py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 active:bg-gray-800 transition-colors touch-manipulation text-sm sm:text-base"
-              aria-label="모달 닫기"
-            >
-              닫기
-            </button>
           </div>
         </div>
       </div>
