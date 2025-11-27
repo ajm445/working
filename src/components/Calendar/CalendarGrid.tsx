@@ -12,15 +12,15 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, onDayClick })
   const dayNames = getKoreanDayNames();
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden transition-colors duration-300">
       {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 bg-gray-50 border-b">
+      <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600 transition-colors duration-300">
         {dayNames.map((dayName, index) => (
           <div
             key={dayName}
             className={`
-              py-3 text-center text-sm font-medium
-              ${index === 0 ? 'text-red-500' : index === 6 ? 'text-blue-500' : 'text-gray-700'}
+              py-3 text-center text-sm font-medium transition-colors duration-300
+              ${index === 0 ? 'text-red-500 dark:text-red-400' : index === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}
             `}
           >
             {dayName}
@@ -34,7 +34,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, onDayClick })
           week.days.map((day, dayIndex) => (
             <div
               key={`${weekIndex}-${dayIndex}`}
-              className="relative border-r border-b last:border-r-0 [&:nth-child(7n)]:border-r-0"
+              className="relative border-r border-b dark:border-gray-600 last:border-r-0 [&:nth-child(7n)]:border-r-0 transition-colors duration-300"
             >
               <CalendarDay
                 day={day}

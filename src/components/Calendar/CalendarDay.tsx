@@ -34,11 +34,11 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
         relative min-h-[100px] md:min-h-[120px] p-2 md:p-3 border cursor-pointer transition-all duration-200
         touch-manipulation active:scale-95
         ${day.isCurrentMonth
-          ? 'bg-white hover:bg-gray-50 active:bg-gray-100 border-gray-200'
-          : 'bg-gray-50 border-gray-100 text-gray-400'
+          ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 border-gray-200 dark:border-gray-600'
+          : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-600'
         }
         ${day.isToday
-          ? 'ring-2 ring-indigo-500 bg-indigo-50'
+          ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
           : ''
         }
         ${summary.hasTransactions
@@ -54,8 +54,8 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
     >
       {/* 날짜 */}
       <div className={`
-        text-sm font-medium mb-1
-        ${day.isToday ? 'text-indigo-700' : day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+        text-sm font-medium mb-1 transition-colors duration-200
+        ${day.isToday ? 'text-indigo-700 dark:text-indigo-300' : day.isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'}
       `}>
         {day.dayNumber}
       </div>
@@ -65,24 +65,24 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
         <div className="space-y-1">
           {/* 수입 */}
           {summary.totalIncome > 0 && (
-            <div className="text-xs text-green-600 font-medium">
+            <div className="text-xs text-green-600 dark:text-green-400 font-medium transition-colors duration-200">
               +{formatAmount(summary.totalIncome)}
             </div>
           )}
 
           {/* 지출 */}
           {summary.totalExpense > 0 && (
-            <div className="text-xs text-red-600 font-medium">
+            <div className="text-xs text-red-600 dark:text-red-400 font-medium transition-colors duration-200">
               -{formatAmount(summary.totalExpense)}
             </div>
           )}
 
           {/* 일일 순액 (수입 - 지출) */}
           {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
-            <div className={`text-xs font-medium ${
+            <div className={`text-xs font-medium transition-colors duration-200 ${
               summary.totalIncome - summary.totalExpense >= 0
-                ? 'text-blue-600'
-                : 'text-red-600'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-red-600 dark:text-red-400'
             }`}>
               순액: {formatAmount(summary.totalIncome - summary.totalExpense, true)}
             </div>
@@ -93,7 +93,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
       {/* 오늘 표시 */}
       {day.isToday && (
         <div className="absolute top-1 right-1">
-          <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full transition-colors duration-200"></div>
         </div>
       )}
     </div>

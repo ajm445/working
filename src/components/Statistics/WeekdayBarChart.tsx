@@ -55,15 +55,15 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
         if (!data) return null;
 
         return (
-          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-            <p className="font-semibold text-gray-900 mb-2">{label}요일</p>
-            <p className="text-sm text-gray-600">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300">
+            <p className="font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-300">{label}요일</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
               평균 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.averageExpense), currentCurrency)}</span>
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
               총 지출: <span className="font-semibold">{formatCurrencyForStats(convertAmount(data.totalExpense), currentCurrency)}</span>
             </p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
               거래 수: <span className="font-semibold">{data.transactionCount}건</span>
             </p>
           </div>
@@ -76,15 +76,15 @@ const WeekdayBarChart: React.FC<WeekdayBarChartProps> = ({ data }) => {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-80 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">표시할 데이터가 없습니다</p>
+      <div className="flex items-center justify-center h-80 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
+        <p className="text-gray-500 dark:text-gray-400 transition-colors duration-300">표시할 데이터가 없습니다</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors duration-300">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
         📅 요일별 평균 지출
       </h3>
       <ResponsiveContainer width="100%" height={300}>

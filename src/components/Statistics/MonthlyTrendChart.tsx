@@ -46,8 +46,8 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
     }> = ({ active, payload, label }) => {
       if (active && payload && payload.length) {
         return (
-          <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-            <p className="font-semibold text-gray-900 mb-2">{label}</p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300">
+            <p className="font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-300">{label}</p>
             {payload.map((entry, index) => (
               <p key={index} className="text-sm" style={{ color: entry.color }}>
                 {entry.dataKey === 'income' && '수입: '}
@@ -68,15 +68,15 @@ const MonthlyTrendChart: React.FC<MonthlyTrendChartProps> = ({ data }) => {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-80 bg-gray-50 rounded-lg">
-        <p className="text-gray-500">표시할 데이터가 없습니다</p>
+      <div className="flex items-center justify-center h-80 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
+        <p className="text-gray-500 dark:text-gray-400 transition-colors duration-300">표시할 데이터가 없습니다</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors duration-300">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
         📈 월별 수입/지출 트렌드
       </h3>
       <ResponsiveContainer width="100%" height={300}>
