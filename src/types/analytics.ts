@@ -27,6 +27,7 @@ export type GAEventAction =
   | 'view_summary'
   | 'view_calendar'
   | 'view_statistics'
+  | 'view_recurring_expenses'
   | 'switch_mode'
   // Currency 액션
   | 'change_currency'
@@ -59,7 +60,7 @@ export interface GAEventParams {
   transaction_type?: 'income' | 'expense';
   currency?: string;
   app_mode?: 'budget' | 'initial-cost' | 'recurring-expenses';
-  view_type?: 'summary' | 'calendar' | 'statistics';
+  view_type?: 'summary' | 'calendar' | 'statistics' | 'recurring-expenses';
   auth_method?: 'email' | 'google' | 'line';
   is_authenticated?: boolean;
   [key: string]: string | number | boolean | undefined;
