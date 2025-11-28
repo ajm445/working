@@ -20,6 +20,7 @@ const ExpenseTracker: React.FC = () => {
   const { user } = useAuth();
   const { trackAddTransaction, trackDeleteTransaction, trackViewChange } = useAnalyticsEvent();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [recurringExpenses, setRecurringExpenses] = useState<any[]>([]); // 고정지출 데이터
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
@@ -119,6 +120,15 @@ const ExpenseTracker: React.FC = () => {
       formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [showAddForm, preselectedDate, editingTransaction]);
+
+  // 뷰 모드가 변경되면 폼 닫기 (요약 보기가 아닌 경우)
+  useEffect((): void => {
+    if (viewMode !== 'summary') {
+      setShowAddForm(false);
+      setEditingTransaction(null);
+      setPreselectedDate(null);
+    }
+  }, [viewMode]);
 
   const addTransaction = async (
     data: TransactionFormData & { amountInKRW: number }
@@ -312,6 +322,8 @@ const ExpenseTracker: React.FC = () => {
       {/* Dashboard - 뷰 모드 상태를 내부에서 관리 */}
       <Dashboard
         transactions={transactions}
+        recurringExpenses={recurringExpenses}
+        onRecurringExpensesChange={setRecurringExpenses}
         onViewModeChange={(newMode) => {
           setViewMode(newMode);
           trackViewChange(newMode);

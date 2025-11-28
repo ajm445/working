@@ -5,10 +5,11 @@ import CalendarDay from './CalendarDay';
 
 interface CalendarGridProps {
   calendarData: CalendarMonth;
+  recurringExpenses?: any[];
   onDayClick?: (day: CalendarDayType) => void;
 }
 
-const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, onDayClick }) => {
+const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, recurringExpenses = [], onDayClick }) => {
   const dayNames = getKoreanDayNames();
 
   return (
@@ -38,6 +39,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, onDayClick })
             >
               <CalendarDay
                 day={day}
+                recurringExpenses={recurringExpenses}
                 onDayClick={onDayClick}
               />
             </div>

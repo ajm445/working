@@ -7,7 +7,15 @@ import type { RecurringExpense } from '../../types/database';
 import * as recurringExpenseService from '../../services/recurringExpenseService';
 import RecurringExpenseForm from './RecurringExpenseForm';
 
-const RecurringExpenseManager: React.FC = () => {
+interface RecurringExpenseManagerProps {
+  expenses?: RecurringExpense[];
+  onExpensesChange?: (expenses: RecurringExpense[]) => void;
+}
+
+const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
+  expenses: externalExpenses,
+  onExpensesChange
+}) => {
   const { user } = useAuth();
   const currencyContext = useContext(CurrencyContext);
 
@@ -28,10 +36,21 @@ const RecurringExpenseManager: React.FC = () => {
       currency: curr,
     }).format(amount);
   };
-  const [expenses, setExpenses] = useState<RecurringExpense[]>([]);
+  const [internalExpenses, setInternalExpenses] = useState<RecurringExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<RecurringExpense | null>(null);
+
+  // 내부 상태와 외부 props 동기화
+  const expenses = externalExpenses !== undefined ? externalExpenses : internalExpenses;
+  const setExpenses = (newExpenses: RecurringExpense[] | ((prev: RecurringExpense[]) => RecurringExpense[])) => {
+    const updatedExpenses = typeof newExpenses === 'function' ? newExpenses(expenses) : newExpenses;
+    if (onExpensesChange) {
+      onExpensesChange(updatedExpenses);
+    } else {
+      setInternalExpenses(updatedExpenses);
+    }
+  };
 
   // 고정지출 로드
   useEffect(() => {

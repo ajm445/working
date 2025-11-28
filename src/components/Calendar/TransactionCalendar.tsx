@@ -10,6 +10,7 @@ import DayDetailModal from './DayDetailModal';
 
 interface TransactionCalendarProps {
   transactions: Transaction[];
+  recurringExpenses?: any[];
   onDateClick?: ((date?: Date) => void) | undefined;
   onMonthChange?: ((year: number, month: number) => void) | undefined;
   onDeleteTransaction?: ((id: string) => void) | undefined;
@@ -18,6 +19,7 @@ interface TransactionCalendarProps {
 
 const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
   transactions,
+  recurringExpenses = [],
   onDateClick,
   onMonthChange,
   onDeleteTransaction,
@@ -115,6 +117,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
       <div ref={swipeHandlers}>
         <CalendarGrid
           calendarData={calendarData}
+          recurringExpenses={recurringExpenses}
           onDayClick={handleDayClick}
         />
       </div>
@@ -141,6 +144,7 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
       {selectedDay && (
         <DayDetailModal
           day={selectedDay}
+          recurringExpenses={recurringExpenses}
           onClose={handleCloseModal}
           onAddTransaction={onDateClick}
           onDeleteTransaction={onDeleteTransaction}

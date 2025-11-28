@@ -6,14 +6,21 @@ import { useCurrencyConverter } from '../../hooks/useCurrencyConversion';
 
 interface CalendarDayProps {
   day: CalendarDayType;
+  recurringExpenses?: any[];
   onDayClick?: ((day: CalendarDayType) => void) | undefined;
 }
 
-const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
+const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], onDayClick }) => {
   const { currentCurrency } = useCurrency();
   const { convertAmount } = useCurrencyConverter();
 
   const summary = getDayTransactionSummary(day.transactions, day.date);
+
+  // 해당 날짜의 고정지출이 있는지 확인
+  const dayOfMonth = day.date.getDate();
+  const hasRecurringExpense = recurringExpenses.some(
+    expense => expense.is_active && expense.day_of_month === dayOfMonth
+  );
 
   const formatAmount = (amount: number, showZero: boolean = false): string => {
     if (amount === 0 && !showZero) return '';
@@ -53,11 +60,19 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, onDayClick }) => {
       aria-label={`${day.dayNumber}일 ${summary.hasTransactions ? `거래 ${summary.transactionCount}건` : ''}`}
     >
       {/* 날짜 */}
-      <div className={`
-        text-sm font-medium mb-1 transition-colors duration-200
-        ${day.isToday ? 'text-indigo-700 dark:text-indigo-300' : day.isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'}
-      `}>
-        {day.dayNumber}
+      <div className="flex items-center justify-between mb-1">
+        <div className={`
+          text-sm font-medium transition-colors duration-200
+          ${day.isToday ? 'text-indigo-700 dark:text-indigo-300' : day.isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'}
+        `}>
+          {day.dayNumber}
+        </div>
+        {/* 고정지출 표시 */}
+        {hasRecurringExpense && day.isCurrentMonth && (
+          <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded font-medium transition-colors duration-200">
+            고정
+          </span>
+        )}
       </div>
 
       {/* 거래 내역이 있는 경우 */}

@@ -28,6 +28,10 @@ export type ViewMode = 'summary' | 'calendar' | 'statistics' | 'recurring-expens
 interface DashboardProps {
   /** 전체 거래 내역 배열 */
   transactions: Transaction[];
+  /** 고정지출 내역 배열 */
+  recurringExpenses?: any[];
+  /** 고정지출 변경 시 호출되는 콜백 함수 */
+  onRecurringExpensesChange?: (expenses: any[]) => void;
   /** 뷰 모드 변경 시 호출되는 콜백 함수 */
   onViewModeChange?: (mode: ViewMode) => void;
   /** 현재 선택된 뷰 모드 (기본값: 'summary') */
@@ -59,6 +63,8 @@ interface DashboardProps {
  */
 const Dashboard: React.FC<DashboardProps> = ({
   transactions,
+  recurringExpenses = [],
+  onRecurringExpensesChange,
   onViewModeChange,
   currentViewMode = 'summary',
   onCalendarDateClick,
@@ -105,6 +111,16 @@ const Dashboard: React.FC<DashboardProps> = ({
       <CurrentTimeDisplay updateInterval={60000} />
 
       <CurrencySelector />
+
+      {/* 이번달 표시 */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
+          {currentViewMode === 'calendar'
+            ? `${displayYear}년 ${displayMonth + 1}월`
+            : '이번달'
+          }
+        </h2>
+      </div>
 
       {/* 잔액 카드들 - 항상 표시 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
@@ -204,6 +220,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       {currentViewMode === 'calendar' && (
         <TransactionCalendar
           transactions={transactions}
+          recurringExpenses={recurringExpenses}
           onDateClick={onCalendarDateClick}
           onMonthChange={handleCalendarMonthChange}
           onDeleteTransaction={onDeleteTransaction}
@@ -216,7 +233,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {currentViewMode === 'recurring-expenses' && (
-        <RecurringExpenseManager />
+        <RecurringExpenseManager
+          expenses={recurringExpenses}
+          onExpensesChange={onRecurringExpensesChange}
+        />
       )}
     </div>
   );
