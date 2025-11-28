@@ -66,7 +66,7 @@ export const calculateMonthlyExpense = (transactions: Transaction[], year: numbe
 };
 
 // 특정 월의 고정지출 합계 계산
-export const calculateMonthlyRecurringExpense = (recurringExpenses: RecurringExpense[], year: number, month: number): number => {
+export const calculateMonthlyRecurringExpense = (recurringExpenses: RecurringExpense[]): number => {
   // 활성화된 고정지출만 포함
   return recurringExpenses
     .filter(expense => expense.is_active)
@@ -81,7 +81,7 @@ export const calculateMonthlyExpenseWithRecurring = (
   month: number
 ): number => {
   const regularExpense = calculateMonthlyExpense(transactions, year, month);
-  const recurringExpense = calculateMonthlyRecurringExpense(recurringExpenses, year, month);
+  const recurringExpense = calculateMonthlyRecurringExpense(recurringExpenses);
   return regularExpense + recurringExpense;
 };
 

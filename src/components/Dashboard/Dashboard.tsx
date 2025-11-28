@@ -235,8 +235,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {currentViewMode === 'recurring-expenses' && (
         <RecurringExpenseManager
-          expenses={recurringExpenses}
-          onExpensesChange={onRecurringExpensesChange}
+          {...(recurringExpenses !== undefined && { expenses: recurringExpenses })}
+          {...(onRecurringExpensesChange !== undefined && { onExpensesChange: onRecurringExpensesChange })}
         />
       )}
     </div>
