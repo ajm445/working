@@ -102,9 +102,9 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
     e.preventDefault();
     console.log('🟡 TransactionForm handleSubmit called');
 
-    // 필수 필드 검증
-    if (!formData.amount || !formData.category || !formData.description || !formData.date) {
-      toast.error('모든 필드를 입력해 주세요.');
+    // 필수 필드 검증 (설명은 선택사항)
+    if (!formData.amount || !formData.category || !formData.date) {
+      toast.error('금액, 카테고리, 날짜는 필수 입력 항목입니다.');
       return;
     }
 
@@ -368,13 +368,15 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
         <div className="mb-4">
           {/* 설명 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">설명</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
+              설명 <span className="text-gray-400 dark:text-gray-500 font-normal">(선택사항)</span>
+            </label>
             <input
               type="text"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-              placeholder="간단한 설명"
+              placeholder="간단한 설명 (선택사항)"
             />
           </div>
         </div>
