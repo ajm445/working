@@ -11,6 +11,7 @@ import TransactionList from './components/TransactionList';
 import { InitialCostCalculator } from './components/InitialCostCalculator';
 import { ModeNavigation } from './components/Navigation';
 import ThemeToggle from './components/ui/ThemeToggle';
+import AccountManagementModal from './components/Auth/AccountManagementModal';
 import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
 
@@ -369,6 +370,7 @@ const MainApp: React.FC = () => {
   const { currentMode, isTransitioning } = useAppMode();
   const { user, profile, signOut } = useAuth();
   const { trackLogout } = useAnalyticsEvent();
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
 
   const getPageTitle = (): { title: string; subtitle: string } => {
     switch (currentMode) {
@@ -394,6 +396,14 @@ const MainApp: React.FC = () => {
 
   const handleGoToLogin = (): void => {
     navigate('/login');
+  };
+
+  const handleOpenAccountModal = (): void => {
+    setIsAccountModalOpen(true);
+  };
+
+  const handleCloseAccountModal = (): void => {
+    setIsAccountModalOpen(false);
   };
 
   return (
@@ -425,20 +435,29 @@ const MainApp: React.FC = () => {
                   {profile?.avatar_url && (
                     <img
                       src={profile.avatar_url}
-                      alt={profile.display_name || 'User'}
+                      alt={profile.username || profile.display_name || 'User'}
                       className="w-8 h-8 rounded-full"
                     />
                   )}
                   <div className="hidden sm:block text-right">
                     <p className="text-sm font-medium text-gray-900 dark:text-white transition-colors duration-300">
-                      {profile?.display_name || profile?.email}
+                      {profile?.username || profile?.display_name || profile?.email}
                     </p>
-                    <button
-                      onClick={() => void handleSignOut()}
-                      className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                    >
-                      로그아웃
-                    </button>
+                    <div className="flex items-center gap-2 justify-end">
+                      <button
+                        onClick={handleOpenAccountModal}
+                        className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                      >
+                        계정 관리
+                      </button>
+                      <span className="text-xs text-gray-300 dark:text-gray-600">|</span>
+                      <button
+                        onClick={() => void handleSignOut()}
+                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                      >
+                        로그아웃
+                      </button>
+                    </div>
                   </div>
                 </>
               ) : (
@@ -470,6 +489,12 @@ const MainApp: React.FC = () => {
           {currentMode === 'initial-cost-calculator' && <InitialCostCalculator />}
         </div>
       </main>
+
+      {/* Account Management Modal */}
+      <AccountManagementModal
+        isOpen={isAccountModalOpen}
+        onClose={handleCloseAccountModal}
+      />
     </div>
   );
 };

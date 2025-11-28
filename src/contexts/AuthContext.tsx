@@ -20,6 +20,10 @@ interface AuthContextType {
   // 프로필 메서드
   updateProfile: (updates: Partial<Profile>) => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
+
+  // 계정 관리 메서드
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -273,8 +277,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (error) throw error;
 
-      // 로컬 상태 업데이트
-      await fetchProfile(user.id);
+      // 로컬 상태 업데이트 (강제 새로고침)
+      await fetchProfile(user.id, true);
       return { error: null };
     } catch (error) {
       return { error: error as Error };
@@ -285,6 +289,72 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const refreshProfile = async (): Promise<void> => {
     if (user) {
       await fetchProfile(user.id);
+    }
+  };
+
+  // 비밀번호 변경
+  const updatePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+    if (!user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    // 현재 비밀번호로 재인증
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email || '',
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      throw new Error('현재 비밀번호가 올바르지 않습니다.');
+    }
+
+    // 비밀번호 업데이트
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      throw new Error('비밀번호 변경에 실패했습니다.');
+    }
+  };
+
+  // 계정 삭제
+  const deleteAccount = async (): Promise<void> => {
+    if (!user) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    try {
+      // 1. 사용자의 모든 거래 내역 삭제
+      const { error: transactionsError } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (transactionsError) {
+        console.error('Failed to delete transactions:', transactionsError);
+        throw new Error('거래 내역 삭제에 실패했습니다.');
+      }
+
+      // 2. 프로필 비활성화 (실제 삭제 대신 is_active를 false로 설정)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        // @ts-expect-error - Supabase type inference issue, will be fixed with CLI generated types
+        .update({ is_active: false })
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Failed to deactivate profile:', profileError);
+        throw new Error('프로필 비활성화에 실패했습니다.');
+      }
+
+      // 3. Supabase Auth에서 사용자 삭제
+      // 참고: Supabase의 auth.admin.deleteUser()는 서버 측에서만 가능
+      // 클라이언트에서는 계정 비활성화 후 로그아웃 처리
+      await signOut();
+    } catch (error) {
+      console.error('Failed to delete account:', error);
+      throw error;
     }
   };
 
@@ -300,6 +370,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signOut,
     updateProfile,
     refreshProfile,
+    updatePassword,
+    deleteAccount,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
