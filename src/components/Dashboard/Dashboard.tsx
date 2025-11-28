@@ -11,14 +11,16 @@ import CurrencySelector from './CurrencySelector';
 import CurrentTimeDisplay from './CurrentTimeDisplay';
 import { TransactionCalendar } from '../Calendar';
 import { StatisticsDashboard } from '../Statistics';
+import RecurringExpenseManager from '../RecurringExpenses/RecurringExpenseManager';
 
 /**
  * 대시보드 뷰 모드 타입
  * - summary: 요약 보기 (현재 달 기준 수입/지출/잔액)
  * - calendar: 캘린더 보기 (월별 거래 내역 캘린더 형식)
  * - statistics: 통계 분석 (차트 및 분석 데이터)
+ * - recurring-expenses: 고정지출 (매월 반복되는 지출 관리)
  */
-type ViewMode = 'summary' | 'calendar' | 'statistics';
+export type ViewMode = 'summary' | 'calendar' | 'statistics' | 'recurring-expenses';
 
 /**
  * Dashboard 컴포넌트의 Props 정의
@@ -130,7 +132,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 뷰 모드 선택 탭 - 모바일 개선 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 mb-4 md:mb-6 overflow-hidden transition-colors duration-300">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-4">
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
@@ -161,6 +163,22 @@ const Dashboard: React.FC<DashboardProps> = ({
               <span className="text-base sm:text-lg">📅</span>
               <span className="hidden sm:inline">캘린더 보기</span>
               <span className="sm:hidden">캘린더</span>
+            </div>
+          </button>
+          <button
+            onClick={() => handleViewModeChange('recurring-expenses')}
+            className={`
+              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
+              ${currentViewMode === 'recurring-expenses'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
+              }
+            `}
+          >
+            <div className="flex items-center justify-center gap-1 sm:gap-2">
+              <span className="text-base sm:text-lg">💳</span>
+              <span className="hidden sm:inline">고정지출</span>
+              <span className="sm:hidden">고정</span>
             </div>
           </button>
           <button
@@ -195,6 +213,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {currentViewMode === 'statistics' && (
         <StatisticsDashboard transactions={transactions} />
+      )}
+
+      {currentViewMode === 'recurring-expenses' && (
+        <RecurringExpenseManager />
       )}
     </div>
   );

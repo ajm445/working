@@ -15,12 +15,6 @@ const ModeNavigation: React.FC = () => {
       description: '일상 수입/지출 관리'
     },
     {
-      key: 'recurring-expenses',
-      label: '고정지출',
-      icon: '📅',
-      description: '월세, 공과금 등 관리'
-    },
-    {
       key: 'initial-cost-calculator',
       label: '초기비용 계산',
       icon: '✈️',
@@ -38,9 +32,7 @@ const ModeNavigation: React.FC = () => {
               onClick={() => {
                 setCurrentMode(mode.key);
                 const eventName =
-                  mode.key === 'expense-tracker' ? 'budget' :
-                  mode.key === 'recurring-expenses' ? 'recurring-expenses' :
-                  'initial-cost';
+                  mode.key === 'expense-tracker' ? 'budget' : 'initial-cost';
                 trackModeSwitch(eventName);
               }}
               disabled={isTransitioning}

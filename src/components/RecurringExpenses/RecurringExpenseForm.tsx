@@ -10,6 +10,8 @@ interface RecurringExpenseFormProps {
   expense: RecurringExpense | null;
   onClose: () => void;
   onSuccess: () => void;
+  onAdd?: (expense: RecurringExpense) => void;
+  onUpdate?: (expense: RecurringExpense) => void;
 }
 
 const EXPENSE_CATEGORIES = [
@@ -27,6 +29,8 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
   expense,
   onClose,
   onSuccess,
+  onAdd,
+  onUpdate,
 }) => {
   const { user } = useAuth();
   const currencyContext = useContext(CurrencyContext);
@@ -74,11 +78,6 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
 
-    if (!user) {
-      toast.error('로그인이 필요합니다.');
-      return;
-    }
-
     if (!name.trim()) {
       toast.error('고정지출 이름을 입력해주세요.');
       return;
@@ -101,50 +100,81 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
     try {
       const amountInKRW = calculateAmountInKRW(amountNum, currency);
 
+      const expenseData = {
+        name: name.trim(),
+        amount: amountNum,
+        currency,
+        amount_in_krw: amountInKRW,
+        category,
+        day_of_month: dayOfMonth,
+        description: description.trim() || null,
+        is_active: isActive,
+      };
+
       if (expense) {
         // 수정
-        const { error } = await recurringExpenseService.updateRecurringExpense(
-          expense.id,
-          {
-            name: name.trim(),
-            amount: amountNum,
-            currency,
-            amount_in_krw: amountInKRW,
-            category,
-            day_of_month: dayOfMonth,
-            description: description.trim() || null,
-            is_active: isActive,
-          }
-        );
+        if (user && !expense.id.startsWith('local-')) {
+          // 로그인 상태이고 Supabase 데이터면 서버에 저장
+          const { error } = await recurringExpenseService.updateRecurringExpense(
+            expense.id,
+            expenseData
+          );
 
-        if (error) {
-          toast.error('수정에 실패했습니다.');
-        } else {
-          toast.success('고정지출이 수정되었습니다.');
-          onSuccess();
+          if (error) {
+            toast.error('수정에 실패했습니다.');
+            setLoading(false);
+            return;
+          }
         }
+
+        // 로컬 상태 업데이트 (비로그인 또는 로컬 데이터)
+        const updatedExpense: RecurringExpense = {
+          ...expense,
+          ...expenseData,
+          updated_at: new Date().toISOString(),
+        };
+
+        onUpdate?.(updatedExpense);
+        toast.success('고정지출이 수정되었습니다.');
+        onSuccess();
       } else {
         // 추가
-        const { error } = await recurringExpenseService.addRecurringExpense(
-          {
-            name: name.trim(),
-            amount: amountNum,
-            currency,
-            amount_in_krw: amountInKRW,
-            category,
-            day_of_month: dayOfMonth,
-            description: description.trim() || null,
-            is_active: isActive,
-          },
-          user.id
-        );
+        if (user) {
+          // 로그인 상태면 Supabase에 저장
+          const { data, error } = await recurringExpenseService.addRecurringExpense(
+            expenseData,
+            user.id
+          );
 
-        if (error) {
-          toast.error('추가에 실패했습니다.');
+          if (error) {
+            toast.error('추가에 실패했습니다.');
+            setLoading(false);
+            return;
+          }
+
+          if (data) {
+            onAdd?.(data);
+          }
         } else {
-          toast.success('고정지출이 추가되었습니다.');
-          onSuccess();
+          // 비로그인 상태면 로컬에만 저장
+          const localExpense: RecurringExpense = {
+            id: `local-${Date.now()}-${Math.random()}`,
+            user_id: 'local',
+            ...expenseData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
+          onAdd?.(localExpense);
+
+          toast('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\n새로고침 시 데이터가 사라집니다.', {
+            icon: '⚠️',
+            duration: 4000,
+          });
         }
+
+        toast.success('고정지출이 추가되었습니다.');
+        onSuccess();
       }
     } catch (error) {
       console.error('Error saving recurring expense:', error);

@@ -35,12 +35,16 @@ const RecurringExpenseManager: React.FC = () => {
   // 고정지출 로드
   useEffect(() => {
     const loadExpenses = async (): Promise<void> => {
+      // 로그아웃 시 로컬 데이터 초기화
       if (!user) {
+        console.log('🔄 User logged out, clearing recurring expenses');
         setExpenses([]);
         setLoading(false);
         return;
       }
 
+      // 로그인 상태면 Supabase에서 로드
+      console.log('📥 User logged in, loading recurring expenses');
       setLoading(true);
       const { data, error } = await recurringExpenseService.fetchAllRecurringExpenses();
 
@@ -86,35 +90,45 @@ const RecurringExpenseManager: React.FC = () => {
   const handleDelete = async (id: string): Promise<void> => {
     if (!confirm('이 고정지출을 삭제하시겠습니까?')) return;
 
-    const { error } = await recurringExpenseService.deleteRecurringExpense(id);
+    // 로그인 상태면 Supabase에서도 삭제
+    if (user && !id.startsWith('local-')) {
+      const { error } = await recurringExpenseService.deleteRecurringExpense(id);
 
-    if (error) {
-      toast.error('삭제에 실패했습니다.');
-    } else {
-      toast.success('고정지출이 삭제되었습니다.');
-      setExpenses(expenses.filter(e => e.id !== id));
+      if (error) {
+        toast.error('삭제에 실패했습니다.');
+        return;
+      }
     }
+
+    // UI 업데이트
+    setExpenses(expenses.filter(e => e.id !== id));
+    toast.success('고정지출이 삭제되었습니다.');
   };
 
   // 활성화/비활성화 토글
   const handleToggleActive = async (expense: RecurringExpense): Promise<void> => {
     const newStatus = !expense.is_active;
 
-    const { error } = await recurringExpenseService.toggleRecurringExpenseActive(
-      expense.id,
-      newStatus
-    );
-
-    if (error) {
-      toast.error('상태 변경에 실패했습니다.');
-    } else {
-      toast.success(newStatus ? '활성화되었습니다.' : '비활성화되었습니다.');
-      setExpenses(
-        expenses.map(e =>
-          e.id === expense.id ? { ...e, is_active: newStatus } : e
-        )
+    // 로그인 상태면 Supabase에도 업데이트
+    if (user && !expense.id.startsWith('local-')) {
+      const { error } = await recurringExpenseService.toggleRecurringExpenseActive(
+        expense.id,
+        newStatus
       );
+
+      if (error) {
+        toast.error('상태 변경에 실패했습니다.');
+        return;
+      }
     }
+
+    // UI 업데이트
+    setExpenses(
+      expenses.map(e =>
+        e.id === expense.id ? { ...e, is_active: newStatus } : e
+      )
+    );
+    toast.success(newStatus ? '활성화되었습니다.' : '비활성화되었습니다.');
   };
 
   // 수정 시작
@@ -132,7 +146,21 @@ const RecurringExpenseManager: React.FC = () => {
   // 폼 제출 성공
   const handleFormSuccess = (): void => {
     handleCloseForm();
-    void loadExpensesQuietly();
+    if (user) {
+      void loadExpensesQuietly();
+    }
+  };
+
+  // 고정지출 추가 (로컬)
+  const handleAddExpense = (expense: RecurringExpense): void => {
+    setExpenses([expense, ...expenses]);
+  };
+
+  // 고정지출 수정 (로컬)
+  const handleUpdateExpense = (updatedExpense: RecurringExpense): void => {
+    setExpenses(
+      expenses.map(e => e.id === updatedExpense.id ? updatedExpense : e)
+    );
   };
 
   // 월별 총액 계산 (현재 선택된 통화 기준)
@@ -155,20 +183,11 @@ const RecurringExpenseManager: React.FC = () => {
 
   const monthlyTotal = calculateMonthlyTotalInCurrentCurrency();
 
-  if (!user) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-600 dark:text-gray-400">
-          고정지출을 관리하려면 로그인이 필요합니다.
-        </p>
-      </div>
-    );
-  }
-
+  // 로딩 상태 표시
   if (loading) {
     return (
       <div className="text-center py-12">
-        <div className="inline-block w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+        <div className="inline-block w-8 h-8 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 dark:border-t-indigo-400 rounded-full animate-spin"></div>
         <p className="mt-4 text-gray-600 dark:text-gray-400">로딩 중...</p>
       </div>
     );
@@ -303,6 +322,8 @@ const RecurringExpenseManager: React.FC = () => {
           expense={editingExpense}
           onClose={handleCloseForm}
           onSuccess={handleFormSuccess}
+          onAdd={handleAddExpense}
+          onUpdate={handleUpdateExpense}
         />
       )}
     </div>

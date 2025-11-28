@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
-export type AppMode = 'expense-tracker' | 'initial-cost-calculator' | 'recurring-expenses';
+export type AppMode = 'expense-tracker' | 'initial-cost-calculator';
 
 interface AppModeContextType {
   currentMode: AppMode;

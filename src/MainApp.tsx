@@ -5,11 +5,10 @@ import { useAuth } from './contexts/AuthContext';
 import { useAppMode } from './contexts/AppModeContext';
 import { useAnalyticsEvent } from './hooks/useAnalyticsEvent';
 import type { Transaction, TransactionFormData } from './types';
-import Dashboard from './components/Dashboard';
+import Dashboard, { type ViewMode } from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { InitialCostCalculator } from './components/InitialCostCalculator';
-import RecurringExpenseManager from './components/RecurringExpenses/RecurringExpenseManager';
 import { ModeNavigation } from './components/Navigation';
 import ThemeToggle from './components/ui/ThemeToggle';
 import AccountManagementModal from './components/Auth/AccountManagementModal';
@@ -23,7 +22,7 @@ const ExpenseTracker: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [viewMode, setViewMode] = useState<'summary' | 'calendar' | 'statistics'>('summary');
+  const [viewMode, setViewMode] = useState<ViewMode>('summary');
   const [preselectedDate, setPreselectedDate] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
@@ -323,7 +322,7 @@ const ExpenseTracker: React.FC = () => {
         onEditTransaction={handleEditTransaction}
       />
 
-      {/* Add Transaction Button - 캘린더 및 통계 분석 탭에서는 숨김 */}
+      {/* Add Transaction Button - 요약 보기에서만 표시 */}
       {viewMode === 'summary' && (
         <div>
           <button
@@ -375,11 +374,6 @@ const MainApp: React.FC = () => {
 
   const getPageTitle = (): { title: string; subtitle: string } => {
     switch (currentMode) {
-      case 'recurring-expenses':
-        return {
-          title: '고정지출 관리',
-          subtitle: '매월 반복되는 지출을 관리해보세요'
-        };
       case 'initial-cost-calculator':
         return {
           title: '워킹홀리데이 초기비용 계산기',
@@ -421,8 +415,7 @@ const MainApp: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors duration-300">
                 <span className="text-white font-bold">
-                  {currentMode === 'initial-cost-calculator' ? '✈️' :
-                   currentMode === 'recurring-expenses' ? '📅' : '💰'}
+                  {currentMode === 'initial-cost-calculator' ? '✈️' : '💰'}
                 </span>
               </div>
               <div>
@@ -493,7 +486,6 @@ const MainApp: React.FC = () => {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className={`transition-opacity duration-150 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`}>
           {currentMode === 'expense-tracker' && <ExpenseTracker />}
-          {currentMode === 'recurring-expenses' && <RecurringExpenseManager />}
           {currentMode === 'initial-cost-calculator' && <InitialCostCalculator />}
         </div>
       </main>
