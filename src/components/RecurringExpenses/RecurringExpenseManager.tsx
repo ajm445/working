@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Plus, Edit2, Trash2, Power, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import { CurrencyContext } from '../../contexts/CurrencyContext';
 import type { RecurringExpense } from '../../types/database';
 import * as recurringExpenseService from '../../services/recurringExpenseService';
 import RecurringExpenseForm from './RecurringExpenseForm';
 
 const RecurringExpenseManager: React.FC = () => {
   const { user } = useAuth();
+  const currencyContext = useContext(CurrencyContext);
+
+  const currentCurrency = (currencyContext?.currentCurrency || 'KRW') as 'KRW' | 'USD' | 'JPY';
+  const exchangeRates = currencyContext?.exchangeRates || { KRW: 1, USD: 1300, JPY: 900 };
 
   const formatCurrency = (amount: number, currency: 'KRW' | 'USD' | 'JPY'): string => {
     const currencyMap = {
@@ -130,8 +135,25 @@ const RecurringExpenseManager: React.FC = () => {
     void loadExpensesQuietly();
   };
 
-  // 월별 총액 계산
-  const monthlyTotal = recurringExpenseService.calculateMonthlyTotal(expenses);
+  // 월별 총액 계산 (현재 선택된 통화 기준)
+  const calculateMonthlyTotalInCurrentCurrency = (): number => {
+    return expenses
+      .filter(expense => expense.is_active)
+      .reduce((total, expense) => {
+        // 각 expense의 원화 금액을 현재 통화로 변환
+        const amountInKRW = expense.amount_in_krw;
+
+        if (currentCurrency === 'KRW') {
+          return total + amountInKRW;
+        }
+
+        // KRW를 현재 통화로 변환
+        const rate = exchangeRates[currentCurrency] || 1;
+        return total + (amountInKRW / rate);
+      }, 0);
+  };
+
+  const monthlyTotal = calculateMonthlyTotalInCurrentCurrency();
 
   if (!user) {
     return (
@@ -175,8 +197,8 @@ const RecurringExpenseManager: React.FC = () => {
 
       {/* 월별 총액 */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-lg p-6 text-white">
-        <p className="text-sm opacity-90">월별 총 고정지출 (원화 환산)</p>
-        <p className="text-3xl font-bold mt-2">{formatCurrency(monthlyTotal, 'KRW')}</p>
+        <p className="text-sm opacity-90">월별 총 고정지출</p>
+        <p className="text-3xl font-bold mt-2">{formatCurrency(monthlyTotal, currentCurrency)}</p>
       </div>
 
       {/* 고정지출 목록 */}
