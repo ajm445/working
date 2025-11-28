@@ -104,6 +104,51 @@ export interface Database {
         Insert: Record<string, never>;
         Update: Record<string, never>;
       };
+      // 고정지출 테이블
+      recurring_expenses: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          amount: number;
+          currency: 'KRW' | 'USD' | 'JPY';
+          amount_in_krw: number;
+          category: string;
+          is_active: boolean;
+          day_of_month: number; // 1-31, 매월 지출 날짜
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          amount: number;
+          currency?: 'KRW' | 'USD' | 'JPY';
+          amount_in_krw: number;
+          category?: string;
+          is_active?: boolean;
+          day_of_month?: number;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          amount?: number;
+          currency?: 'KRW' | 'USD' | 'JPY';
+          amount_in_krw?: number;
+          category?: string;
+          is_active?: boolean;
+          day_of_month?: number;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -125,6 +170,10 @@ export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 export type Transaction = Database['public']['Tables']['transactions']['Row'];
 export type TransactionInsert = Database['public']['Tables']['transactions']['Insert'];
 export type TransactionUpdate = Database['public']['Tables']['transactions']['Update'];
+
+export type RecurringExpense = Database['public']['Tables']['recurring_expenses']['Row'];
+export type RecurringExpenseInsert = Database['public']['Tables']['recurring_expenses']['Insert'];
+export type RecurringExpenseUpdate = Database['public']['Tables']['recurring_expenses']['Update'];
 
 // 사용자 설정 타입
 export interface UserSettings {

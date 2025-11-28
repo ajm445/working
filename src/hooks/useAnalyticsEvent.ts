@@ -95,7 +95,7 @@ export const useAnalyticsEvent = () => {
    * 앱 모드 전환 이벤트
    */
   const trackModeSwitch = useCallback(
-    (mode: 'budget' | 'initial-cost') => {
+    (mode: 'budget' | 'initial-cost' | 'recurring-expenses') => {
       trackEvent({
         category: 'Mode',
         action: 'switch_mode',

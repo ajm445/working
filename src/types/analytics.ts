@@ -58,7 +58,7 @@ export interface GAEventParams {
   // 커스텀 디멘션
   transaction_type?: 'income' | 'expense';
   currency?: string;
-  app_mode?: 'budget' | 'initial-cost';
+  app_mode?: 'budget' | 'initial-cost' | 'recurring-expenses';
   view_type?: 'summary' | 'calendar' | 'statistics';
   auth_method?: 'email' | 'google' | 'line';
   is_authenticated?: boolean;
