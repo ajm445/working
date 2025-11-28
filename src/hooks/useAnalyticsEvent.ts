@@ -76,7 +76,7 @@ export const useAnalyticsEvent = () => {
    * 뷰 전환 이벤트
    */
   const trackViewChange = useCallback(
-    (viewType: 'summary' | 'calendar' | 'statistics') => {
+    (viewType: 'summary' | 'calendar' | 'statistics' | 'recurring-expenses') => {
       trackEvent({
         category: 'Navigation',
         action:
@@ -84,7 +84,9 @@ export const useAnalyticsEvent = () => {
             ? 'view_summary'
             : viewType === 'calendar'
               ? 'view_calendar'
-              : 'view_statistics',
+              : viewType === 'statistics'
+                ? 'view_statistics'
+                : 'view_recurring_expenses',
         view_type: viewType,
       });
     },
