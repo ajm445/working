@@ -2,13 +2,14 @@
 import React from 'react';
 import type { CalendarDay } from '../../types/calendar';
 import type { Transaction } from '../../types/transaction';
+import type { RecurringExpense } from '../../types/database';
 import { getDayTransactionSummary } from '../../utils/calendar';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useCurrencyConverter } from '../../hooks/useCurrencyConversion';
 
 interface DayDetailModalProps {
   day: CalendarDay;
-  recurringExpenses?: any[];
+  recurringExpenses?: RecurringExpense[];
   onClose: () => void;
   onAddTransaction?: ((date: Date) => void) | undefined;
   onDeleteTransaction?: ((id: string) => void) | undefined;
@@ -33,6 +34,16 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
   const relevantRecurringExpenses = recurringExpenses.filter(
     expense => expense.is_active && expense.day_of_month === dayOfMonth
   );
+
+  // 고정지출 총액 계산
+  const totalRecurringExpense = relevantRecurringExpenses.reduce(
+    (sum, expense) => sum + expense.amount_in_krw,
+    0
+  );
+
+  // 고정지출을 포함한 총 지출 및 순액 계산
+  const totalExpenseWithRecurring = summary.totalExpense + totalRecurringExpense;
+  const netAmountWithRecurring = summary.totalIncome - totalExpenseWithRecurring;
 
   const formatAmount = (amount: number): string => {
     const convertedAmount = convertAmount(amount, 'KRW', currentCurrency);
@@ -131,8 +142,8 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto max-h-[65vh] sm:max-h-[60vh]">
           {summary.hasTransactions || relevantRecurringExpenses.length > 0 ? (
             <div className="space-y-6">
-              {/* 일일 요약 - 거래 내역이 있을 때만 표시 */}
-              {summary.hasTransactions && (
+              {/* 일일 요약 - 거래 내역 또는 고정지출이 있을 때 표시 */}
+              {(summary.hasTransactions || relevantRecurringExpenses.length > 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="bg-green-50 rounded-lg p-4">
                     <div className="text-green-600 text-sm font-medium">총 수입</div>
@@ -143,15 +154,20 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   <div className="bg-red-50 rounded-lg p-4">
                     <div className="text-red-600 text-sm font-medium">총 지출</div>
                     <div className="text-red-800 text-xl font-bold mt-1">
-                      {formatAmount(summary.totalExpense)}
+                      {formatAmount(totalExpenseWithRecurring)}
                     </div>
+                    {relevantRecurringExpenses.length > 0 && (
+                      <div className="text-xs text-red-500 mt-1">
+                        (고정지출 {formatAmount(totalRecurringExpense)} 포함)
+                      </div>
+                    )}
                   </div>
                   <div className="bg-blue-50 rounded-lg p-4">
                     <div className="text-blue-600 text-sm font-medium">일일 순액</div>
                     <div className={`text-xl font-bold mt-1 ${
-                      summary.totalIncome - summary.totalExpense >= 0 ? 'text-blue-800' : 'text-red-600'
+                      netAmountWithRecurring >= 0 ? 'text-blue-800' : 'text-red-600'
                     }`}>
-                      {formatAmount(summary.totalIncome - summary.totalExpense)}
+                      {formatAmount(netAmountWithRecurring)}
                     </div>
                   </div>
                 </div>

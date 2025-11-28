@@ -1,12 +1,13 @@
 import React from 'react';
 import type { CalendarDay as CalendarDayType } from '../../types/calendar';
+import type { RecurringExpense } from '../../types/database';
 import { getDayTransactionSummary } from '../../utils/calendar';
 import { useCurrency } from '../../hooks/useCurrency';
 import { useCurrencyConverter } from '../../hooks/useCurrencyConversion';
 
 interface CalendarDayProps {
   day: CalendarDayType;
-  recurringExpenses?: any[];
+  recurringExpenses?: RecurringExpense[];
   onDayClick?: ((day: CalendarDayType) => void) | undefined;
 }
 

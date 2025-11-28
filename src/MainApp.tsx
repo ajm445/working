@@ -5,6 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useAppMode } from './contexts/AppModeContext';
 import { useAnalyticsEvent } from './hooks/useAnalyticsEvent';
 import type { Transaction, TransactionFormData } from './types';
+import type { RecurringExpense } from './types/database';
 import Dashboard, { type ViewMode } from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
@@ -20,7 +21,7 @@ const ExpenseTracker: React.FC = () => {
   const { user } = useAuth();
   const { trackAddTransaction, trackDeleteTransaction, trackViewChange } = useAnalyticsEvent();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [recurringExpenses, setRecurringExpenses] = useState<any[]>([]); // 고정지출 데이터
+  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]); // 고정지출 데이터
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');

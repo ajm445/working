@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '../../types/transaction';
+import type { RecurringExpense } from '../../types/database';
 import type { CalendarDay as CalendarDayType } from '../../types/calendar';
 import { generateCalendarMonth } from '../../utils/calendar';
 import { getKSTDate } from '../../utils/dateUtils';
@@ -10,7 +11,7 @@ import DayDetailModal from './DayDetailModal';
 
 interface TransactionCalendarProps {
   transactions: Transaction[];
-  recurringExpenses?: any[];
+  recurringExpenses?: RecurringExpense[];
   onDateClick?: ((date?: Date) => void) | undefined;
   onMonthChange?: ((year: number, month: number) => void) | undefined;
   onDeleteTransaction?: ((id: string) => void) | undefined;

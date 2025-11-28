@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import type { Transaction } from '../../types/transaction';
+import type { RecurringExpense } from '../../types/database';
 import {
   calculateMonthlyIncome,
-  calculateMonthlyExpense,
-  calculateMonthlyBalance
+  calculateMonthlyExpenseWithRecurring,
+  calculateMonthlyBalanceWithRecurring
 } from '../../utils/calculations';
 import { getKSTDate } from '../../utils/dateUtils';
 import BalanceCard from './BalanceCard';
@@ -29,9 +30,9 @@ interface DashboardProps {
   /** 전체 거래 내역 배열 */
   transactions: Transaction[];
   /** 고정지출 내역 배열 */
-  recurringExpenses?: any[];
+  recurringExpenses?: RecurringExpense[];
   /** 고정지출 변경 시 호출되는 콜백 함수 */
-  onRecurringExpensesChange?: (expenses: any[]) => void;
+  onRecurringExpensesChange?: (expenses: RecurringExpense[]) => void;
   /** 뷰 모드 변경 시 호출되는 콜백 함수 */
   onViewModeChange?: (mode: ViewMode) => void;
   /** 현재 선택된 뷰 모드 (기본값: 'summary') */
@@ -102,8 +103,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const displayMonth = currentViewMode === 'calendar' ? calendarMonth : today.getMonth();
 
   const totalIncome = calculateMonthlyIncome(transactions, displayYear, displayMonth);
-  const totalExpense = calculateMonthlyExpense(transactions, displayYear, displayMonth);
-  const balance = calculateMonthlyBalance(transactions, displayYear, displayMonth);
+  const totalExpense = calculateMonthlyExpenseWithRecurring(transactions, recurringExpenses, displayYear, displayMonth);
+  const balance = calculateMonthlyBalanceWithRecurring(transactions, recurringExpenses, displayYear, displayMonth);
 
   return (
     <div>

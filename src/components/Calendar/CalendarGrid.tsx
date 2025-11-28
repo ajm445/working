@@ -1,11 +1,12 @@
 import React from 'react';
 import type { CalendarMonth, CalendarDay as CalendarDayType } from '../../types/calendar';
+import type { RecurringExpense } from '../../types/database';
 import { getKoreanDayNames } from '../../utils/calendar';
 import CalendarDay from './CalendarDay';
 
 interface CalendarGridProps {
   calendarData: CalendarMonth;
-  recurringExpenses?: any[];
+  recurringExpenses?: RecurringExpense[];
   onDayClick?: (day: CalendarDayType) => void;
 }
 
