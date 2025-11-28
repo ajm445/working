@@ -37,7 +37,7 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
   const [loading, setLoading] = useState(false);
 
   const selectedCurrency = currencyContext?.currentCurrency || 'KRW';
-  const exchangeRates = currencyContext?.exchangeRates || { KRW: 1, USD: 1300, JPY: 900 };
+  const exchangeRates = currencyContext?.exchangeRates;
 
   // 폼 상태
   const [name, setName] = useState(expense?.name || '');
@@ -71,8 +71,16 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
   // 원화 환산 금액 계산
   const calculateAmountInKRW = (amt: number, curr: 'KRW' | 'USD' | 'JPY'): number => {
     if (curr === 'KRW') return amt;
-    const rate = exchangeRates[curr] || 1;
-    return Math.round(amt * rate);
+
+    // 환율 정보가 없으면 원화 그대로 반환 (경고 출력)
+    if (!exchangeRates || !exchangeRates[curr]) {
+      console.warn(`환율 정보가 없어 ${curr} → KRW 변환을 할 수 없습니다. 원화 금액을 그대로 사용합니다.`);
+      return amt; // 환율이 없으면 입력값 그대로 사용
+    }
+
+    const rate = exchangeRates[curr];
+    // 다른 통화 → KRW: amount / rate (예: 100달러 / 0.00071 = 140,845원)
+    return Math.round(amt / rate);
   };
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
@@ -92,6 +100,12 @@ const RecurringExpenseForm: React.FC<RecurringExpenseFormProps> = ({
 
     if (dayOfMonth < 1 || dayOfMonth > 31) {
       toast.error('지출 날짜는 1일부터 31일 사이여야 합니다.');
+      return;
+    }
+
+    // 환율 정보 확인 (KRW가 아닌 경우)
+    if (currency !== 'KRW' && (!exchangeRates || !exchangeRates[currency])) {
+      toast.error('환율 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
       return;
     }
 

@@ -12,7 +12,8 @@ const RecurringExpenseManager: React.FC = () => {
   const currencyContext = useContext(CurrencyContext);
 
   const currentCurrency = (currencyContext?.currentCurrency || 'KRW') as 'KRW' | 'USD' | 'JPY';
-  const exchangeRates = currencyContext?.exchangeRates || { KRW: 1, USD: 1300, JPY: 900 };
+  const exchangeRates = currencyContext?.exchangeRates;
+  const isLoadingRates = currencyContext?.isLoadingRates || false;
 
   const formatCurrency = (amount: number, currency: 'KRW' | 'USD' | 'JPY'): string => {
     const currencyMap = {
@@ -175,9 +176,15 @@ const RecurringExpenseManager: React.FC = () => {
           return total + amountInKRW;
         }
 
-        // KRW를 현재 통화로 변환
-        const rate = exchangeRates[currentCurrency] || 1;
-        return total + (amountInKRW / rate);
+        // 환율 정보가 없으면 원화 그대로 표시
+        if (!exchangeRates || !exchangeRates[currentCurrency]) {
+          console.warn(`환율 정보가 없어 원화로 표시합니다: ${currentCurrency}`);
+          return total + amountInKRW;
+        }
+
+        // KRW를 현재 통화로 변환 (1원 * rate = 해당 통화 금액)
+        const rate = exchangeRates[currentCurrency];
+        return total + (amountInKRW * rate);
       }, 0);
   };
 
@@ -217,7 +224,14 @@ const RecurringExpenseManager: React.FC = () => {
       {/* 월별 총액 */}
       <div className="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 rounded-lg p-6 text-white">
         <p className="text-sm opacity-90">월별 총 고정지출</p>
-        <p className="text-3xl font-bold mt-2">{formatCurrency(monthlyTotal, currentCurrency)}</p>
+        {isLoadingRates && currentCurrency !== 'KRW' ? (
+          <p className="text-3xl font-bold mt-2 animate-pulse">환율 불러오는 중...</p>
+        ) : (
+          <p className="text-3xl font-bold mt-2">{formatCurrency(monthlyTotal, currentCurrency)}</p>
+        )}
+        {!exchangeRates && currentCurrency !== 'KRW' && !isLoadingRates && (
+          <p className="text-xs opacity-75 mt-2">⚠️ 환율 정보를 불러오지 못해 원화로 표시됩니다</p>
+        )}
       </div>
 
       {/* 고정지출 목록 */}
