@@ -1,29 +1,28 @@
 import React, { useState, useEffect, memo } from 'react';
-import { getKSTDate } from '../../utils/dateUtils';
+import { getKSTDateTime } from '../../utils/dateUtils';
 
 interface CurrentTimeDisplayProps {
-  updateInterval?: number; // 밀리초 단위, 기본값 60000 (1분)
+  updateInterval?: number; // 밀리초 단위, 기본값 1000 (1초)
 }
 
 // React.memo로 감싸서 props가 변경되지 않으면 재렌더링 방지
-const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInterval = 60000 }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
+const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInterval = 1000 }) => {
+  const [currentTime, setCurrentTime] = useState(getKSTDateTime());
 
   useEffect((): (() => void) => {
     // 초기화 시 즉시 시간 업데이트
-    setCurrentTime(new Date());
+    setCurrentTime(getKSTDateTime());
 
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTime(getKSTDateTime());
     }, updateInterval);
 
     return () => clearInterval(timer);
   }, [updateInterval]);
 
   // 오늘 날짜 포맷팅
-  const formatTodayDate = (): string => {
-    const today = getKSTDate();
-    return today.toLocaleDateString('ko-KR', {
+  const formatTodayDate = (date: Date): string => {
+    return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -44,7 +43,7 @@ const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInte
     <div className="mb-6 text-center">
       <div className="inline-flex items-center gap-4 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors duration-300">
         <span className="text-lg font-semibold text-indigo-800 dark:text-indigo-300 transition-colors duration-300">
-          오늘: {formatTodayDate()}
+          오늘: {formatTodayDate(currentTime)}
         </span>
         <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 transition-colors duration-300">
           {formatTime(currentTime)}

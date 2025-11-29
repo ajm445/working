@@ -1,6 +1,7 @@
 /**
  * KST/JST 시간대 기준으로 현재 날짜를 가져옴 (UTC+9)
  * UTC 시간을 기준으로 9시간을 더해 KST 시간으로 변환
+ * 주의: 시간은 00:00:00으로 초기화됨
  */
 export const getKSTDate = (): Date => {
   const now = new Date();
@@ -15,6 +16,29 @@ export const getKSTDate = (): Date => {
   const day = kstTime.getUTCDate();
 
   return new Date(year, month, day);
+};
+
+/**
+ * KST/JST 시간대 기준으로 현재 날짜와 시간을 가져옴 (UTC+9)
+ * UTC 시간을 기준으로 9시간을 더해 KST 시간으로 변환
+ */
+export const getKSTDateTime = (): Date => {
+  const now = new Date();
+  // UTC 기준 시간에서 KST 오프셋(9시간)을 적용
+  const utcTime = now.getTime();
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstTime = new Date(utcTime + kstOffset);
+
+  // KST 날짜와 시간을 로컬 Date 객체로 반환
+  const year = kstTime.getUTCFullYear();
+  const month = kstTime.getUTCMonth();
+  const day = kstTime.getUTCDate();
+  const hours = kstTime.getUTCHours();
+  const minutes = kstTime.getUTCMinutes();
+  const seconds = kstTime.getUTCSeconds();
+  const milliseconds = kstTime.getUTCMilliseconds();
+
+  return new Date(year, month, day, hours, minutes, seconds, milliseconds);
 };
 
 /**
