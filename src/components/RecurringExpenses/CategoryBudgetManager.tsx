@@ -383,79 +383,94 @@ const CategoryBudgetManager: React.FC = () => {
               {budgets.map((budget) => (
                 <div
                   key={budget.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300"
+                  className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300"
                 >
-                  <div className="flex-1 mb-3 sm:mb-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900 dark:text-white">
-                        {budget.category}
-                      </span>
-                      {!budget.is_active && (
-                        <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-xs rounded-full text-gray-600 dark:text-gray-300">
-                          비활성
+                  {editingId === budget.id ? (
+                    // 수정 모드
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900 dark:text-white">
+                          {budget.category}
                         </span>
-                      )}
-                    </div>
-
-                    {editingId === budget.id ? (
-                      <div className="flex gap-2 mt-2">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          value={editingBudget.amount}
-                          onChange={(e) => {
-                            const formatted = formatNumberWithCommas(e.target.value);
-                            setEditingBudget({
-                              ...editingBudget,
-                              amount: formatted,
-                            });
-                          }}
-                          className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                        />
-                        <select
-                          value={editingBudget.currency}
-                          onChange={(e) =>
-                            setEditingBudget({
-                              ...editingBudget,
-                              currency: e.target.value as Currency,
-                            })
-                          }
-                          className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                        >
-                          <option value="KRW">KRW</option>
-                          <option value="USD">USD</option>
-                          <option value="JPY">JPY</option>
-                        </select>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        월 예산:{' '}
-                        {formatCurrency(
-                          budget.budget_amount,
-                          budget.currency as Currency
+                        {!budget.is_active && (
+                          <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-xs rounded-full text-gray-600 dark:text-gray-300">
+                            비활성
+                          </span>
                         )}
-                      </p>
-                    )}
-                  </div>
+                      </div>
 
-                  <div className="flex gap-2">
-                    {editingId === budget.id ? (
-                      <>
-                        <button
-                          onClick={() => handleSaveEdit(budget.id)}
-                          className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          저장
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
-                        >
-                          취소
-                        </button>
-                      </>
-                    ) : (
-                      <>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex gap-2 flex-1">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={editingBudget.amount}
+                            onChange={(e) => {
+                              const formatted = formatNumberWithCommas(e.target.value);
+                              setEditingBudget({
+                                ...editingBudget,
+                                amount: formatted,
+                              });
+                            }}
+                            className="flex-1 min-w-0 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                            placeholder="금액"
+                          />
+                          <select
+                            value={editingBudget.currency}
+                            onChange={(e) =>
+                              setEditingBudget({
+                                ...editingBudget,
+                                currency: e.target.value as Currency,
+                              })
+                            }
+                            className="w-24 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                          >
+                            <option value="KRW">KRW</option>
+                            <option value="USD">USD</option>
+                            <option value="JPY">JPY</option>
+                          </select>
+                        </div>
+
+                        <div className="flex gap-2 sm:ml-auto">
+                          <button
+                            onClick={() => handleSaveEdit(budget.id)}
+                            className="flex-1 sm:flex-none px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            저장
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="flex-1 sm:flex-none px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    // 일반 모드
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {budget.category}
+                          </span>
+                          {!budget.is_active && (
+                            <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-xs rounded-full text-gray-600 dark:text-gray-300">
+                              비활성
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          월 예산:{' '}
+                          {formatCurrency(
+                            budget.budget_amount,
+                            budget.currency as Currency
+                          )}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleStartEdit(budget)}
                           className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors"
@@ -468,9 +483,9 @@ const CategoryBudgetManager: React.FC = () => {
                         >
                           삭제
                         </button>
-                      </>
-                    )}
-                  </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
