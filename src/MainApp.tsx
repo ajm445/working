@@ -8,7 +8,7 @@ import type { Transaction, TransactionFormData } from './types';
 import type { RecurringExpense } from './types/database';
 import Dashboard from './components/Dashboard';
 import type { ViewMode } from './components/Dashboard';
-import TransactionForm from './components/TransactionForm';
+import { TransactionFormModal } from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
 import { InitialCostCalculator } from './components/InitialCostCalculator';
 import { ModeNavigation } from './components/Navigation';
@@ -16,6 +16,7 @@ import ThemeToggle from './components/ui/ThemeToggle';
 import AccountManagementModal from './components/Auth/AccountManagementModal';
 import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
+import * as recurringExpenseService from './services/recurringExpenseService';
 
 // Expense Tracker Component (기존 가계부 기능)
 const ExpenseTracker: React.FC = () => {
@@ -57,6 +58,31 @@ const ExpenseTracker: React.FC = () => {
     };
 
     void loadTransactions();
+  }, [user]);
+
+  // 고정지출 로드
+  useEffect(() => {
+    const loadRecurringExpenses = async (): Promise<void> => {
+      // 로그인 안 된 상태면 빈 배열로 초기화
+      if (!user) {
+        console.log('🔄 User logged out, clearing recurring expenses');
+        setRecurringExpenses([]);
+        return;
+      }
+
+      // 로그인 상태면 Supabase에서 로드
+      console.log('📥 User logged in, loading recurring expenses');
+      const { data, error } = await recurringExpenseService.fetchAllRecurringExpenses();
+
+      if (error) {
+        console.error('Failed to load recurring expenses:', error);
+      } else if (data) {
+        console.log(`✅ Loaded ${data.length} recurring expenses`);
+        setRecurringExpenses(data);
+      }
+    };
+
+    void loadRecurringExpenses();
   }, [user]);
 
   // 실시간 구독 설정 (다른 브라우저/탭에서의 변경사항 감지용)
@@ -351,19 +377,17 @@ const ExpenseTracker: React.FC = () => {
 
       {/* Add/Edit Transaction Form */}
       {(showAddForm || editingTransaction) && (
-        <div ref={formRef}>
-          <TransactionForm
-            onSubmit={addTransaction}
-            onCancel={() => {
-              setShowAddForm(false);
-              setPreselectedDate(null);
-              setEditingTransaction(null);
-            }}
-            initialDate={preselectedDate ?? undefined}
-            editingTransaction={editingTransaction}
-            onUpdate={updateTransaction}
-          />
-        </div>
+        <TransactionFormModal
+          onSubmit={addTransaction}
+          onCancel={() => {
+            setShowAddForm(false);
+            setPreselectedDate(null);
+            setEditingTransaction(null);
+          }}
+          initialDate={preselectedDate ?? undefined}
+          editingTransaction={editingTransaction}
+          onUpdate={updateTransaction}
+        />
       )}
 
       {/* Transaction List - 요약 보기일 때만 표시 */}

@@ -103,35 +103,35 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-2 sm:p-4 transition-colors duration-300"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden"
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] sm:max-h-[80vh] overflow-hidden transition-colors duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 모달 헤더 */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b bg-gray-50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <h3 id="modal-title" className="text-base sm:text-lg font-bold text-gray-900">
+              <h3 id="modal-title" className="text-base sm:text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
                 {formatDate(day.date)}
               </h3>
               {day.isToday && (
-                <span className="inline-block mt-1 px-2 py-1 text-xs font-medium text-indigo-700 bg-indigo-100 rounded-full">
+                <span className="inline-block mt-1 px-2 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/50 rounded-full transition-colors duration-300">
                   오늘
                 </span>
               )}
             </div>
             <button
               onClick={onClose}
-              className="p-2 sm:p-3 hover:bg-gray-200 active:bg-gray-300 rounded-lg transition-colors touch-manipulation"
+              className="p-2 sm:p-3 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600 rounded-lg transition-colors touch-manipulation"
               aria-label="닫기"
             >
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 dark:text-gray-400 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -145,27 +145,27 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
               {/* 일일 요약 - 거래 내역 또는 고정지출이 있을 때 표시 */}
               {(summary.hasTransactions || relevantRecurringExpenses.length > 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="text-green-600 text-sm font-medium">총 수입</div>
-                    <div className="text-green-800 text-xl font-bold mt-1">
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 transition-colors duration-300">
+                    <div className="text-green-600 dark:text-green-400 text-sm font-medium transition-colors duration-300">총 수입</div>
+                    <div className="text-green-800 dark:text-green-300 text-xl font-bold mt-1 transition-colors duration-300">
                       {formatAmount(summary.totalIncome)}
                     </div>
                   </div>
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <div className="text-red-600 text-sm font-medium">총 지출</div>
-                    <div className="text-red-800 text-xl font-bold mt-1">
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 transition-colors duration-300">
+                    <div className="text-red-600 dark:text-red-400 text-sm font-medium transition-colors duration-300">총 지출</div>
+                    <div className="text-red-800 dark:text-red-300 text-xl font-bold mt-1 transition-colors duration-300">
                       {formatAmount(totalExpenseWithRecurring)}
                     </div>
                     {relevantRecurringExpenses.length > 0 && (
-                      <div className="text-xs text-red-500 mt-1">
+                      <div className="text-xs text-red-500 dark:text-red-400 mt-1 transition-colors duration-300">
                         (고정지출 {formatAmount(totalRecurringExpense)} 포함)
                       </div>
                     )}
                   </div>
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="text-blue-600 text-sm font-medium">일일 순액</div>
-                    <div className={`text-xl font-bold mt-1 ${
-                      netAmountWithRecurring >= 0 ? 'text-blue-800' : 'text-red-600'
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 transition-colors duration-300">
+                    <div className="text-blue-600 dark:text-blue-400 text-sm font-medium transition-colors duration-300">일일 순액</div>
+                    <div className={`text-xl font-bold mt-1 transition-colors duration-300 ${
+                      netAmountWithRecurring >= 0 ? 'text-blue-800 dark:text-blue-300' : 'text-red-600 dark:text-red-400'
                     }`}>
                       {formatAmount(netAmountWithRecurring)}
                     </div>
@@ -176,41 +176,41 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
               {/* 고정지출 표시 (가장 상단, 강조) */}
               {relevantRecurringExpenses.length > 0 && (
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 text-purple-700 text-xs font-medium">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 transition-colors duration-300">
+                    <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs font-medium transition-colors duration-300">
                       고정지출
                     </span>
-                    <span className="text-sm text-gray-500">({relevantRecurringExpenses.length}건)</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">({relevantRecurringExpenses.length}건)</span>
                   </h4>
                   <div className="space-y-3">
                     {relevantRecurringExpenses.map((expense) => (
                       <div
                         key={expense.id}
-                        className="p-4 rounded-lg border-2 border-purple-400 bg-purple-50 shadow-md"
+                        className="p-4 rounded-lg border-2 border-purple-400 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20 shadow-md transition-colors duration-300"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-3 flex-1">
                             <span className="text-xl">💳</span>
                             <div className="flex-1">
-                              <div className="font-semibold text-gray-900">
+                              <div className="font-semibold text-gray-900 dark:text-white transition-colors duration-300">
                                 {expense.name}
                               </div>
-                              <div className="text-sm text-gray-600">
+                              <div className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
                                 {expense.category} · 매월 {expense.day_of_month}일
                               </div>
                               {expense.description && (
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
                                   {expense.description}
                                 </div>
                               )}
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="font-bold text-purple-700">
+                            <div className="font-bold text-purple-700 dark:text-purple-300 transition-colors duration-300">
                               -{formatAmount(expense.amount_in_krw)}
                             </div>
                             {expense.currency !== 'KRW' && (
-                              <div className="text-xs text-gray-600 mt-1">
+                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-300">
                                 {expense.currency} {expense.amount.toLocaleString()}
                               </div>
                             )}
@@ -225,7 +225,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
               {/* 거래 내역 목록 - 거래 내역이 있을 때만 표시 */}
               {summary.hasTransactions && (
                 <div>
-                  <h4 className="text-md font-semibold text-gray-900 mb-4">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
                     거래 내역 ({summary.transactionCount}건)
                   </h4>
                   <div className="space-y-3">
@@ -233,8 +233,8 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                       <div
                         key={transaction.id}
                         className={`
-                          p-4 rounded-lg border-l-4 bg-gray-50
-                          ${transaction.type === 'income' ? 'border-green-500' : 'border-red-500'}
+                          p-4 rounded-lg border-l-4 bg-gray-50 dark:bg-gray-700/50 transition-colors duration-300
+                          ${transaction.type === 'income' ? 'border-green-500 dark:border-green-400' : 'border-red-500 dark:border-red-400'}
                         `}
                       >
                         <div className="flex items-center justify-between gap-3">
@@ -243,23 +243,23 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                               {getCategoryIcon(transaction.category)}
                             </span>
                             <div className="flex-1">
-                              <div className="font-medium text-gray-900">
+                              <div className="font-medium text-gray-900 dark:text-white transition-colors duration-300">
                                 {transaction.description}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
                                 {transaction.category}
                               </div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className={`font-bold ${
-                              transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                            <div className={`font-bold transition-colors duration-300 ${
+                              transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                             }`}>
                               {transaction.type === 'income' ? '+' : '-'}
                               {formatAmount(transaction.amountInKRW)}
                             </div>
                             {transaction.currency !== 'KRW' && (
-                              <div className="text-xs text-gray-500 mt-1">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
                                 {transaction.currency} {transaction.amount.toLocaleString()}
                               </div>
                             )}
@@ -269,7 +269,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                             {onEditTransaction && (
                               <button
                                 onClick={() => handleEdit(transaction)}
-                                className="p-3 text-gray-400 hover:text-blue-600 active:text-blue-700 hover:bg-blue-50 active:bg-blue-100 rounded-lg transition-colors touch-manipulation"
+                                className="p-3 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 active:text-blue-700 dark:active:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded-lg transition-colors touch-manipulation"
                                 aria-label={`${transaction.description} 거래 내역 수정`}
                                 title="수정"
                               >
@@ -281,7 +281,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                             {onDeleteTransaction && (
                               <button
                                 onClick={() => handleDelete(transaction.id)}
-                                className="p-3 text-gray-400 hover:text-red-600 active:text-red-700 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation"
+                                className="p-3 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 active:text-red-700 dark:active:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
                                 aria-label={`${transaction.description} 거래 내역 삭제`}
                                 title="삭제"
                               >
@@ -301,10 +301,10 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
           ) : (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📅</div>
-              <div className="text-gray-500 text-lg font-medium mb-2">
+              <div className="text-gray-500 dark:text-gray-400 text-lg font-medium mb-2 transition-colors duration-300">
                 이 날에는 거래 내역이 없습니다
               </div>
-              <div className="text-gray-400 text-sm">
+              <div className="text-gray-400 dark:text-gray-500 text-sm transition-colors duration-300">
                 내역 추가하기를 통해 새로운 거래를 등록해보세요
               </div>
             </div>
@@ -312,7 +312,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
         </div>
 
         {/* 모달 푸터 - 모바일 개선 */}
-        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t bg-gray-50">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {onAddTransaction && (
               <button
@@ -320,7 +320,7 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
                   onAddTransaction(day.date);
                   onClose();
                 }}
-                className="w-full sm:flex-1 md:flex-none px-6 py-3 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition-colors touch-manipulation text-sm sm:text-base"
+                className="w-full sm:flex-1 md:flex-none px-6 py-3 sm:py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 active:bg-indigo-800 dark:active:bg-indigo-700 transition-colors touch-manipulation text-sm sm:text-base"
                 aria-label={`${formatDate(day.date)}에 거래 내역 추가`}
               >
                 ➕ 이 날짜에 내역 추가

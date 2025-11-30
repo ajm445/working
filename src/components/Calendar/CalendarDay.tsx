@@ -39,15 +39,15 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
   return (
     <div
       className={`
-        relative min-h-[70px] md:min-h-[100px] lg:min-h-[120px] p-1.5 md:p-2 lg:p-3 border cursor-pointer transition-all duration-200
+        relative min-h-[70px] md:min-h-[100px] lg:min-h-[120px] p-1.5 md:p-2 lg:p-3 cursor-pointer transition-all duration-200
         touch-manipulation active:scale-95
         ${day.isCurrentMonth
-          ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 border-gray-200 dark:border-gray-600'
-          : 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-400 dark:text-gray-600'
+          ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
+          : 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-600'
         }
         ${day.isToday
-          ? 'ring-2 ring-indigo-500 dark:ring-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
-          : ''
+          ? 'border-2 border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
+          : 'border border-gray-200 dark:border-gray-600'
         }
         ${summary.hasTransactions
           ? 'shadow-sm'
@@ -63,14 +63,14 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
       {/* 날짜 */}
       <div className="flex items-center justify-between mb-1">
         <div className={`
-          text-sm font-medium transition-colors duration-200
+          text-xs sm:text-sm font-medium transition-colors duration-200
           ${day.isToday ? 'text-indigo-700 dark:text-indigo-300' : day.isCurrentMonth ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-600'}
         `}>
           {day.dayNumber}
         </div>
         {/* 고정지출 표시 */}
         {hasRecurringExpense && day.isCurrentMonth && (
-          <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded font-medium transition-colors duration-200">
+          <span className="text-[8px] px-1 py-0.5 bg-purple-200 dark:bg-purple-800/70 text-purple-700 dark:text-purple-200 rounded font-medium transition-colors duration-200">
             고정
           </span>
         )}
@@ -121,30 +121,28 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
           </div>
 
           {/* 모바일: 도트 인디케이터만 표시 */}
-          <div className="sm:hidden flex items-center gap-1 mt-1">
-            {/* 수입이 있는 경우 녹색 도트 */}
+          <div className="sm:hidden flex flex-col gap-0.5 mt-1">
+            {/* 수입이 있는 경우 녹색 도트와 건수 */}
             {summary.totalIncome > 0 && (
-              <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 transition-colors duration-200"></div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 transition-colors duration-200"></div>
+                <span className="text-[10px] text-green-600 dark:text-green-400 transition-colors duration-200">
+                  {day.transactions.filter(t => t.type === 'income').length}건
+                </span>
+              </div>
             )}
 
-            {/* 지출이 있는 경우 빨간색 도트 */}
+            {/* 지출이 있는 경우 빨간색 도트와 건수 */}
             {summary.totalExpense > 0 && (
-              <div className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400 transition-colors duration-200"></div>
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400 transition-colors duration-200"></div>
+                <span className="text-[10px] text-red-600 dark:text-red-400 transition-colors duration-200">
+                  {day.transactions.filter(t => t.type === 'expense').length}건
+                </span>
+              </div>
             )}
-
-            {/* 거래 건수 표시 */}
-            <span className="text-[10px] text-gray-500 dark:text-gray-400 transition-colors duration-200">
-              {summary.transactionCount}건
-            </span>
           </div>
         </>
-      )}
-
-      {/* 오늘 표시 */}
-      {day.isToday && (
-        <div className="absolute top-1 right-1">
-          <div className="w-2 h-2 bg-indigo-500 dark:bg-indigo-400 rounded-full transition-colors duration-200"></div>
-        </div>
       )}
     </div>
   );

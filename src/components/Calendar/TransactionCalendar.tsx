@@ -8,7 +8,6 @@ import { useSwipe } from '../../hooks/useSwipe';
 import CalendarHeader from './CalendarHeader';
 import CalendarGrid from './CalendarGrid';
 import DayDetailModal from './DayDetailModal';
-import SelectedDaySummary from './SelectedDaySummary';
 
 interface TransactionCalendarProps {
   transactions: Transaction[];
@@ -30,7 +29,6 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
   const today = getKSTDate();
   const [currentDate, setCurrentDate] = useState<Date>(today);
   const [selectedDay, setSelectedDay] = useState<CalendarDayType | null>(null);
-  const [selectedDayForSummary, setSelectedDayForSummary] = useState<CalendarDayType | null>(null); // 모바일 하단 표시용
 
   // 월 네비게이션 핸들러 (useSwipe 전에 선언)
   const handlePrevMonth = (): void => {
@@ -97,13 +95,8 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
   };
 
   const handleDayClick = (day: CalendarDayType): void => {
-    // 모바일: 하단에 금액 표시만 업데이트, 모달은 열지 않음
-    // 데스크톱/태블릿: 모달 열기
-    if (window.innerWidth < 640) { // sm breakpoint (640px)
-      setSelectedDayForSummary(day);
-    } else {
-      setSelectedDay(day);
-    }
+    // 모든 화면 크기에서 모달 열기
+    setSelectedDay(day);
   };
 
   const handleCloseModal = (): void => {
@@ -130,13 +123,6 @@ const TransactionCalendar: React.FC<TransactionCalendarProps> = ({
           onDayClick={handleDayClick}
         />
       </div>
-
-      {/* 모바일: 선택된 날짜 금액 표시 */}
-      <SelectedDaySummary
-        selectedDay={selectedDayForSummary}
-        recurringExpenses={recurringExpenses}
-        onAddTransaction={onDateClick}
-      />
 
       {/* 캘린더 사용법 안내 */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 sm:p-4 transition-colors duration-300">
