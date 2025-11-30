@@ -21,7 +21,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({ calendarData, recurringExpe
           <div
             key={dayName}
             className={`
-              py-3 text-center text-sm font-medium transition-colors duration-300
+              py-2 md:py-3 text-center text-xs md:text-sm font-medium transition-colors duration-300
               ${index === 0 ? 'text-red-500 dark:text-red-400' : index === 6 ? 'text-blue-500 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}
             `}
           >

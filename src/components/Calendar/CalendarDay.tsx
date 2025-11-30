@@ -36,10 +36,47 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
     return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
   };
 
+  // 모바일용 축약된 금액 표시
+  const formatAmountCompact = (amount: number): string => {
+    if (amount === 0) return '';
+
+    const convertedAmount = convertAmount(amount, 'KRW', currentCurrency);
+    const absAmount = Math.abs(convertedAmount);
+
+    let formattedAmount = '';
+
+    // 원화일 경우 만원/백만원 단위로 축약
+    if (currentCurrency === 'KRW') {
+      if (absAmount < 10000) {
+        // 1만원 미만: 천원 단위로 반올림하여 표시
+        formattedAmount = `${Math.round(absAmount / 1000)}k`;
+      } else if (absAmount < 1000000) {
+        // 1만원 ~ 99만원: 만원 단위로 표시
+        const manwon = Math.round(absAmount / 10000);
+        formattedAmount = `${manwon}만`;
+      } else {
+        // 100만원 이상: 백만원 단위로 소수점 1자리까지 표시
+        const million = (absAmount / 1000000).toFixed(1);
+        formattedAmount = `${million}M`;
+      }
+    } else {
+      // 달러, 엔화 등
+      if (absAmount < 1000) {
+        formattedAmount = Math.round(absAmount).toString();
+      } else if (absAmount < 1000000) {
+        formattedAmount = `${(absAmount / 1000).toFixed(1)}K`;
+      } else {
+        formattedAmount = `${(absAmount / 1000000).toFixed(1)}M`;
+      }
+    }
+
+    return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
+  };
+
   return (
     <div
       className={`
-        relative min-h-[100px] md:min-h-[120px] p-2 md:p-3 border cursor-pointer transition-all duration-200
+        relative min-h-[70px] md:min-h-[100px] lg:min-h-[120px] p-1.5 md:p-2 lg:p-3 border cursor-pointer transition-all duration-200
         touch-manipulation active:scale-95
         ${day.isCurrentMonth
           ? 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600 border-gray-200 dark:border-gray-600'
@@ -78,32 +115,66 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
 
       {/* 거래 내역이 있는 경우 */}
       {summary.hasTransactions && (
-        <div className="space-y-1">
-          {/* 수입 */}
-          {summary.totalIncome > 0 && (
-            <div className="text-xs text-green-600 dark:text-green-400 font-medium transition-colors duration-200">
-              +{formatAmount(summary.totalIncome)}
-            </div>
-          )}
+        <>
+          {/* 데스크톱: 수입, 지출, 순액 모두 표시 */}
+          <div className="hidden md:block space-y-1">
+            {/* 수입 */}
+            {summary.totalIncome > 0 && (
+              <div className="text-xs text-green-600 dark:text-green-400 font-medium transition-colors duration-200">
+                +{formatAmount(summary.totalIncome)}
+              </div>
+            )}
 
-          {/* 지출 */}
-          {summary.totalExpense > 0 && (
-            <div className="text-xs text-red-600 dark:text-red-400 font-medium transition-colors duration-200">
-              -{formatAmount(summary.totalExpense)}
-            </div>
-          )}
+            {/* 지출 */}
+            {summary.totalExpense > 0 && (
+              <div className="text-xs text-red-600 dark:text-red-400 font-medium transition-colors duration-200">
+                -{formatAmount(summary.totalExpense)}
+              </div>
+            )}
 
-          {/* 일일 순액 (수입 - 지출) */}
-          {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
-            <div className={`text-xs font-medium transition-colors duration-200 ${
-              summary.totalIncome - summary.totalExpense >= 0
-                ? 'text-blue-600 dark:text-blue-400'
-                : 'text-red-600 dark:text-red-400'
-            }`}>
-              순액: {formatAmount(summary.totalIncome - summary.totalExpense, true)}
-            </div>
-          )}
-        </div>
+            {/* 일일 순액 (수입 - 지출) */}
+            {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
+              <div className={`text-xs font-medium transition-colors duration-200 ${
+                summary.totalIncome - summary.totalExpense >= 0
+                  ? 'text-blue-600 dark:text-blue-400'
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                순액: {formatAmount(summary.totalIncome - summary.totalExpense, true)}
+              </div>
+            )}
+          </div>
+
+          {/* 태블릿: 일일 순액만 전체 금액으로 표시 */}
+          <div className="hidden sm:block md:hidden">
+            {(summary.totalIncome > 0 || summary.totalExpense > 0) && (
+              <div className={`text-xs font-semibold transition-colors duration-200 ${
+                summary.totalIncome - summary.totalExpense >= 0
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
+              }`}>
+                {formatAmount(summary.totalIncome - summary.totalExpense, true)}
+              </div>
+            )}
+          </div>
+
+          {/* 모바일: 도트 인디케이터만 표시 */}
+          <div className="sm:hidden flex items-center gap-1 mt-1">
+            {/* 수입이 있는 경우 녹색 도트 */}
+            {summary.totalIncome > 0 && (
+              <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 transition-colors duration-200"></div>
+            )}
+
+            {/* 지출이 있는 경우 빨간색 도트 */}
+            {summary.totalExpense > 0 && (
+              <div className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400 transition-colors duration-200"></div>
+            )}
+
+            {/* 거래 건수 표시 */}
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 transition-colors duration-200">
+              {summary.transactionCount}건
+            </span>
+          </div>
+        </>
       )}
 
       {/* 오늘 표시 */}
