@@ -83,6 +83,21 @@ const CategoryBudgetManager: React.FC = () => {
     currency: currentCurrency,
   });
 
+  // 숫자 포맷팅 함수 (쉼표 추가)
+  const formatNumberWithCommas = (value: string): string => {
+    // 숫자만 추출
+    const numbers = value.replace(/[^\d]/g, '');
+    if (!numbers) return '';
+
+    // 천 단위 구분 쉼표 추가
+    return Number(numbers).toLocaleString('ko-KR');
+  };
+
+  // 쉼표 제거하여 숫자만 추출
+  const removeCommas = (value: string): string => {
+    return value.replace(/,/g, '');
+  };
+
   // 사용자 인증 확인
   useEffect(() => {
     const checkUser = async () => {
@@ -137,7 +152,7 @@ const CategoryBudgetManager: React.FC = () => {
       return;
     }
 
-    const amount = parseFloat(newBudget.amount);
+    const amount = parseFloat(removeCommas(newBudget.amount));
     if (isNaN(amount) || amount <= 0) {
       setError('올바른 금액을 입력해주세요.');
       return;
@@ -177,7 +192,7 @@ const CategoryBudgetManager: React.FC = () => {
   const handleStartEdit = (budget: CategoryBudget) => {
     setEditingId(budget.id);
     setEditingBudget({
-      amount: budget.budget_amount.toString(),
+      amount: formatNumberWithCommas(budget.budget_amount.toString()),
       currency: budget.currency as Currency,
     });
   };
@@ -188,7 +203,7 @@ const CategoryBudgetManager: React.FC = () => {
   };
 
   const handleSaveEdit = async (budgetId: string) => {
-    const amount = parseFloat(editingBudget.amount);
+    const amount = parseFloat(removeCommas(editingBudget.amount));
     if (isNaN(amount) || amount <= 0) {
       setError('올바른 금액을 입력해주세요.');
       return;
@@ -299,11 +314,13 @@ const CategoryBudgetManager: React.FC = () => {
                 월 예산 금액
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={newBudget.amount}
-                onChange={(e) =>
-                  setNewBudget({ ...newBudget, amount: e.target.value })
-                }
+                onChange={(e) => {
+                  const formatted = formatNumberWithCommas(e.target.value);
+                  setNewBudget({ ...newBudget, amount: formatted });
+                }}
                 placeholder="0"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
               />
@@ -373,14 +390,16 @@ const CategoryBudgetManager: React.FC = () => {
                     {editingId === budget.id ? (
                       <div className="flex gap-2 mt-2">
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={editingBudget.amount}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const formatted = formatNumberWithCommas(e.target.value);
                             setEditingBudget({
                               ...editingBudget,
-                              amount: e.target.value,
-                            })
-                          }
+                              amount: formatted,
+                            });
+                          }}
                           className="flex-1 px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                         />
                         <select
