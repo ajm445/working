@@ -176,6 +176,9 @@ const CategoryBudgetManager: React.FC = () => {
 
       if (addError) throw addError;
 
+      // 데이터 새로고침
+      await loadBudgets();
+
       // 폼 초기화
       setNewBudget({
         category: '',
@@ -224,6 +227,9 @@ const CategoryBudgetManager: React.FC = () => {
 
       if (updateError) throw updateError;
 
+      // 데이터 새로고침
+      await loadBudgets();
+
       setEditingId(null);
       setError(null);
     } catch (err) {
@@ -238,6 +244,10 @@ const CategoryBudgetManager: React.FC = () => {
     try {
       const { error: deleteError } = await deleteCategoryBudget(budgetId);
       if (deleteError) throw deleteError;
+
+      // 데이터 새로고침
+      await loadBudgets();
+
       setError(null);
     } catch (err) {
       console.error('Failed to delete budget:', err);
