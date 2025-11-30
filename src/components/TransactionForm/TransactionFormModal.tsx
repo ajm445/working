@@ -11,10 +11,11 @@ interface TransactionFormModalProps {
 }
 
 /**
- * 모바일용 거래 내역 추가/수정 모달
+ * 거래 내역 추가/수정 모달
  *
  * TransactionForm을 모달로 감싸서 표시합니다.
- * 640px 미만(모바일)에서만 모달로 표시되고, 그 이상에서는 일반 폼으로 표시됩니다.
+ * 모든 화면 크기(모바일/태블릿/데스크톱)에서 모달로 표시됩니다.
+ * 모바일/태블릿: 하단 슬라이드업, 데스크톱: 중앙 모달
  */
 const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
   onSubmit,
@@ -37,37 +38,21 @@ const TransactionFormModal: React.FC<TransactionFormModalProps> = ({
     };
   }, [onCancel]);
 
-  // 모바일 여부 체크
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-
-  // 모바일이 아니면 일반 폼으로 표시
-  if (!isMobile) {
-    return (
-      <TransactionForm
-        onSubmit={onSubmit}
-        onCancel={onCancel}
-        initialDate={initialDate}
-        editingTransaction={editingTransaction ?? null}
-        onUpdate={onUpdate}
-      />
-    );
-  }
-
-  // 모바일이면 모달로 표시
+  // 모든 화면 크기에서 모달로 표시
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-end sm:items-center justify-center z-50 transition-colors duration-300"
+      className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-end md:items-center justify-center z-50 transition-colors duration-300"
       role="dialog"
       aria-modal="true"
       aria-labelledby="transaction-form-title"
       onClick={onCancel}
     >
       <div
-        className="bg-white dark:bg-gray-800 w-full sm:max-w-2xl sm:rounded-xl rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto transition-colors duration-300 animate-slide-up"
+        className="bg-white dark:bg-gray-800 w-full md:max-w-2xl md:rounded-xl rounded-t-2xl shadow-xl max-h-[90vh] overflow-y-auto transition-colors duration-300 animate-slide-up"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 모달 헤더 */}
-        <div className="sticky top-0 z-10 px-4 py-3 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-between rounded-t-2xl sm:rounded-t-xl">
+        <div className="sticky top-0 z-10 px-4 py-3 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex items-center justify-between rounded-t-2xl md:rounded-t-xl">
           <h2 id="transaction-form-title" className="text-lg font-bold text-gray-900 dark:text-white transition-colors duration-300">
             {editingTransaction ? '거래 내역 수정' : '거래 내역 추가'}
           </h2>

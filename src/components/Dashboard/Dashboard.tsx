@@ -108,8 +108,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div>
-      {/* 오늘 날짜 및 시간 표시 - 1분마다 업데이트 */}
-      <CurrentTimeDisplay updateInterval={60000} />
+      {/* 오늘 날짜 표시 */}
+      <CurrentTimeDisplay />
 
       <CurrencySelector />
 

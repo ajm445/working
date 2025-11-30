@@ -1,24 +1,9 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { memo } from 'react';
 import { getKSTDateTime } from '../../utils/dateUtils';
 
-interface CurrentTimeDisplayProps {
-  updateInterval?: number; // 밀리초 단위, 기본값 1000 (1초)
-}
-
 // React.memo로 감싸서 props가 변경되지 않으면 재렌더링 방지
-const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInterval = 1000 }) => {
-  const [currentTime, setCurrentTime] = useState(getKSTDateTime());
-
-  useEffect((): (() => void) => {
-    // 초기화 시 즉시 시간 업데이트
-    setCurrentTime(getKSTDateTime());
-
-    const timer = setInterval(() => {
-      setCurrentTime(getKSTDateTime());
-    }, updateInterval);
-
-    return () => clearInterval(timer);
-  }, [updateInterval]);
+const CurrentTimeDisplay: React.FC = memo(() => {
+  const currentTime = getKSTDateTime();
 
   // 오늘 날짜 포맷팅
   const formatTodayDate = (date: Date): string => {
@@ -30,34 +15,12 @@ const CurrentTimeDisplay: React.FC<CurrentTimeDisplayProps> = memo(({ updateInte
     });
   };
 
-  // 현재 시간 포맷팅 (am/pm)
-  const formatTime = (date: Date): string => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const period = hours >= 12 ? 'pm' : 'am';
-    const displayHours = hours % 12 || 12;
-    return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
-  };
-
   return (
     <div className="mb-6 text-center">
-      {/* 모바일: 세로 레이아웃 (날짜 상단, 시간 하단) */}
-      <div className="inline-flex sm:hidden flex-col gap-1 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors duration-300">
-        <div className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 transition-colors duration-300">
+      {/* 날짜만 표시 (모든 화면 크기) */}
+      <div className="inline-flex px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors duration-300">
+        <span className="text-base sm:text-lg font-semibold text-indigo-800 dark:text-indigo-300 transition-colors duration-300">
           {formatTodayDate(currentTime)}
-        </div>
-        <div className="text-base font-semibold text-indigo-600 dark:text-indigo-400 transition-colors duration-300">
-          {formatTime(currentTime)}
-        </div>
-      </div>
-
-      {/* 데스크톱/태블릿: 가로 레이아웃 (기존) */}
-      <div className="hidden sm:inline-flex items-center gap-4 px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors duration-300">
-        <span className="text-lg font-semibold text-indigo-800 dark:text-indigo-300 transition-colors duration-300">
-          오늘: {formatTodayDate(currentTime)}
-        </span>
-        <span className="text-lg font-semibold text-indigo-600 dark:text-indigo-400 transition-colors duration-300">
-          {formatTime(currentTime)}
         </span>
       </div>
     </div>

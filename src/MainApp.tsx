@@ -363,7 +363,8 @@ const ExpenseTracker: React.FC = () => {
       />
 
       {/* Add Transaction Button - 요약 보기에서만 표시 */}
-      {viewMode === 'summary' && (
+      {/* 모달 방식으로 통합되어 주석처리 */}
+      {/* {viewMode === 'summary' && (
         <div>
           <button
             onClick={() => handleAddTransactionWithDate()}
@@ -373,7 +374,7 @@ const ExpenseTracker: React.FC = () => {
             내역 추가하기
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Add/Edit Transaction Form */}
       {(showAddForm || editingTransaction) && (
@@ -390,10 +391,12 @@ const ExpenseTracker: React.FC = () => {
         />
       )}
 
-      {/* Transaction List - 요약 보기일 때만 표시 */}
+      {/* Transaction List - 요약 보기일 때만 표시 (최신순 7개) */}
       {viewMode === 'summary' && (
         <TransactionList
-          transactions={transactions}
+          transactions={transactions
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 7)}
           onDeleteTransaction={deleteTransaction}
           onEditTransaction={handleEditTransaction}
         />
