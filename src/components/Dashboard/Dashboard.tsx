@@ -226,7 +226,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {currentViewMode === 'statistics' && (
-        <StatisticsDashboard transactions={transactions} />
+        <StatisticsDashboard
+          transactions={transactions}
+          recurringExpenses={recurringExpenses}
+        />
       )}
 
       {currentViewMode === 'recurring-expenses' && (

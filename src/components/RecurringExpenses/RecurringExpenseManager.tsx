@@ -55,10 +55,9 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
   // 고정지출 로드
   useEffect(() => {
     const loadExpenses = async (): Promise<void> => {
-      // 로그아웃 시 로컬 데이터 초기화
+      // 비로그인 상태일 때는 외부에서 props로 관리하므로 로드하지 않음
       if (!user) {
-        console.log('🔄 User logged out, clearing recurring expenses');
-        setExpenses([]);
+        console.log('📦 Non-logged in mode - using external expenses from props');
         setLoading(false);
         return;
       }

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { Transaction } from '../../types/transaction';
+import type { RecurringExpense } from '../../types/database';
 import type { StatisticsPeriod } from '../../types/statistics';
 import { generateStatistics } from '../../utils/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
@@ -10,16 +11,17 @@ import WeekdayBarChart from './WeekdayBarChart';
 
 interface StatisticsDashboardProps {
   transactions: Transaction[];
+  recurringExpenses?: RecurringExpense[];
 }
 
-const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions }) => {
+const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions, recurringExpenses = [] }) => {
   const [period, setPeriod] = useState<StatisticsPeriod>('1month');
   const { currentCurrency, exchangeRates } = useCurrency();
 
   // 통계 데이터 생성
   const statistics = useMemo(() => {
-    return generateStatistics(transactions, period);
-  }, [transactions, period]);
+    return generateStatistics(transactions, recurringExpenses, period);
+  }, [transactions, recurringExpenses, period]);
 
   // 통화 변환 함수
   const convertAmount = (amountInKRW: number): number => {

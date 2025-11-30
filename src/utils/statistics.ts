@@ -3,6 +3,7 @@
  */
 
 import type { Transaction } from '../types/transaction';
+import type { RecurringExpense } from '../types/database';
 import type {
   MonthlyTrendData,
   CategoryExpenseData,
@@ -14,6 +15,7 @@ import type {
 import { CHART_COLORS } from '../types/statistics';
 import { parseTransactionDate } from './calendar';
 import { getKSTDate } from './dateUtils';
+import { calculateMonthlyRecurringExpense } from './calculations';
 
 /**
  * 월 문자열을 "N월" 형식으로 변환
@@ -83,10 +85,11 @@ export const filterTransactionsByPeriod = (
 };
 
 /**
- * 월별 트렌드 데이터 생성
+ * 월별 트렌드 데이터 생성 (고정지출 포함)
  */
 export const generateMonthlyTrend = (
   transactions: Transaction[],
+  recurringExpenses: RecurringExpense[],
   period: StatisticsPeriod = '6months'
 ): MonthlyTrendData[] => {
   const filteredTransactions = filterTransactionsByPeriod(transactions, period);
@@ -110,6 +113,12 @@ export const generateMonthlyTrend = (
     }
   });
 
+  // 고정지출을 각 월에 추가
+  const recurringExpenseAmount = calculateMonthlyRecurringExpense(recurringExpenses);
+  monthlyMap.forEach(monthData => {
+    monthData.expense += recurringExpenseAmount;
+  });
+
   // 배열로 변환 및 정렬
   const monthlyTrend: MonthlyTrendData[] = Array.from(monthlyMap.entries())
     .map(([month, data]) => ({
@@ -125,10 +134,11 @@ export const generateMonthlyTrend = (
 };
 
 /**
- * 카테고리별 지출 분포 데이터 생성
+ * 카테고리별 지출 분포 데이터 생성 (고정지출 포함)
  */
 export const generateCategoryExpense = (
   transactions: Transaction[],
+  recurringExpenses: RecurringExpense[],
   period: StatisticsPeriod = 'all'
 ): CategoryExpenseData[] => {
   const filteredTransactions = filterTransactionsByPeriod(transactions, period);
@@ -146,6 +156,16 @@ export const generateCategoryExpense = (
     categoryMap.set(category, currentAmount + transaction.amountInKRW);
     totalExpense += transaction.amountInKRW;
   });
+
+  // 고정지출을 카테고리별로 추가 (활성화된 것만)
+  recurringExpenses
+    .filter(expense => expense.is_active)
+    .forEach(expense => {
+      const category = expense.category;
+      const currentAmount = categoryMap.get(category) || 0;
+      categoryMap.set(category, currentAmount + expense.amount_in_krw);
+      totalExpense += expense.amount_in_krw;
+    });
 
   // 배열로 변환 및 정렬 (금액 내림차순)
   const categoryExpense: CategoryExpenseData[] = Array.from(categoryMap.entries())
@@ -200,10 +220,11 @@ export const generateWeekdayExpense = (
 };
 
 /**
- * 통계 요약 정보 생성
+ * 통계 요약 정보 생성 (고정지출 포함)
  */
 export const generateStatisticsSummary = (
   transactions: Transaction[],
+  recurringExpenses: RecurringExpense[],
   period: StatisticsPeriod = 'all'
 ): StatisticsSummary => {
   const filteredTransactions = filterTransactionsByPeriod(transactions, period);
@@ -216,7 +237,11 @@ export const generateStatisticsSummary = (
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amountInKRW, 0);
 
-  const totalBalance = totalIncome - totalExpense;
+  // 고정지출 추가
+  const recurringExpenseAmount = calculateMonthlyRecurringExpense(recurringExpenses);
+  const totalExpenseWithRecurring = totalExpense + recurringExpenseAmount;
+
+  const totalBalance = totalIncome - totalExpenseWithRecurring;
 
   // 날짜 범위 계산
   const dates = filteredTransactions.map(t => parseTransactionDate(t.date));
@@ -232,10 +257,10 @@ export const generateStatisticsSummary = (
     : 1;
 
   const averageDailyIncome = totalIncome / dayCount;
-  const averageDailyExpense = totalExpense / dayCount;
+  const averageDailyExpense = totalExpenseWithRecurring / dayCount;
 
-  // 가장 많이 지출한 카테고리
-  const categoryExpense = generateCategoryExpense(transactions, period);
+  // 가장 많이 지출한 카테고리 (고정지출 포함)
+  const categoryExpense = generateCategoryExpense(transactions, recurringExpenses, period);
   const mostExpensiveCategory = categoryExpense[0]?.category || '없음';
   const mostExpensiveCategoryAmount = categoryExpense[0]?.amount || 0;
 
@@ -260,7 +285,7 @@ export const generateStatisticsSummary = (
 
   return {
     totalIncome,
-    totalExpense,
+    totalExpense: totalExpenseWithRecurring,
     totalBalance,
     averageDailyIncome,
     averageDailyExpense,
@@ -273,16 +298,17 @@ export const generateStatisticsSummary = (
 };
 
 /**
- * 전체 통계 데이터 생성
+ * 전체 통계 데이터 생성 (고정지출 포함)
  */
 export const generateStatistics = (
   transactions: Transaction[],
+  recurringExpenses: RecurringExpense[],
   period: StatisticsPeriod = '6months'
 ): StatisticsData => {
   return {
-    summary: generateStatisticsSummary(transactions, period),
-    monthlyTrend: generateMonthlyTrend(transactions, period),
-    categoryExpense: generateCategoryExpense(transactions, period),
+    summary: generateStatisticsSummary(transactions, recurringExpenses, period),
+    monthlyTrend: generateMonthlyTrend(transactions, recurringExpenses, period),
+    categoryExpense: generateCategoryExpense(transactions, recurringExpenses, period),
     weekdayExpense: generateWeekdayExpense(transactions, period),
   };
 };

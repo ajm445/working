@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import type { TransactionFormData, Transaction } from '../../types';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, SUPPORTED_CURRENCIES } from '../../types';
+import { EXPENSE_CATEGORY_GROUPS, INCOME_CATEGORIES, SUPPORTED_CURRENCIES } from '../../types';
 import { convertToKRW, getCurrencySymbol } from '../../utils/currency';
 import { useCurrency } from '../../hooks/useCurrency';
 import {
@@ -218,7 +218,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       : formattedInteger;
   };
 
-  const categories = formData.type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
   const currencySymbol = getCurrencySymbol(formData.currency);
 
   // 확인 모달 - 계속 추가할지 확인
@@ -314,7 +313,7 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {/* 금액 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">
@@ -328,23 +327,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
               placeholder="0.00"
             />
-          </div>
-
-          {/* 카테고리 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors duration-300">카테고리</label>
-            <select
-              value={formData.category}
-              onChange={(e) => handleInputChange('category', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-            >
-              <option value="">카테고리 선택</option>
-              {categories.map(category => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
           </div>
 
           {/* 날짜 */}
@@ -363,6 +345,59 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        {/* 카테고리 */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
+            카테고리 {!formData.category && <span className="text-red-500 dark:text-red-400">*</span>}
+          </label>
+          {formData.type === 'expense' ? (
+            // 지출 카테고리 - 그룹별 버튼
+            <div className="space-y-3">
+              {Object.entries(EXPENSE_CATEGORY_GROUPS).map(([groupName, groupCategories]) => (
+                <div key={groupName}>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 transition-colors duration-300">
+                    {groupName}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {groupCategories.map(category => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => handleInputChange('category', category)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          formData.category === category
+                            ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md scale-105'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // 수입 카테고리 - 간단한 버튼 그리드
+            <div className="grid grid-cols-3 gap-2">
+              {INCOME_CATEGORIES.map(category => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => handleInputChange('category', category)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    formData.category === category
+                      ? 'bg-green-600 dark:bg-green-500 text-white shadow-md scale-105'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="mb-4">

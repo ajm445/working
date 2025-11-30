@@ -31,6 +31,14 @@ const ExpenseTracker: React.FC = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
+  // 임시 모드에서 고정지출이 변경될 때 로컬스토리지에 저장
+  useEffect(() => {
+    if (!user && recurringExpenses.length >= 0) {
+      console.log('💾 Saving recurring expenses to localStorage:', recurringExpenses.length);
+      localStorage.setItem('temp_recurring_expenses', JSON.stringify(recurringExpenses));
+    }
+  }, [recurringExpenses, user]);
+
   // 거래 내역 로드 및 로그아웃 시 초기화
   useEffect(() => {
     const loadTransactions = async (): Promise<void> => {
@@ -63,10 +71,22 @@ const ExpenseTracker: React.FC = () => {
   // 고정지출 로드
   useEffect(() => {
     const loadRecurringExpenses = async (): Promise<void> => {
-      // 로그인 안 된 상태면 빈 배열로 초기화
+      // 로그인 안 된 상태면 로컬스토리지에서 로드
       if (!user) {
-        console.log('🔄 User logged out, clearing recurring expenses');
-        setRecurringExpenses([]);
+        console.log('📦 Loading recurring expenses from localStorage (temporary mode)');
+        const stored = localStorage.getItem('temp_recurring_expenses');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as RecurringExpense[];
+            console.log(`✅ Loaded ${parsed.length} recurring expenses from localStorage`);
+            setRecurringExpenses(parsed);
+          } catch (error) {
+            console.error('Failed to parse recurring expenses from localStorage:', error);
+            setRecurringExpenses([]);
+          }
+        } else {
+          setRecurringExpenses([]);
+        }
         return;
       }
 
