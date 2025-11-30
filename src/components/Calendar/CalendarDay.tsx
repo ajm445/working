@@ -36,43 +36,6 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
     return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
   };
 
-  // 모바일용 축약된 금액 표시
-  const formatAmountCompact = (amount: number): string => {
-    if (amount === 0) return '';
-
-    const convertedAmount = convertAmount(amount, 'KRW', currentCurrency);
-    const absAmount = Math.abs(convertedAmount);
-
-    let formattedAmount = '';
-
-    // 원화일 경우 만원/백만원 단위로 축약
-    if (currentCurrency === 'KRW') {
-      if (absAmount < 10000) {
-        // 1만원 미만: 천원 단위로 반올림하여 표시
-        formattedAmount = `${Math.round(absAmount / 1000)}k`;
-      } else if (absAmount < 1000000) {
-        // 1만원 ~ 99만원: 만원 단위로 표시
-        const manwon = Math.round(absAmount / 10000);
-        formattedAmount = `${manwon}만`;
-      } else {
-        // 100만원 이상: 백만원 단위로 소수점 1자리까지 표시
-        const million = (absAmount / 1000000).toFixed(1);
-        formattedAmount = `${million}M`;
-      }
-    } else {
-      // 달러, 엔화 등
-      if (absAmount < 1000) {
-        formattedAmount = Math.round(absAmount).toString();
-      } else if (absAmount < 1000000) {
-        formattedAmount = `${(absAmount / 1000).toFixed(1)}K`;
-      } else {
-        formattedAmount = `${(absAmount / 1000000).toFixed(1)}M`;
-      }
-    }
-
-    return convertedAmount < 0 ? `-${formattedAmount}` : formattedAmount;
-  };
-
   return (
     <div
       className={`
