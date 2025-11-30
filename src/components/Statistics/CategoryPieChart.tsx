@@ -8,15 +8,28 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { CategoryExpenseData } from '../../types/statistics';
+import type { CategoryBudget } from '../../types/database';
 import { useCurrency } from '../../hooks/useCurrency';
 import { formatCurrencyForStats } from '../../utils/currency';
 
 interface CategoryPieChartProps {
   data: CategoryExpenseData[];
+  budgets?: CategoryBudget[];
 }
 
-const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
+const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, budgets = [] }) => {
   const { currentCurrency, exchangeRates } = useCurrency();
+
+  // 예산 맵 생성
+  const budgetMap = useMemo(() => {
+    const map = new Map<string, number>();
+    budgets.forEach(budget => {
+      if (budget.is_active) {
+        map.set(budget.category, budget.budget_amount_in_krw);
+      }
+    });
+    return map;
+  }, [budgets]);
 
   // 통화 변환 함수 - useCallback으로 메모이제이션
   const convertAmount = useCallback((amountInKRW: number): number => {
@@ -133,46 +146,84 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
           <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3 transition-colors duration-300">
             상세 내역
           </h4>
-          {chartData.map((item, index) => (
-            <div
-              key={index}
-              className="group relative overflow-hidden bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-200 hover:shadow-md"
-            >
-              {/* 배경 프로그레스 바 */}
-              <div
-                className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 transition-all duration-300"
-                style={{ width: `${item.percentage}%` }}
-              />
+          {chartData.map((item, index) => {
+            const budgetInKRW = budgetMap.get(item.category);
+            const budgetAmount = budgetInKRW ? convertAmount(budgetInKRW) : null;
+            const budgetPercent = budgetAmount ? (item.amount / budgetAmount) * 100 : null;
+            const isOverBudget = budgetPercent !== null && budgetPercent > 100;
 
-              {/* 내용 */}
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded-full shadow-md ring-2 ring-white dark:ring-gray-800"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-300">
-                    {item.category}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:block px-2 py-1 bg-white/80 dark:bg-gray-700/80 rounded-md">
-                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                        {item.percentage.toFixed(1)}%
+            return (
+              <div
+                key={index}
+                className={`group relative overflow-hidden bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg p-3 sm:p-4 border transition-all duration-200 hover:shadow-md ${
+                  isOverBudget
+                    ? 'border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500'
+                }`}
+              >
+                {/* 배경 프로그레스 바 */}
+                <div
+                  className={`absolute inset-0 transition-all duration-300 ${
+                    isOverBudget
+                      ? 'bg-gradient-to-r from-red-50/50 to-orange-50/50 dark:from-red-900/20 dark:to-orange-900/20'
+                      : 'bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20'
+                  }`}
+                  style={{ width: `${item.percentage}%` }}
+                />
+
+                {/* 내용 */}
+                <div className="relative space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-4 h-4 rounded-full shadow-md ring-2 ring-white dark:ring-gray-800"
+                        style={{ backgroundColor: item.color }}
+                      />
+                      <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-300">
+                        {item.category}
+                      </span>
+                      {isOverBudget && (
+                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-semibold rounded-full">
+                          예산 초과
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="hidden sm:block px-2 py-1 bg-white/80 dark:bg-gray-700/80 rounded-md">
+                          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                            {item.percentage.toFixed(1)}%
+                          </span>
+                        </div>
+                        <span className="text-xs sm:hidden font-semibold text-indigo-600 dark:text-indigo-400">
+                          {item.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                      <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white transition-colors duration-300 min-w-[80px] sm:min-w-[100px] text-right">
+                        {formatCurrencyForStats(item.amount, currentCurrency)}
                       </span>
                     </div>
-                    <span className="text-xs sm:hidden font-semibold text-indigo-600 dark:text-indigo-400">
-                      {item.percentage.toFixed(1)}%
-                    </span>
                   </div>
-                  <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white transition-colors duration-300 min-w-[80px] sm:min-w-[100px] text-right">
-                    {formatCurrencyForStats(item.amount, currentCurrency)}
-                  </span>
+
+                  {/* 예산 정보 */}
+                  {budgetAmount !== null && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500 dark:text-gray-400">
+                        예산: {formatCurrencyForStats(budgetAmount, currentCurrency)}
+                      </span>
+                      <span className={`font-semibold ${
+                        isOverBudget
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-green-600 dark:text-green-400'
+                      }`}>
+                        {budgetPercent !== null && budgetPercent.toFixed(1)}% 사용
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

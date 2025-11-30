@@ -6,6 +6,7 @@ import { CurrencyContext } from '../../contexts/CurrencyContext';
 import type { RecurringExpense } from '../../types/database';
 import * as recurringExpenseService from '../../services/recurringExpenseService';
 import RecurringExpenseForm from './RecurringExpenseForm';
+import CategoryBudgetManager from './CategoryBudgetManager';
 
 interface RecurringExpenseManagerProps {
   expenses?: RecurringExpense[];
@@ -408,22 +409,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       )}
 
       {/* 카테고리 예산 탭 내용 */}
-      {activeSubTab === 'budget' && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">💰</span>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            카테고리별 예산 관리
-          </h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">
-            각 카테고리별로 월간 예산을 설정하고 지출을 관리하세요
-          </p>
-          <p className="text-sm text-yellow-600 dark:text-yellow-400">
-            🚧 곧 출시 예정입니다
-          </p>
-        </div>
-      )}
+      {activeSubTab === 'budget' && <CategoryBudgetManager />}
 
       {/* 고정지출 추가/수정 폼 모달 */}
       {showForm && (

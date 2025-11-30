@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Transaction } from '../../types/transaction';
-import type { RecurringExpense } from '../../types/database';
+import type { RecurringExpense, CategoryBudget } from '../../types/database';
 import type { StatisticsPeriod } from '../../types/statistics';
 import { generateStatistics } from '../../utils/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
 import { formatCurrencyForStats } from '../../utils/currency';
 import CategoryPieChart from './CategoryPieChart';
+import { fetchAllCategoryBudgets } from '../../services/categoryBudgetService';
 
 interface StatisticsDashboardProps {
   transactions: Transaction[];
@@ -14,7 +15,19 @@ interface StatisticsDashboardProps {
 
 const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions, recurringExpenses = [] }) => {
   const [period, setPeriod] = useState<StatisticsPeriod>('1month');
+  const [budgets, setBudgets] = useState<CategoryBudget[]>([]);
   const { currentCurrency, exchangeRates } = useCurrency();
+
+  // 예산 데이터 로드
+  useEffect(() => {
+    const loadBudgets = async () => {
+      const { data } = await fetchAllCategoryBudgets();
+      if (data) {
+        setBudgets(data);
+      }
+    };
+    loadBudgets();
+  }, []);
 
   // 통계 데이터 생성
   const statistics = useMemo(() => {
@@ -150,7 +163,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions,
       </div>
 
       {/* 카테고리별 지출 분포 */}
-      <CategoryPieChart data={statistics.categoryExpense} />
+      <CategoryPieChart data={statistics.categoryExpense} budgets={budgets} />
 
       {/* 추가 인사이트 - 모바일 간격 개선 */}
       <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow transition-colors duration-300">
