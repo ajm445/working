@@ -67,52 +67,113 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
     );
   }
 
-  return (
-    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow transition-colors duration-300">
-      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 transition-colors duration-300">
-        📊 카테고리별 지출 분포
-      </h3>
-      <ResponsiveContainer width="100%" height={250}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            dataKey="amount"
-            nameKey="category"
-            cx="50%"
-            cy="50%"
-            outerRadius={100}
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend
-            wrapperStyle={{ fontSize: '14px' }}
-            iconType="circle"
-          />
-        </PieChart>
-      </ResponsiveContainer>
+  // 총 지출 계산
+  const totalExpense = useMemo(() =>
+    chartData.reduce((sum, item) => sum + item.amount, 0),
+    [chartData]
+  );
 
-      {/* 카테고리별 상세 목록 */}
-      <div className="mt-4 space-y-2">
-        {chartData.map((item, index) => (
-          <div key={index} className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-3 h-3 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-gray-700">{item.category}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-gray-500">{item.percentage.toFixed(1)}%</span>
-              <span className="font-semibold text-gray-900">
-                {formatCurrencyForStats(item.amount, currentCurrency)}
-              </span>
-            </div>
+  return (
+    <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl">
+      {/* 헤더 */}
+      <div className="bg-gradient-to-r from-indigo-500 to-purple-600 dark:from-indigo-600 dark:to-purple-700 p-4 sm:p-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+            <span className="text-2xl">📊</span>
           </div>
-        ))}
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold text-white">
+              카테고리별 지출 분포
+            </h3>
+            <p className="text-sm text-indigo-100 mt-0.5">
+              총 지출: <span className="font-semibold">{formatCurrencyForStats(totalExpense, currentCurrency)}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 sm:p-6">
+        {/* 차트 영역 */}
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm transition-colors duration-300 mb-6">
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart>
+              <Pie
+                data={chartData}
+                dataKey="amount"
+                nameKey="category"
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={110}
+                paddingAngle={2}
+                animationDuration={800}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.color}
+                    strokeWidth={2}
+                    stroke="#fff"
+                    className="dark:stroke-gray-800"
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                wrapperStyle={{ fontSize: '13px', fontWeight: '500' }}
+                iconType="circle"
+                iconSize={10}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 카테고리별 상세 목록 - 개선된 디자인 */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-3 transition-colors duration-300">
+            상세 내역
+          </h4>
+          {chartData.map((item, index) => (
+            <div
+              key={index}
+              className="group relative overflow-hidden bg-gradient-to-r from-gray-50 to-white dark:from-gray-700/50 dark:to-gray-800/50 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-600 hover:border-indigo-300 dark:hover:border-indigo-500 transition-all duration-200 hover:shadow-md"
+            >
+              {/* 배경 프로그레스 바 */}
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 transition-all duration-300"
+                style={{ width: `${item.percentage}%` }}
+              />
+
+              {/* 내용 */}
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-4 h-4 rounded-full shadow-md ring-2 ring-white dark:ring-gray-800"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="text-sm sm:text-base font-medium text-gray-800 dark:text-gray-200 transition-colors duration-300">
+                    {item.category}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:block px-2 py-1 bg-white/80 dark:bg-gray-700/80 rounded-md">
+                      <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                        {item.percentage.toFixed(1)}%
+                      </span>
+                    </div>
+                    <span className="text-xs sm:hidden font-semibold text-indigo-600 dark:text-indigo-400">
+                      {item.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                  <span className="text-sm sm:text-base font-bold text-gray-900 dark:text-white transition-colors duration-300 min-w-[80px] sm:min-w-[100px] text-right">
+                    {formatCurrencyForStats(item.amount, currentCurrency)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

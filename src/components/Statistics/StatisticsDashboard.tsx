@@ -5,9 +5,7 @@ import type { StatisticsPeriod } from '../../types/statistics';
 import { generateStatistics } from '../../utils/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
 import { formatCurrencyForStats } from '../../utils/currency';
-import MonthlyTrendChart from './MonthlyTrendChart';
 import CategoryPieChart from './CategoryPieChart';
-import WeekdayBarChart from './WeekdayBarChart';
 
 interface StatisticsDashboardProps {
   transactions: Transaction[];
@@ -151,15 +149,8 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions,
         </div>
       </div>
 
-      {/* 차트들 - 모바일 간격 개선 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <MonthlyTrendChart data={statistics.monthlyTrend} />
-        <CategoryPieChart data={statistics.categoryExpense} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:gap-6">
-        <WeekdayBarChart data={statistics.weekdayExpense} />
-      </div>
+      {/* 카테고리별 지출 분포 */}
+      <CategoryPieChart data={statistics.categoryExpense} />
 
       {/* 추가 인사이트 - 모바일 간격 개선 */}
       <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow transition-colors duration-300">
