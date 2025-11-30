@@ -153,65 +153,61 @@ const Dashboard: React.FC<DashboardProps> = ({
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors touch-manipulation
+              px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors touch-manipulation
               ${currentViewMode === 'summary'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              <span className="text-base sm:text-lg">📊</span>
-              <span className="hidden sm:inline">요약 보기</span>
-              <span className="sm:hidden">요약</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">📊</span>
+              <span className="text-[10px] sm:text-sm">요약</span>
             </div>
           </button>
           <button
             onClick={() => handleViewModeChange('calendar')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
+              px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
               ${currentViewMode === 'calendar'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              <span className="text-base sm:text-lg">📅</span>
-              <span className="hidden sm:inline">캘린더 보기</span>
-              <span className="sm:hidden">캘린더</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">📅</span>
+              <span className="text-[10px] sm:text-sm">캘린더</span>
             </div>
           </button>
           <button
             onClick={() => handleViewModeChange('recurring-expenses')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
+              px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
               ${currentViewMode === 'recurring-expenses'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              <span className="text-base sm:text-lg">💳</span>
-              <span className="hidden sm:inline">고정지출</span>
-              <span className="sm:hidden">고정</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">💳</span>
+              <span className="text-[10px] sm:text-sm">고정</span>
             </div>
           </button>
           <button
             onClick={() => handleViewModeChange('statistics')}
             className={`
-              px-2 sm:px-4 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
+              px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
               ${currentViewMode === 'statistics'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
               }
             `}
           >
-            <div className="flex items-center justify-center gap-1 sm:gap-2">
-              <span className="text-base sm:text-lg">📈</span>
-              <span className="hidden sm:inline">통계 분석</span>
-              <span className="sm:hidden">통계</span>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">📈</span>
+              <span className="text-[10px] sm:text-sm">통계</span>
             </div>
           </button>
         </div>

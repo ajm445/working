@@ -424,35 +424,38 @@ const MainApp: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors duration-300">
-                <span className="text-white font-bold">
+        <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+              <div className="w-8 h-8 flex-shrink-0 bg-indigo-600 dark:bg-indigo-500 rounded-lg flex items-center justify-center transition-colors duration-300">
+                <span className="text-white font-bold text-sm sm:text-base">
                   {currentMode === 'initial-cost-calculator' ? '✈️' : '💰'}
                 </span>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300">{title}</h1>
-                <p className="text-gray-600 dark:text-gray-300 text-sm transition-colors duration-300">{subtitle}</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-300 truncate">{title}</h1>
+                <p className="text-gray-600 dark:text-gray-300 text-xs sm:text-sm transition-colors duration-300 hidden sm:block">{subtitle}</p>
               </div>
             </div>
 
             {/* 테마 토글 및 사용자 프로필 또는 로그인 버튼 */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
               {/* 다크 모드 토글 버튼 */}
               <ThemeToggle />
 
               {user ? (
                 // 로그인된 상태
                 <>
+                  {/* 아바타 이미지 */}
                   {profile?.avatar_url && (
                     <img
                       src={profile.avatar_url}
                       alt={profile.username || profile.display_name || 'User'}
-                      className="w-8 h-8 rounded-full"
+                      className="w-8 h-8 rounded-full hidden sm:block"
                     />
                   )}
+
+                  {/* 데스크톱: 사용자 이름과 버튼 표시 */}
                   <div className="hidden sm:block text-right">
                     <p className="text-sm font-medium text-gray-900 dark:text-white transition-colors duration-300">
                       {profile?.username || profile?.display_name || profile?.email}
@@ -473,6 +476,56 @@ const MainApp: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  {/* 모바일: 설정 및 로그아웃 버튼만 표시 */}
+                  <div className="flex sm:hidden items-center gap-2">
+                    <button
+                      onClick={handleOpenAccountModal}
+                      className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                      aria-label="계정 관리"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => void handleSignOut()}
+                      className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      aria-label="로그아웃"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </>
               ) : (
                 // 로그인 안 된 상태
@@ -482,9 +535,10 @@ const MainApp: React.FC = () => {
                   </div>
                   <button
                     onClick={handleGoToLogin}
-                    className="bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm"
+                    className="bg-indigo-600 dark:bg-indigo-500 text-white px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-xs sm:text-sm whitespace-nowrap"
                   >
-                    로그인 / 회원가입
+                    <span className="hidden sm:inline">로그인 / 회원가입</span>
+                    <span className="sm:hidden">로그인</span>
                   </button>
                 </div>
               )}

@@ -61,18 +61,18 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data }) => {
 
   if (data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-80 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
-        <p className="text-gray-500 dark:text-gray-400 transition-colors duration-300">표시할 데이터가 없습니다</p>
+      <div className="flex items-center justify-center h-48 sm:h-64 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 transition-colors duration-300">표시할 데이터가 없습니다</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors duration-300">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 transition-colors duration-300">
+    <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow transition-colors duration-300">
+      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 transition-colors duration-300">
         📊 카테고리별 지출 분포
       </h3>
-      <ResponsiveContainer width="100%" height={300}>
+      <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={chartData}
