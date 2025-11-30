@@ -149,6 +149,42 @@ export interface Database {
           updated_at?: string;
         };
       };
+      // 카테고리별 예산 테이블
+      category_budgets: {
+        Row: {
+          id: string;
+          user_id: string;
+          category: string;
+          budget_amount: number;
+          currency: string;
+          budget_amount_in_krw: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          category: string;
+          budget_amount: number;
+          currency?: string;
+          budget_amount_in_krw: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          category?: string;
+          budget_amount?: number;
+          currency?: string;
+          budget_amount_in_krw?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -174,6 +210,10 @@ export type TransactionUpdate = Database['public']['Tables']['transactions']['Up
 export type RecurringExpense = Database['public']['Tables']['recurring_expenses']['Row'];
 export type RecurringExpenseInsert = Database['public']['Tables']['recurring_expenses']['Insert'];
 export type RecurringExpenseUpdate = Database['public']['Tables']['recurring_expenses']['Update'];
+
+export type CategoryBudget = Database['public']['Tables']['category_budgets']['Row'];
+export type CategoryBudgetInsert = Database['public']['Tables']['category_budgets']['Insert'];
+export type CategoryBudgetUpdate = Database['public']['Tables']['category_budgets']['Update'];
 
 // 사용자 설정 타입
 export interface UserSettings {

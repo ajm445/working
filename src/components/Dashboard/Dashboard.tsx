@@ -192,7 +192,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           >
             <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
               <span className="text-lg sm:text-xl">💳</span>
-              <span className="text-[10px] sm:text-sm">고정</span>
+              <span className="text-[10px] sm:text-sm">고정지출</span>
             </div>
           </button>
           <button
