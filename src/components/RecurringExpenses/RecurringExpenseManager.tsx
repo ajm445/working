@@ -198,7 +198,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
     );
   };
 
-  // 월별 총액 계산 (현재 선택된 통화 기준, 생성일 이후만 포함)
+  // 월별 총액 계산 (현재 선택된 통화 기준, 이번 달 전체 예상 금액 - 미래 포함)
   const calculateMonthlyTotalInCurrentCurrency = (): number => {
     const today = new Date();
     const currentYear = today.getFullYear();
@@ -218,7 +218,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
         // 이번 달의 마지막 날 확인
         const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-        // 생성일 이후이고, 이번 달에 유효한 날짜인 경우만 포함
+        // 생성일 이후이고, 이번 달에 유효한 날짜인 경우 포함 (미래 날짜도 포함)
         return expenseDate >= createdDate && dayOfMonth <= lastDayOfMonth;
       })
       .reduce((total, expense) => {

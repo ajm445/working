@@ -127,12 +127,16 @@ export const generateMonthlyTrend = (
     }
   });
 
-  // 고정지출을 각 월에 추가 - 생성일 이후 & 해당 월에 실제로 발생하는 경우만
+  // 고정지출을 각 월에 추가 - 생성일 이후이고 오늘 이전만
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   recurringExpenses
     .filter(expense => expense.is_active)
     .forEach(expense => {
       const dayOfMonth = expense.day_of_month;
       const createdDate = new Date(expense.created_at);
+      createdDate.setHours(0, 0, 0, 0);
 
       monthlyMap.forEach((monthData, monthKey) => {
         // monthKey 형식: "2025-01"
@@ -142,11 +146,12 @@ export const generateMonthlyTrend = (
 
         // 해당 월의 고정지출 발생일
         const expenseDate = new Date(year, month, dayOfMonth);
+        expenseDate.setHours(0, 0, 0, 0);
 
-        // 고정지출 생성일 이후이고, 해당 월의 마지막 날보다 이전인 경우만 추가
+        // 고정지출 생성일 이후이고, 해당 월의 마지막 날보다 이전이며, 오늘 이하인 경우만 추가
         const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
 
-        if (expenseDate >= createdDate && dayOfMonth <= lastDayOfMonth) {
+        if (expenseDate >= createdDate && expenseDate <= today && dayOfMonth <= lastDayOfMonth) {
           monthData.expense += expense.amount_in_krw;
         }
       });
@@ -221,6 +226,9 @@ export const generateCategoryExpense = (
       }
     }
 
+    const todayForComparison = new Date();
+    todayForComparison.setHours(0, 0, 0, 0);
+
     recurringExpenses
       .filter(expense => expense.is_active)
       .forEach(expense => {
@@ -228,16 +236,21 @@ export const generateCategoryExpense = (
 
         // 고정지출 생성일 이후부터만 적용
         const createdDate = new Date(expense.created_at);
+        createdDate.setHours(0, 0, 0, 0);
         const effectiveStartDate = createdDate > startDate ? createdDate : startDate;
 
         let currentDate = new Date(effectiveStartDate.getFullYear(), effectiveStartDate.getMonth(), dayOfMonth);
+        currentDate.setHours(0, 0, 0, 0);
 
         if (currentDate < effectiveStartDate) {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
+        // 오늘 이전까지만 카운트 (미래 고정지출은 제외)
+        const effectiveEndDate = endDate < todayForComparison ? endDate : todayForComparison;
+
         let count = 0;
-        while (currentDate <= endDate) {
+        while (currentDate <= effectiveEndDate) {
           count++;
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
@@ -254,6 +267,9 @@ export const generateCategoryExpense = (
       const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
       const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
 
+      const todayForComparison = new Date();
+      todayForComparison.setHours(0, 0, 0, 0);
+
       recurringExpenses
         .filter(expense => expense.is_active)
         .forEach(expense => {
@@ -261,16 +277,21 @@ export const generateCategoryExpense = (
 
           // 고정지출 생성일 이후부터만 적용
           const createdDate = new Date(expense.created_at);
+          createdDate.setHours(0, 0, 0, 0);
           const effectiveStartDate = createdDate > minDate ? createdDate : minDate;
 
           let currentDate = new Date(effectiveStartDate.getFullYear(), effectiveStartDate.getMonth(), dayOfMonth);
+          currentDate.setHours(0, 0, 0, 0);
 
           if (currentDate < effectiveStartDate) {
             currentDate.setMonth(currentDate.getMonth() + 1);
           }
 
+          // 오늘 이전까지만 카운트 (미래 고정지출은 제외)
+          const effectiveEndDate = maxDate < todayForComparison ? maxDate : todayForComparison;
+
           let count = 0;
-          while (currentDate <= maxDate) {
+          while (currentDate <= effectiveEndDate) {
             count++;
             currentDate.setMonth(currentDate.getMonth() + 1);
           }
@@ -391,6 +412,9 @@ export const generateStatisticsSummary = (
     }
 
     // 각 고정지출에 대해 기간 내 발생 횟수 계산
+    const todayForComparison = new Date();
+    todayForComparison.setHours(0, 0, 0, 0);
+
     recurringExpenses
       .filter(expense => expense.is_active)
       .forEach(expense => {
@@ -398,18 +422,23 @@ export const generateStatisticsSummary = (
 
         // 고정지출 생성일 이후부터만 적용
         const createdDate = new Date(expense.created_at);
+        createdDate.setHours(0, 0, 0, 0);
         const effectiveStartDate = createdDate > startDate ? createdDate : startDate;
 
         let currentDate = new Date(effectiveStartDate.getFullYear(), effectiveStartDate.getMonth(), dayOfMonth);
+        currentDate.setHours(0, 0, 0, 0);
 
         // 시작일보다 이전이면 다음 달로
         if (currentDate < effectiveStartDate) {
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
 
+        // 오늘 이전까지만 카운트 (미래 고정지출은 제외)
+        const effectiveEndDate = endDate < todayForComparison ? endDate : todayForComparison;
+
         // 기간 내의 모든 발생일 카운트
         let count = 0;
-        while (currentDate <= endDate) {
+        while (currentDate <= effectiveEndDate) {
           count++;
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
@@ -423,6 +452,9 @@ export const generateStatisticsSummary = (
       const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
       const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
 
+      const todayForComparison = new Date();
+      todayForComparison.setHours(0, 0, 0, 0);
+
       recurringExpenses
         .filter(expense => expense.is_active)
         .forEach(expense => {
@@ -430,16 +462,21 @@ export const generateStatisticsSummary = (
 
           // 고정지출 생성일 이후부터만 적용
           const createdDate = new Date(expense.created_at);
+          createdDate.setHours(0, 0, 0, 0);
           const effectiveStartDate = createdDate > minDate ? createdDate : minDate;
 
           let currentDate = new Date(effectiveStartDate.getFullYear(), effectiveStartDate.getMonth(), dayOfMonth);
+          currentDate.setHours(0, 0, 0, 0);
 
           if (currentDate < effectiveStartDate) {
             currentDate.setMonth(currentDate.getMonth() + 1);
           }
 
+          // 오늘 이전까지만 카운트 (미래 고정지출은 제외)
+          const effectiveEndDate = maxDate < todayForComparison ? maxDate : todayForComparison;
+
           let count = 0;
-          while (currentDate <= maxDate) {
+          while (currentDate <= effectiveEndDate) {
             count++;
             currentDate.setMonth(currentDate.getMonth() + 1);
           }

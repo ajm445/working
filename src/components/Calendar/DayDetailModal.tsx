@@ -29,11 +29,25 @@ const DayDetailModal: React.FC<DayDetailModalProps> = ({
 
   const summary = getDayTransactionSummary(day.transactions, day.date);
 
-  // 해당 날짜의 고정지출 필터링 (활성화된 것만)
+  // 해당 날짜의 고정지출 필터링 (활성화, 생성일 이후, 오늘 이하)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const dayOfMonth = day.date.getDate();
-  const relevantRecurringExpenses = recurringExpenses.filter(
-    expense => expense.is_active && expense.day_of_month === dayOfMonth
-  );
+  const relevantRecurringExpenses = recurringExpenses.filter(expense => {
+    if (!expense.is_active || expense.day_of_month !== dayOfMonth) return false;
+
+    // 고정지출 생성일
+    const createdDate = new Date(expense.created_at);
+    createdDate.setHours(0, 0, 0, 0);
+
+    // 모달에 표시할 날짜
+    const targetDate = new Date(day.date);
+    targetDate.setHours(0, 0, 0, 0);
+
+    // 생성일 이후이고 오늘 이하인 경우만 표시
+    return targetDate >= createdDate && targetDate <= today;
+  });
 
   // 고정지출 총액 계산
   const totalRecurringExpense = relevantRecurringExpenses.reduce(

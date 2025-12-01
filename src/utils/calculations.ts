@@ -65,12 +65,15 @@ export const calculateMonthlyExpense = (transactions: Transaction[], year: numbe
   return calculateTotalExpense(monthlyTransactions);
 };
 
-// 특정 월의 고정지출 합계 계산 (생성일 이후만 포함)
+// 특정 월의 고정지출 합계 계산 (생성일 이후이고 오늘 이전만 포함)
 export const calculateMonthlyRecurringExpense = (
   recurringExpenses: RecurringExpense[],
   year: number,
   month: number
 ): number => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 시간 제거하고 날짜만 비교
+
   return recurringExpenses
     .filter(expense => {
       if (!expense.is_active) return false;
@@ -78,15 +81,17 @@ export const calculateMonthlyRecurringExpense = (
       // 해당 월의 고정지출 발생일
       const dayOfMonth = expense.day_of_month;
       const expenseDate = new Date(year, month, dayOfMonth);
+      expenseDate.setHours(0, 0, 0, 0);
 
       // 고정지출 생성일
       const createdDate = new Date(expense.created_at);
+      createdDate.setHours(0, 0, 0, 0);
 
       // 해당 월의 마지막 날 확인 (예: 2월에 31일 고정지출은 제외)
       const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
 
-      // 생성일 이후이고, 해당 월에 유효한 날짜인 경우만 포함
-      return expenseDate >= createdDate && dayOfMonth <= lastDayOfMonth;
+      // 생성일 이후이고, 해당 월에 유효한 날짜이며, 오늘 이하인 경우만 포함
+      return expenseDate >= createdDate && expenseDate <= today && dayOfMonth <= lastDayOfMonth;
     })
     .reduce((sum, expense) => sum + expense.amount_in_krw, 0);
 };

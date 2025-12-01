@@ -17,16 +17,24 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
 
   const summary = getDayTransactionSummary(day.transactions, day.date, recurringExpenses);
 
-  // 해당 날짜의 고정지출이 있는지 확인 (생성일 이후만)
+  // 해당 날짜의 고정지출이 있는지 확인 (생성일 이후이고 오늘 이전만)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const dayOfMonth = day.date.getDate();
   const hasRecurringExpense = recurringExpenses.some(expense => {
     if (!expense.is_active || expense.day_of_month !== dayOfMonth) return false;
 
     // 고정지출 생성일
     const createdDate = new Date(expense.created_at);
+    createdDate.setHours(0, 0, 0, 0);
 
-    // 해당 날짜가 생성일 이후인지 확인
-    return day.date >= createdDate;
+    // 해당 날짜 준비
+    const targetDate = new Date(day.date);
+    targetDate.setHours(0, 0, 0, 0);
+
+    // 해당 날짜가 생성일 이후이고 오늘 이하인지 확인
+    return targetDate >= createdDate && targetDate <= today;
   });
 
   const formatAmount = (amount: number, showZero: boolean = false): string => {

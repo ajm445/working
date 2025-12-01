@@ -78,8 +78,11 @@ export const getDayTransactionSummary = (
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amountInKRW, 0);
 
-  // 해당 날짜에 고정지출이 있으면 추가 (생성일 이후만)
+  // 해당 날짜에 고정지출이 있으면 추가 (생성일 이후이고 오늘 이전만)
   if (recurringExpenses) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 시간 제거하고 날짜만 비교
+
     const dayOfMonth = date.getDate();
     const recurringExpenseAmount = recurringExpenses
       .filter(expense => {
@@ -87,9 +90,14 @@ export const getDayTransactionSummary = (
 
         // 고정지출 생성일
         const createdDate = new Date(expense.created_at);
+        createdDate.setHours(0, 0, 0, 0);
 
-        // 해당 날짜가 생성일 이후인지 확인
-        return date >= createdDate;
+        // 비교할 날짜도 시간 제거
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);
+
+        // 해당 날짜가 생성일 이후이고, 오늘 이하인 경우만 포함
+        return targetDate >= createdDate && targetDate <= today;
       })
       .reduce((sum, expense) => sum + expense.amount_in_krw, 0);
 
