@@ -235,6 +235,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <StatisticsDashboard
           transactions={transactions}
           recurringExpenses={recurringExpenses}
+          categoryBudgets={categoryBudgets}
         />
       )}
 

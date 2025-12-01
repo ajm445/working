@@ -11,23 +11,36 @@ import { fetchAllCategoryBudgets } from '../../services/categoryBudgetService';
 interface StatisticsDashboardProps {
   transactions: Transaction[];
   recurringExpenses?: RecurringExpense[];
+  categoryBudgets?: CategoryBudget[];
 }
 
-const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({ transactions, recurringExpenses = [] }) => {
+const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
+  transactions,
+  recurringExpenses = [],
+  categoryBudgets: externalBudgets
+}) => {
   const [period, setPeriod] = useState<StatisticsPeriod>('1month');
-  const [budgets, setBudgets] = useState<CategoryBudget[]>([]);
+  const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const { currentCurrency, exchangeRates } = useCurrency();
 
-  // 예산 데이터 로드
+  // 외부 props가 있으면 사용, 없으면 내부 상태 사용
+  const budgets = externalBudgets !== undefined ? externalBudgets : internalBudgets;
+
+  // 예산 데이터 로드 (외부 props가 없을 때만)
   useEffect(() => {
+    if (externalBudgets !== undefined) {
+      console.log('📦 Using external budgets from props');
+      return;
+    }
+
     const loadBudgets = async () => {
       const { data } = await fetchAllCategoryBudgets();
       if (data) {
-        setBudgets(data);
+        setInternalBudgets(data);
       }
     };
     loadBudgets();
-  }, []);
+  }, [externalBudgets]);
 
   // 통계 데이터 생성
   const statistics = useMemo(() => {
