@@ -70,7 +70,7 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
         </div>
         {/* 고정지출 표시 */}
         {hasRecurringExpense && day.isCurrentMonth && (
-          <span className="text-[8px] px-1 py-0.5 bg-purple-200 dark:bg-purple-800/70 text-purple-700 dark:text-purple-200 rounded font-medium transition-colors duration-200">
+          <span className="text-[6.5px] min-[360px]:text-[7px] min-[400px]:text-[8px] sm:text-[10px] md:text-xs lg:text-sm px-1 py-0.5 bg-purple-200 dark:bg-purple-800/70 text-purple-700 dark:text-purple-200 rounded font-medium whitespace-nowrap transition-colors duration-200">
             고정
           </span>
         )}
