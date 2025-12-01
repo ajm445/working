@@ -3,7 +3,7 @@ import { Plus, Edit2, Trash2, Power, Calendar } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { CurrencyContext } from '../../contexts/CurrencyContext';
-import type { RecurringExpense } from '../../types/database';
+import type { RecurringExpense, CategoryBudget } from '../../types/database';
 import * as recurringExpenseService from '../../services/recurringExpenseService';
 import RecurringExpenseForm from './RecurringExpenseForm';
 import CategoryBudgetManager from './CategoryBudgetManager';
@@ -11,13 +11,17 @@ import CategoryBudgetManager from './CategoryBudgetManager';
 interface RecurringExpenseManagerProps {
   expenses?: RecurringExpense[];
   onExpensesChange?: (expenses: RecurringExpense[]) => void;
+  budgets?: CategoryBudget[];
+  onBudgetsChange?: (budgets: CategoryBudget[]) => void;
 }
 
 type SubTab = 'recurring' | 'budget';
 
 const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
   expenses: externalExpenses,
-  onExpensesChange
+  onExpensesChange,
+  budgets: externalBudgets,
+  onBudgetsChange
 }) => {
   const { user } = useAuth();
   const currencyContext = useContext(CurrencyContext);
@@ -409,7 +413,12 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       )}
 
       {/* 카테고리 예산 탭 내용 */}
-      {activeSubTab === 'budget' && <CategoryBudgetManager />}
+      {activeSubTab === 'budget' && (
+        <CategoryBudgetManager
+          {...(externalBudgets !== undefined && { budgets: externalBudgets })}
+          {...(onBudgetsChange !== undefined && { onBudgetsChange: onBudgetsChange })}
+        />
+      )}
 
       {/* 고정지출 추가/수정 폼 모달 */}
       {showForm && (

@@ -5,7 +5,7 @@ import { useAuth } from './contexts/AuthContext';
 import { useAppMode } from './contexts/AppModeContext';
 import { useAnalyticsEvent } from './hooks/useAnalyticsEvent';
 import type { Transaction, TransactionFormData } from './types';
-import type { RecurringExpense } from './types/database';
+import type { RecurringExpense, CategoryBudget } from './types/database';
 import Dashboard from './components/Dashboard';
 import type { ViewMode } from './components/Dashboard';
 import { TransactionFormModal } from './components/TransactionForm';
@@ -24,6 +24,7 @@ const ExpenseTracker: React.FC = () => {
   const { trackAddTransaction, trackDeleteTransaction, trackViewChange } = useAnalyticsEvent();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]); // 고정지출 데이터
+  const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]); // 카테고리 예산 데이터
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
@@ -38,6 +39,14 @@ const ExpenseTracker: React.FC = () => {
       localStorage.setItem('temp_recurring_expenses', JSON.stringify(recurringExpenses));
     }
   }, [recurringExpenses, user]);
+
+  // 임시 모드에서 카테고리 예산이 변경될 때 로컬스토리지에 저장
+  useEffect(() => {
+    if (!user && categoryBudgets.length >= 0) {
+      console.log('💾 Saving category budgets to localStorage:', categoryBudgets.length);
+      localStorage.setItem('temp_category_budgets', JSON.stringify(categoryBudgets));
+    }
+  }, [categoryBudgets, user]);
 
   // 거래 내역 로드 및 로그아웃 시 초기화
   useEffect(() => {
@@ -103,6 +112,34 @@ const ExpenseTracker: React.FC = () => {
     };
 
     void loadRecurringExpenses();
+  }, [user]);
+
+  // 카테고리 예산 로드 (비로그인 모드만)
+  useEffect(() => {
+    const loadCategoryBudgets = async (): Promise<void> => {
+      // 로그인 안 된 상태면 로컬스토리지에서 로드
+      if (!user) {
+        console.log('📦 Loading category budgets from localStorage (temporary mode)');
+        const stored = localStorage.getItem('temp_category_budgets');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as CategoryBudget[];
+            console.log(`✅ Loaded ${parsed.length} category budgets from localStorage`);
+            setCategoryBudgets(parsed);
+          } catch (error) {
+            console.error('Failed to parse category budgets from localStorage:', error);
+            setCategoryBudgets([]);
+          }
+        } else {
+          setCategoryBudgets([]);
+        }
+      } else {
+        // 로그인 상태면 초기화하지 않음 (CategoryBudgetManager가 자체적으로 관리)
+        console.log('📥 User logged in, CategoryBudgetManager will handle budgets');
+      }
+    };
+
+    void loadCategoryBudgets();
   }, [user]);
 
   // 실시간 구독 설정 (다른 브라우저/탭에서의 변경사항 감지용)
@@ -372,6 +409,10 @@ const ExpenseTracker: React.FC = () => {
         transactions={transactions}
         recurringExpenses={recurringExpenses}
         onRecurringExpensesChange={setRecurringExpenses}
+        {...(!user && {
+          categoryBudgets: categoryBudgets,
+          onCategoryBudgetsChange: setCategoryBudgets,
+        })}
         onViewModeChange={(newMode) => {
           setViewMode(newMode);
           trackViewChange(newMode);

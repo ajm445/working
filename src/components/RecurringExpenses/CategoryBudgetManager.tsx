@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import type { CategoryBudget } from '../../types/database';
 import { EXPENSE_CATEGORIES } from '../../types/transaction';
 import { CurrencyContext } from '../../contexts/CurrencyContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   fetchAllCategoryBudgets,
   addCategoryBudget,
@@ -9,24 +10,44 @@ import {
   deleteCategoryBudget,
   subscribeToCategoryBudgets,
 } from '../../services/categoryBudgetService';
-import { supabase } from '../../lib/supabase';
+import toast from 'react-hot-toast';
 
 type Currency = 'KRW' | 'USD' | 'JPY';
+
+interface CategoryBudgetManagerProps {
+  budgets?: CategoryBudget[];
+  onBudgetsChange?: (budgets: CategoryBudget[]) => void;
+}
 
 /**
  * CategoryBudgetManager 컴포넌트
  * 카테고리별 월별 예산을 설정하고 관리하는 컴포넌트
  */
-const CategoryBudgetManager: React.FC = () => {
+const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
+  budgets: externalBudgets,
+  onBudgetsChange
+}) => {
+  const { user } = useAuth();
   const currencyContext = useContext(CurrencyContext);
   const currentCurrency = (currencyContext?.currentCurrency || 'KRW') as Currency;
   const exchangeRates = currencyContext?.exchangeRates;
 
-  const [budgets, setBudgets] = useState<CategoryBudget[]>([]);
+  const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // 내부 상태와 외부 props 동기화
+  const budgets = externalBudgets !== undefined ? externalBudgets : internalBudgets;
+  const setBudgets = (newBudgets: CategoryBudget[] | ((prev: CategoryBudget[]) => CategoryBudget[])) => {
+    const updatedBudgets = typeof newBudgets === 'function' ? newBudgets(budgets) : newBudgets;
+    if (onBudgetsChange) {
+      onBudgetsChange(updatedBudgets);
+    } else {
+      setInternalBudgets(updatedBudgets);
+    }
+  };
 
   // 통화 포맷팅
   const formatCurrency = (amount: number, currency: Currency): string => {
@@ -98,20 +119,40 @@ const CategoryBudgetManager: React.FC = () => {
     return value.replace(/,/g, '');
   };
 
-  // 사용자 인증 확인
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-      setUser(currentUser);
-    };
-    checkUser();
-  }, []);
-
   // 예산 데이터 로드
   useEffect(() => {
-    loadBudgets();
+    const loadBudgetsEffect = async (): Promise<void> => {
+      // 외부에서 props로 전달받은 경우 로드하지 않음
+      if (externalBudgets !== undefined) {
+        console.log('📦 Using external budgets from props');
+        setLoading(false);
+        return;
+      }
+
+      // 비로그인 상태일 때도 로드하지 않음
+      if (!user) {
+        console.log('📦 Non-logged in mode - no budgets to load');
+        setLoading(false);
+        return;
+      }
+
+      // 로그인 상태이고 외부 props가 없을 때만 Supabase에서 로드
+      console.log('📥 User logged in, loading category budgets from Supabase');
+      setLoading(true);
+      const { data, error: fetchError } = await fetchAllCategoryBudgets();
+
+      if (fetchError) {
+        console.error('Failed to load category budgets:', fetchError);
+        setError('예산 정보를 불러오는데 실패했습니다.');
+      } else if (data) {
+        setBudgets(data);
+        setError(null);
+      }
+
+      setLoading(false);
+    };
+
+    void loadBudgetsEffect();
   }, [user]);
 
   // 실시간 구독 설정
@@ -119,7 +160,7 @@ const CategoryBudgetManager: React.FC = () => {
     if (!user) return;
 
     const subscription = subscribeToCategoryBudgets(user.id, () => {
-      loadBudgets();
+      void loadBudgetsQuietly();
     });
 
     return () => {
@@ -127,22 +168,12 @@ const CategoryBudgetManager: React.FC = () => {
     };
   }, [user]);
 
-  const loadBudgets = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+  const loadBudgetsQuietly = async (): Promise<void> => {
+    if (!user) return;
 
-    try {
-      const { data, error: fetchError } = await fetchAllCategoryBudgets();
-      if (fetchError) throw fetchError;
-      setBudgets(data || []);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to load budgets:', err);
-      setError('예산 정보를 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
+    const { data } = await fetchAllCategoryBudgets();
+    if (data) {
+      setBudgets(data);
     }
   };
 
@@ -164,20 +195,51 @@ const CategoryBudgetManager: React.FC = () => {
       return;
     }
 
-    try {
-      const amountInKrw = convertCurrency(amount, newBudget.currency, 'KRW');
+    const amountInKrw = convertCurrency(amount, newBudget.currency, 'KRW');
 
-      const { error: addError } = await addCategoryBudget({
+    // 로그인 상태면 Supabase에 저장
+    if (user) {
+      try {
+        const { error: addError } = await addCategoryBudget({
+          category: newBudget.category,
+          budget_amount: amount,
+          currency: newBudget.currency,
+          budget_amount_in_krw: amountInKrw,
+        });
+
+        if (addError) throw addError;
+
+        // 데이터 새로고침
+        await loadBudgetsQuietly();
+
+        // 폼 초기화
+        setNewBudget({
+          category: '',
+          amount: '',
+          currency: currentCurrency,
+        });
+        setError(null);
+        setShowAddModal(false);
+        toast.success('예산이 추가되었습니다.');
+      } catch (err) {
+        console.error('Failed to add budget:', err);
+        setError('예산 추가에 실패했습니다.');
+      }
+    } else {
+      // 비로그인 상태면 로컬 메모리에만 저장
+      const localBudget: CategoryBudget = {
+        id: `local-${Date.now()}-${Math.random()}`,
+        user_id: 'local',
         category: newBudget.category,
         budget_amount: amount,
         currency: newBudget.currency,
         budget_amount_in_krw: amountInKrw,
-      });
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      if (addError) throw addError;
-
-      // 데이터 새로고침
-      await loadBudgets();
+      setBudgets([...budgets, localBudget]);
 
       // 폼 초기화
       setNewBudget({
@@ -186,9 +248,12 @@ const CategoryBudgetManager: React.FC = () => {
         currency: currentCurrency,
       });
       setError(null);
-    } catch (err) {
-      console.error('Failed to add budget:', err);
-      setError('예산 추가에 실패했습니다.');
+      setShowAddModal(false);
+      toast.success('예산이 추가되었습니다.');
+      toast('⚠️ 로그인하지 않아 데이터가 임시로만 저장됩니다.\n새로고침 시 데이터가 사라집니다.', {
+        icon: '⚠️',
+        duration: 4000,
+      });
     }
   };
 
@@ -212,46 +277,78 @@ const CategoryBudgetManager: React.FC = () => {
       return;
     }
 
-    try {
-      const amountInKrw = convertCurrency(
-        amount,
-        editingBudget.currency,
-        'KRW'
+    const amountInKrw = convertCurrency(
+      amount,
+      editingBudget.currency,
+      'KRW'
+    );
+
+    // 로그인 상태면 Supabase에 업데이트
+    if (user && !budgetId.startsWith('local-')) {
+      try {
+        const { error: updateError } = await updateCategoryBudget(budgetId, {
+          budget_amount: amount,
+          currency: editingBudget.currency,
+          budget_amount_in_krw: amountInKrw,
+        });
+
+        if (updateError) throw updateError;
+
+        // 데이터 새로고침
+        await loadBudgetsQuietly();
+
+        setEditingId(null);
+        setError(null);
+        toast.success('예산이 수정되었습니다.');
+      } catch (err) {
+        console.error('Failed to update budget:', err);
+        setError('예산 수정에 실패했습니다.');
+      }
+    } else {
+      // 비로그인 상태거나 로컬 데이터면 로컬에서만 수정
+      setBudgets(
+        budgets.map((b) =>
+          b.id === budgetId
+            ? {
+                ...b,
+                budget_amount: amount,
+                currency: editingBudget.currency,
+                budget_amount_in_krw: amountInKrw,
+                updated_at: new Date().toISOString(),
+              }
+            : b
+        )
       );
-
-      const { error: updateError } = await updateCategoryBudget(budgetId, {
-        budget_amount: amount,
-        currency: editingBudget.currency,
-        budget_amount_in_krw: amountInKrw,
-      });
-
-      if (updateError) throw updateError;
-
-      // 데이터 새로고침
-      await loadBudgets();
 
       setEditingId(null);
       setError(null);
-    } catch (err) {
-      console.error('Failed to update budget:', err);
-      setError('예산 수정에 실패했습니다.');
+      toast.success('예산이 수정되었습니다.');
     }
   };
 
   const handleDelete = async (budgetId: string) => {
     if (!confirm('정말 이 예산을 삭제하시겠습니까?')) return;
 
-    try {
-      const { error: deleteError } = await deleteCategoryBudget(budgetId);
-      if (deleteError) throw deleteError;
+    // 로그인 상태면 Supabase에서도 삭제
+    if (user && !budgetId.startsWith('local-')) {
+      try {
+        const { error: deleteError } = await deleteCategoryBudget(budgetId);
+        if (deleteError) throw deleteError;
 
-      // 데이터 새로고침
-      await loadBudgets();
+        // 데이터 새로고침
+        await loadBudgetsQuietly();
 
+        setError(null);
+        toast.success('예산이 삭제되었습니다.');
+      } catch (err) {
+        console.error('Failed to delete budget:', err);
+        setError('예산 삭제에 실패했습니다.');
+      }
+    } else {
+      // 비로그인 상태거나 로컬 데이터면 로컬에서만 삭제
+      setBudgets(budgets.filter((b) => b.id !== budgetId));
       setError(null);
-    } catch (err) {
-      console.error('Failed to delete budget:', err);
-      setError('예산 삭제에 실패했습니다.');
+      toast.success('예산이 삭제되었습니다.');
     }
   };
 
@@ -259,16 +356,6 @@ const CategoryBudgetManager: React.FC = () => {
   const availableCategories = EXPENSE_CATEGORIES.filter(
     (category) => !budgets.some((b) => b.category === category)
   );
-
-  if (!user) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 transition-colors duration-300">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          카테고리별 예산 기능은 로그인 후 사용할 수 있습니다.
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -282,87 +369,39 @@ const CategoryBudgetManager: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        </div>
-      )}
-
-      {/* 새 예산 추가 폼 */}
-      {availableCategories.length > 0 && (
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-4 sm:p-6 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            새 예산 추가
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* 카테고리 선택 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                카테고리
-              </label>
-              <select
-                value={newBudget.category}
-                onChange={(e) =>
-                  setNewBudget({ ...newBudget, category: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
-              >
-                <option value="">선택하세요</option>
-                {availableCategories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 금액 입력 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                월 예산 금액
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={newBudget.amount}
-                onChange={(e) => {
-                  const formatted = formatNumberWithCommas(e.target.value);
-                  setNewBudget({ ...newBudget, amount: formatted });
-                }}
-                placeholder="0"
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
-              />
-            </div>
-
-            {/* 통화 선택 */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                통화
-              </label>
-              <select
-                value={newBudget.currency}
-                onChange={(e) =>
-                  setNewBudget({
-                    ...newBudget,
-                    currency: e.target.value as Currency,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
-              >
-                <option value="KRW">KRW (₩)</option>
-                <option value="USD">USD ($)</option>
-                <option value="JPY">JPY (¥)</option>
-              </select>
-            </div>
+      {/* 카테고리 예산 설명 */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">💰</span>
+          <div>
+            <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-1">
+              카테고리 예산이란?
+            </h3>
+            <p className="text-sm text-purple-800 dark:text-purple-200">
+              돈을 효율적으로 관리하기 위해 매월 각 카테고리별로 얼마나 지출할지 미리 계획할 수 있습니다.
+              식비, 교통비, 쇼핑 등 카테고리별 예산을 설정하면 지출 현황을 한눈에 파악할 수 있습니다.
+            </p>
           </div>
+        </div>
+      </div>
 
+      {/* 예산 추가 버튼 */}
+      {availableCategories.length > 0 && (
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              카테고리별 예산 목록
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              각 카테고리별 월별 예산 금액
+            </p>
+          </div>
           <button
-            onClick={handleAddBudget}
-            className="mt-4 w-full sm:w-auto px-6 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors duration-300"
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
           >
-            추가
+            <span className="text-lg">+</span>
+            <span>예산 추가</span>
           </button>
         </div>
       )}
@@ -370,14 +409,33 @@ const CategoryBudgetManager: React.FC = () => {
       {/* 예산 목록 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 transition-colors duration-300">
         <div className="p-4 sm:p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            설정된 예산 ({budgets.length})
-          </h3>
+          {availableCategories.length === 0 && (
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              설정된 예산 ({budgets.length})
+            </h3>
+          )}
 
           {budgets.length === 0 ? (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-              설정된 예산이 없습니다. 위에서 새 예산을 추가해보세요.
-            </p>
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">💰</span>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                설정된 예산이 없습니다
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                카테고리별 예산을 설정하여 지출을 효율적으로 관리해보세요
+              </p>
+              {availableCategories.length > 0 && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
+                >
+                  <span className="text-lg">+</span>
+                  <span>첫 예산 추가하기</span>
+                </button>
+              )}
+            </div>
           ) : (
             <div className="space-y-3">
               {budgets.map((budget) => (
@@ -499,6 +557,115 @@ const CategoryBudgetManager: React.FC = () => {
           <p className="text-sm text-blue-600 dark:text-blue-400">
             모든 카테고리에 대한 예산이 설정되었습니다.
           </p>
+        </div>
+      )}
+
+      {/* 예산 추가 모달 */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                새 예산 추가
+              </h2>
+
+              {/* 에러 메시지 */}
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                {/* 카테고리 선택 - 버튼 그리드 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    카테고리 {!newBudget.category && <span className="text-red-500 dark:text-red-400">*</span>}
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {availableCategories.map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setNewBudget({ ...newBudget, category })}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                          newBudget.category === category
+                            ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md scale-105'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 금액 입력 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      월 예산 금액 {!newBudget.amount && <span className="text-red-500 dark:text-red-400">*</span>}
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={newBudget.amount}
+                      onChange={(e) => {
+                        const formatted = formatNumberWithCommas(e.target.value);
+                        setNewBudget({ ...newBudget, amount: formatted });
+                      }}
+                      placeholder="0"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
+                    />
+                  </div>
+
+                  {/* 통화 선택 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      통화
+                    </label>
+                    <select
+                      value={newBudget.currency}
+                      onChange={(e) =>
+                        setNewBudget({
+                          ...newBudget,
+                          currency: e.target.value as Currency,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors duration-300"
+                    >
+                      <option value="KRW">KRW (₩)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="JPY">JPY (¥)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleAddBudget}
+                  className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors duration-300"
+                >
+                  추가
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setError(null);
+                    setNewBudget({
+                      category: '',
+                      amount: '',
+                      currency: currentCurrency,
+                    });
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white font-medium rounded-lg transition-colors duration-300"
+                >
+                  취소
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

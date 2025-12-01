@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Transaction } from '../../types/transaction';
-import type { RecurringExpense } from '../../types/database';
+import type { RecurringExpense, CategoryBudget } from '../../types/database';
 import {
   calculateMonthlyIncome,
   calculateMonthlyExpenseWithRecurring,
@@ -33,6 +33,10 @@ interface DashboardProps {
   recurringExpenses?: RecurringExpense[];
   /** 고정지출 변경 시 호출되는 콜백 함수 */
   onRecurringExpensesChange?: (expenses: RecurringExpense[]) => void;
+  /** 카테고리 예산 내역 배열 */
+  categoryBudgets?: CategoryBudget[];
+  /** 카테고리 예산 변경 시 호출되는 콜백 함수 */
+  onCategoryBudgetsChange?: (budgets: CategoryBudget[]) => void;
   /** 뷰 모드 변경 시 호출되는 콜백 함수 */
   onViewModeChange?: (mode: ViewMode) => void;
   /** 현재 선택된 뷰 모드 (기본값: 'summary') */
@@ -66,6 +70,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   transactions,
   recurringExpenses = [],
   onRecurringExpensesChange,
+  categoryBudgets = [],
+  onCategoryBudgetsChange,
   onViewModeChange,
   currentViewMode = 'summary',
   onCalendarDateClick,
@@ -236,6 +242,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         <RecurringExpenseManager
           {...(recurringExpenses !== undefined && { expenses: recurringExpenses })}
           {...(onRecurringExpensesChange !== undefined && { onExpensesChange: onRecurringExpensesChange })}
+          {...(categoryBudgets !== undefined && { budgets: categoryBudgets })}
+          {...(onCategoryBudgetsChange !== undefined && { onBudgetsChange: onCategoryBudgetsChange })}
         />
       )}
     </div>
