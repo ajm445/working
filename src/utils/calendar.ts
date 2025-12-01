@@ -1,4 +1,5 @@
 import type { Transaction } from '../types/transaction';
+import type { RecurringExpense } from '../types/database';
 import type { CalendarDay, CalendarWeek, CalendarMonth, DayTransactionSummary } from '../types/calendar';
 import { getKSTDate } from './dateUtils';
 
@@ -60,24 +61,46 @@ export const getTransactionsForDate = (transactions: Transaction[], date: Date):
 };
 
 /**
- * 특정 날짜의 거래 요약 정보 계산
+ * 특정 날짜의 거래 요약 정보 계산 (고정지출 포함)
  */
-export const getDayTransactionSummary = (transactions: Transaction[], date: Date): DayTransactionSummary => {
+export const getDayTransactionSummary = (
+  transactions: Transaction[],
+  date: Date,
+  recurringExpenses?: RecurringExpense[]
+): DayTransactionSummary => {
   const dayTransactions = getTransactionsForDate(transactions, date);
 
   const totalIncome = dayTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amountInKRW, 0);
 
-  const totalExpense = dayTransactions
+  let totalExpense = dayTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amountInKRW, 0);
+
+  // 해당 날짜에 고정지출이 있으면 추가 (생성일 이후만)
+  if (recurringExpenses) {
+    const dayOfMonth = date.getDate();
+    const recurringExpenseAmount = recurringExpenses
+      .filter(expense => {
+        if (!expense.is_active || expense.day_of_month !== dayOfMonth) return false;
+
+        // 고정지출 생성일
+        const createdDate = new Date(expense.created_at);
+
+        // 해당 날짜가 생성일 이후인지 확인
+        return date >= createdDate;
+      })
+      .reduce((sum, expense) => sum + expense.amount_in_krw, 0);
+
+    totalExpense += recurringExpenseAmount;
+  }
 
   return {
     totalIncome,
     totalExpense,
     transactionCount: dayTransactions.length,
-    hasTransactions: dayTransactions.length > 0,
+    hasTransactions: dayTransactions.length > 0 || totalExpense > 0,
   };
 };
 

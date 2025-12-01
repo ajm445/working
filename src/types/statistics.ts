@@ -63,7 +63,7 @@ export interface StatisticsData {
 /**
  * 통계 기간 옵션
  */
-export type StatisticsPeriod = '1month' | '3months' | '6months' | '1year' | 'all';
+export type StatisticsPeriod = 'monthly' | '1month' | '3months' | '6months' | '1year' | 'all';
 
 /**
  * 차트 색상 팔레트

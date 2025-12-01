@@ -23,6 +23,11 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
   const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const { currentCurrency, exchangeRates } = useCurrency();
 
+  // 월별 선택용 상태
+  const today = new Date();
+  const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState<number>(today.getMonth() + 1); // 1-12
+
   // 외부 props가 있으면 사용, 없으면 내부 상태 사용
   const budgets = externalBudgets !== undefined ? externalBudgets : internalBudgets;
 
@@ -44,8 +49,14 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
 
   // 통계 데이터 생성
   const statistics = useMemo(() => {
-    return generateStatistics(transactions, recurringExpenses, period);
-  }, [transactions, recurringExpenses, period]);
+    return generateStatistics(
+      transactions,
+      recurringExpenses,
+      period,
+      period === 'monthly' ? selectedYear : undefined,
+      period === 'monthly' ? selectedMonth : undefined
+    );
+  }, [transactions, recurringExpenses, period, selectedYear, selectedMonth]);
 
   // 통화 변환 함수
   const convertAmount = (amountInKRW: number): number => {
@@ -72,6 +83,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
           {/* 기간 선택 버튼 - 모바일 개선 */}
           <div className="flex gap-2 flex-wrap justify-start sm:justify-end">
             {[
+              { value: 'monthly' as StatisticsPeriod, label: '월별' },
               { value: '1month' as StatisticsPeriod, label: '1개월' },
               { value: '3months' as StatisticsPeriod, label: '3개월' },
               { value: '6months' as StatisticsPeriod, label: '6개월' },
@@ -92,6 +104,40 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
             ))}
           </div>
         </div>
+
+        {/* 월별 선택 시 년/월 선택 UI */}
+        {period === 'monthly' && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                분석 기간:
+              </label>
+              <div className="flex gap-2 flex-wrap">
+                {/* 년도 선택 */}
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                >
+                  {Array.from({ length: 10 }, (_, i) => today.getFullYear() - i).map(year => (
+                    <option key={year} value={year}>{year}년</option>
+                  ))}
+                </select>
+
+                {/* 월 선택 */}
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                  className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                    <option key={month} value={month}>{month}월</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 요약 카드 - 모바일 간격 개선 */}

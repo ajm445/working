@@ -129,29 +129,31 @@ const Dashboard: React.FC<DashboardProps> = ({
         </h2>
       </div>
 
-      {/* 잔액 카드들 - 항상 표시 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
-        <BalanceCard
-          title="총 수입"
-          amount={totalIncome}
-          icon="📈"
-          type="income"
-        />
+      {/* 잔액 카드들 - 요약 및 캘린더 탭에서만 표시 */}
+      {(currentViewMode === 'summary' || currentViewMode === 'calendar') && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+          <BalanceCard
+            title="총 수입"
+            amount={totalIncome}
+            icon="📈"
+            type="income"
+          />
 
-        <BalanceCard
-          title="총 지출"
-          amount={totalExpense}
-          icon="📉"
-          type="expense"
-        />
+          <BalanceCard
+            title="총 지출"
+            amount={totalExpense}
+            icon="📉"
+            type="expense"
+          />
 
-        <BalanceCard
-          title="잔액"
-          amount={balance}
-          icon="💳"
-          type="balance"
-        />
-      </div>
+          <BalanceCard
+            title="잔액"
+            amount={balance}
+            icon="💳"
+            type="balance"
+          />
+        </div>
+      )}
 
       {/* 뷰 모드 선택 탭 - 모바일 개선 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 mb-4 md:mb-6 overflow-hidden transition-colors duration-300">

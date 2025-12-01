@@ -65,11 +65,29 @@ export const calculateMonthlyExpense = (transactions: Transaction[], year: numbe
   return calculateTotalExpense(monthlyTransactions);
 };
 
-// 특정 월의 고정지출 합계 계산
-export const calculateMonthlyRecurringExpense = (recurringExpenses: RecurringExpense[]): number => {
-  // 활성화된 고정지출만 포함
+// 특정 월의 고정지출 합계 계산 (생성일 이후만 포함)
+export const calculateMonthlyRecurringExpense = (
+  recurringExpenses: RecurringExpense[],
+  year: number,
+  month: number
+): number => {
   return recurringExpenses
-    .filter(expense => expense.is_active)
+    .filter(expense => {
+      if (!expense.is_active) return false;
+
+      // 해당 월의 고정지출 발생일
+      const dayOfMonth = expense.day_of_month;
+      const expenseDate = new Date(year, month, dayOfMonth);
+
+      // 고정지출 생성일
+      const createdDate = new Date(expense.created_at);
+
+      // 해당 월의 마지막 날 확인 (예: 2월에 31일 고정지출은 제외)
+      const lastDayOfMonth = new Date(year, month + 1, 0).getDate();
+
+      // 생성일 이후이고, 해당 월에 유효한 날짜인 경우만 포함
+      return expenseDate >= createdDate && dayOfMonth <= lastDayOfMonth;
+    })
     .reduce((sum, expense) => sum + expense.amount_in_krw, 0);
 };
 
@@ -81,7 +99,7 @@ export const calculateMonthlyExpenseWithRecurring = (
   month: number
 ): number => {
   const regularExpense = calculateMonthlyExpense(transactions, year, month);
-  const recurringExpense = calculateMonthlyRecurringExpense(recurringExpenses);
+  const recurringExpense = calculateMonthlyRecurringExpense(recurringExpenses, year, month);
   return regularExpense + recurringExpense;
 };
 

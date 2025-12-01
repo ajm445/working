@@ -1,6 +1,8 @@
 import React from 'react';
 import type { Transaction } from '../../types/transaction';
 import { formatCurrency } from '../../utils/currency';
+import { useCurrency } from '../../hooks/useCurrency';
+import { useCurrencyConverter } from '../../hooks/useCurrencyConversion';
 
 interface TransactionItemProps {
   transaction: Transaction;
@@ -9,6 +11,8 @@ interface TransactionItemProps {
 }
 
 const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete, onEdit }) => {
+  const { currentCurrency } = useCurrency();
+  const { convertAmount } = useCurrencyConverter();
   const handleDelete = (): void => {
     if (window.confirm('이 내역을 삭제하시겠습니까?')) {
       onDelete(transaction.id);
@@ -37,11 +41,6 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete
             <p className="text-sm text-gray-500 dark:text-gray-400 transition-colors duration-300">
               {transaction.category} • {transaction.date}
             </p>
-            {transaction.currency !== 'KRW' && (
-              <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">
-                원화: {formatCurrency(transaction.amountInKRW, 'KRW')}
-              </p>
-            )}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -49,9 +48,9 @@ const TransactionItem: React.FC<TransactionItemProps> = ({ transaction, onDelete
             <p className={`font-semibold transition-colors duration-300 ${
               transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
             }`}>
-              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount, transaction.currency)}
+              {transaction.type === 'income' ? '+' : '-'}{formatCurrency(convertAmount(transaction.amountInKRW, 'KRW', currentCurrency), currentCurrency)}
             </p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">{transaction.currency}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 transition-colors duration-300">{currentCurrency}</p>
           </div>
           <div className="flex gap-1">
             {onEdit && (

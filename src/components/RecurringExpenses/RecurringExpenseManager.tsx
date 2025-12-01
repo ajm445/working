@@ -44,6 +44,14 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       currency: curr,
     }).format(amount);
   };
+
+  // 통화 변환 함수
+  const convertAmount = (amountInKRW: number, targetCurrency: 'KRW' | 'USD' | 'JPY'): number => {
+    if (targetCurrency === 'KRW') return amountInKRW;
+    if (!exchangeRates) return amountInKRW;
+    const rate = exchangeRates[targetCurrency];
+    return rate ? amountInKRW * rate : amountInKRW;
+  };
   const [internalExpenses, setInternalExpenses] = useState<RecurringExpense[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -190,10 +198,29 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
     );
   };
 
-  // 월별 총액 계산 (현재 선택된 통화 기준)
+  // 월별 총액 계산 (현재 선택된 통화 기준, 생성일 이후만 포함)
   const calculateMonthlyTotalInCurrentCurrency = (): number => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
+
     return expenses
-      .filter(expense => expense.is_active)
+      .filter(expense => {
+        if (!expense.is_active) return false;
+
+        // 이번 달의 고정지출 발생일
+        const dayOfMonth = expense.day_of_month;
+        const expenseDate = new Date(currentYear, currentMonth, dayOfMonth);
+
+        // 고정지출 생성일
+        const createdDate = new Date(expense.created_at);
+
+        // 이번 달의 마지막 날 확인
+        const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+        // 생성일 이후이고, 이번 달에 유효한 날짜인 경우만 포함
+        return expenseDate >= createdDate && dayOfMonth <= lastDayOfMonth;
+      })
       .reduce((total, expense) => {
         // 각 expense의 원화 금액을 현재 통화로 변환
         const amountInKRW = expense.amount_in_krw;
@@ -366,7 +393,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
                       매월 {expense.day_of_month}일
                     </span>
                     <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {formatCurrency(expense.amount, expense.currency)}
+                      {formatCurrency(convertAmount(expense.amount_in_krw, currentCurrency), currentCurrency)}
                     </span>
                   </div>
                   {expense.description && (

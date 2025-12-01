@@ -84,6 +84,14 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
     return krwAmount / toRate;
   };
 
+  // KRW 금액을 현재 통화로 변환
+  const convertFromKRW = (amountInKRW: number): number => {
+    if (currentCurrency === 'KRW') return amountInKRW;
+    if (!exchangeRates) return amountInKRW;
+    const rate = exchangeRates[currentCurrency];
+    return rate ? amountInKRW * rate : amountInKRW;
+  };
+
   // 새 예산 입력 폼 상태
   const [newBudget, setNewBudget] = useState<{
     category: string;
@@ -441,11 +449,11 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
               {budgets.map((budget) => (
                 <div
                   key={budget.id}
-                  className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600 transition-colors duration-300"
+                  className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 transition-all duration-200 hover:shadow-md"
                 >
                   {editingId === budget.id ? (
                     // 수정 모드
-                    <div className="space-y-3">
+                    <div className="p-4 space-y-3">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-gray-900 dark:text-white">
                           {budget.category}
@@ -506,40 +514,48 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                       </div>
                     </div>
                   ) : (
-                    // 일반 모드
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    // 일반 모드 - 고정지출 카드 스타일
+                    <div className="p-4 flex items-center justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-base font-semibold text-gray-900 dark:text-white">
                             {budget.category}
-                          </span>
+                          </h4>
                           {!budget.is_active && (
                             <span className="px-2 py-0.5 bg-gray-200 dark:bg-gray-600 text-xs rounded-full text-gray-600 dark:text-gray-300">
                               비활성
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          월 예산:{' '}
-                          {formatCurrency(
-                            budget.budget_amount,
-                            budget.currency as Currency
-                          )}
-                        </p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {formatCurrency(
+                              convertFromKRW(budget.budget_amount_in_krw),
+                              currentCurrency
+                            )}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      {/* 액션 버튼 */}
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleStartEdit(budget)}
-                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white text-sm font-medium rounded-lg transition-colors"
+                          className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                          title="수정"
                         >
-                          수정
+                          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
                         </button>
                         <button
                           onClick={() => handleDelete(budget.id)}
-                          className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+                          className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                          title="삭제"
                         >
-                          삭제
+                          <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                         </button>
                       </div>
                     </div>
