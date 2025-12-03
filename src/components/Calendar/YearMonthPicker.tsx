@@ -19,9 +19,9 @@ const YearMonthPicker: React.FC<YearMonthPickerProps> = ({
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
-  // 고정 시작 년도: 2020년
+  // 고정 시작 년도: 2023년
   // 동적 종료 년도: 현재 년도 + 3년
-  const START_YEAR = 2020;
+  const START_YEAR = 2023;
   const today = new Date();
   const currentYearNow = today.getFullYear();
   const endYear = currentYearNow + 3;
