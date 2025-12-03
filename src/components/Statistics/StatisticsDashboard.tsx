@@ -138,7 +138,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
                   onChange={(e) => setSelectedYear(Number(e.target.value))}
                   className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 >
-                  {Array.from({ length: 10 }, (_, i) => today.getFullYear() - i).map(year => (
+                  {Array.from({ length: (today.getFullYear() + 3) - 2023 + 1 }, (_, i) => 2023 + i).map(year => (
                     <option key={year} value={year}>{year}년</option>
                   ))}
                 </select>
