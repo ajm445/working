@@ -4,19 +4,17 @@ import { EXPENSE_CATEGORIES } from '../../types/transaction';
 import { CurrencyContext } from '../../contexts/CurrencyContext';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-  fetchAllCategoryBudgets,
   addCategoryBudget,
   updateCategoryBudget,
   deleteCategoryBudget,
-  subscribeToCategoryBudgets,
 } from '../../services/categoryBudgetService';
 import toast from 'react-hot-toast';
 
 type Currency = 'KRW' | 'USD' | 'JPY';
 
 interface CategoryBudgetManagerProps {
-  budgets?: CategoryBudget[];
-  onBudgetsChange?: (budgets: CategoryBudget[]) => void;
+  budgets?: CategoryBudget[] | undefined;
+  onBudgetsChange?: ((budgets: CategoryBudget[]) => void) | undefined;
 }
 
 /**
@@ -32,22 +30,13 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const currentCurrency = (currencyContext?.currentCurrency || 'KRW') as Currency;
   const exchangeRates = currencyContext?.exchangeRates;
 
-  const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  // 내부 상태와 외부 props 동기화
-  const budgets = externalBudgets !== undefined ? externalBudgets : internalBudgets;
-  const setBudgets = (newBudgets: CategoryBudget[] | ((prev: CategoryBudget[]) => CategoryBudget[])) => {
-    const updatedBudgets = typeof newBudgets === 'function' ? newBudgets(budgets) : newBudgets;
-    if (onBudgetsChange) {
-      onBudgetsChange(updatedBudgets);
-    } else {
-      setInternalBudgets(updatedBudgets);
-    }
-  };
+  // 외부 props 사용
+  const budgets = externalBudgets || [];
 
   // 통화 포맷팅
   const formatCurrency = (amount: number, currency: Currency): string => {
@@ -127,69 +116,21 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
     return value.replace(/,/g, '');
   };
 
-  // 예산 데이터 로드
+  // 예산 데이터 로드 - 이제 MainApp에서 관리하므로 로드 불필요
   useEffect(() => {
-    const loadBudgetsEffect = async (): Promise<void> => {
-      // 외부에서 props로 전달받은 경우 로드하지 않음
-      if (externalBudgets !== undefined) {
-        console.log('📦 Using external budgets from props');
-        setLoading(false);
-        return;
-      }
-
-      // 비로그인 상태일 때도 로드하지 않음
-      if (!user) {
-        console.log('📦 Non-logged in mode - no budgets to load');
-        setLoading(false);
-        return;
-      }
-
-      // 로그인 상태이고 외부 props가 없을 때만 Supabase에서 로드
-      console.log('📥 User logged in, loading category budgets from Supabase');
-      setLoading(true);
-      const { data, error: fetchError } = await fetchAllCategoryBudgets();
-
-      console.log('📊 Fetched budgets:', data);
-      console.log('❌ Fetch error:', fetchError);
-
-      if (fetchError) {
-        console.error('Failed to load category budgets:', fetchError);
-        setError('예산 정보를 불러오는데 실패했습니다.');
-      } else if (data) {
-        console.log(`✅ Setting ${data.length} budgets to state`);
-        setBudgets(data);
-        setError(null);
-      } else {
-        console.log('⚠️ No data returned from fetchAllCategoryBudgets');
-      }
-
+    // 외부에서 props로 전달받으면 사용
+    if (externalBudgets !== undefined) {
+      console.log('📦 CategoryBudgetManager: Using budgets from props', externalBudgets);
       setLoading(false);
-    };
-
-    void loadBudgetsEffect();
-  }, [user]);
-
-  // 실시간 구독 설정
-  useEffect(() => {
-    if (!user) return;
-
-    const subscription = subscribeToCategoryBudgets(user.id, () => {
-      void loadBudgetsQuietly();
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [user]);
-
-  const loadBudgetsQuietly = async (): Promise<void> => {
-    if (!user) return;
-
-    const { data } = await fetchAllCategoryBudgets();
-    if (data) {
-      setBudgets(data);
+      return;
     }
-  };
+
+    // props가 없으면 경고 로그
+    console.log('⚠️ CategoryBudgetManager: No budgets provided via props');
+    setLoading(false);
+  }, [externalBudgets]);
+
+  // 실시간 구독은 MainApp에서 관리하므로 제거
 
   const handleAddBudget = async () => {
     if (!newBudget.category || !newBudget.amount) {
@@ -232,8 +173,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           return;
         }
 
-        // 데이터 새로고침
-        await loadBudgetsQuietly();
+        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
 
         // 폼 초기화
         setNewBudget({
@@ -250,7 +190,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         toast.error('예산 추가에 실패했습니다.');
       }
     } else {
-      // 비로그인 상태면 로컬 메모리에만 저장
+      // 비로그인 상태면 콜백을 통해 MainApp에 알림
       const localBudget: CategoryBudget = {
         id: `local-${Date.now()}-${Math.random()}`,
         user_id: 'local',
@@ -263,7 +203,9 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         updated_at: new Date().toISOString(),
       };
 
-      setBudgets([...budgets, localBudget]);
+      if (onBudgetsChange) {
+        onBudgetsChange([...budgets, localBudget]);
+      }
 
       // 폼 초기화
       setNewBudget({
@@ -318,8 +260,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
 
         if (updateError) throw updateError;
 
-        // 데이터 새로고침
-        await loadBudgetsQuietly();
+        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
 
         setEditingId(null);
         setError(null);
@@ -329,20 +270,22 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         setError('예산 수정에 실패했습니다.');
       }
     } else {
-      // 비로그인 상태거나 로컬 데이터면 로컬에서만 수정
-      setBudgets(
-        budgets.map((b) =>
-          b.id === budgetId
-            ? {
-                ...b,
-                budget_amount: amount,
-                currency: editingBudget.currency,
-                budget_amount_in_krw: amountInKrw,
-                updated_at: new Date().toISOString(),
-              }
-            : b
-        )
-      );
+      // 비로그인 상태면 콜백을 통해 MainApp에 알림
+      if (onBudgetsChange) {
+        onBudgetsChange(
+          budgets.map((b) =>
+            b.id === budgetId
+              ? {
+                  ...b,
+                  budget_amount: amount,
+                  currency: editingBudget.currency,
+                  budget_amount_in_krw: amountInKrw,
+                  updated_at: new Date().toISOString(),
+                }
+              : b
+          )
+        );
+      }
 
       setEditingId(null);
       setError(null);
@@ -359,8 +302,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         const { error: deleteError } = await deleteCategoryBudget(budgetId);
         if (deleteError) throw deleteError;
 
-        // 데이터 새로고침
-        await loadBudgetsQuietly();
+        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
 
         setError(null);
         toast.success('예산이 삭제되었습니다.');
@@ -369,8 +311,10 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         setError('예산 삭제에 실패했습니다.');
       }
     } else {
-      // 비로그인 상태거나 로컬 데이터면 로컬에서만 삭제
-      setBudgets(budgets.filter((b) => b.id !== budgetId));
+      // 비로그인 상태면 콜백을 통해 MainApp에 알림
+      if (onBudgetsChange) {
+        onBudgetsChange(budgets.filter((b) => b.id !== budgetId));
+      }
       setError(null);
       toast.success('예산이 삭제되었습니다.');
     }

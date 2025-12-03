@@ -459,8 +459,8 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       {/* 카테고리 예산 탭 내용 */}
       {activeSubTab === 'budget' && (
         <CategoryBudgetManager
-          {...(!user && externalBudgets !== undefined && { budgets: externalBudgets })}
-          {...(!user && onBudgetsChange !== undefined && { onBudgetsChange: onBudgetsChange })}
+          budgets={externalBudgets}
+          onBudgetsChange={onBudgetsChange}
         />
       )}
 

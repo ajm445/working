@@ -6,7 +6,6 @@ import { generateStatistics } from '../../utils/statistics';
 import { useCurrency } from '../../hooks/useCurrency';
 import { formatCurrencyForStats } from '../../utils/currency';
 import CategoryPieChart from './CategoryPieChart';
-import { fetchAllCategoryBudgets } from '../../services/categoryBudgetService';
 
 interface StatisticsDashboardProps {
   transactions: Transaction[];
@@ -20,7 +19,6 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
   categoryBudgets: externalBudgets
 }) => {
   const [period, setPeriod] = useState<StatisticsPeriod>('monthly');
-  const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const { currentCurrency, exchangeRates } = useCurrency();
 
   // 월별 선택용 상태
@@ -28,25 +26,17 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
   const [selectedYear, setSelectedYear] = useState<number>(today.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState<number>(today.getMonth() + 1); // 1-12
 
-  // 외부 props가 있으면 사용, 없으면 내부 상태 사용
-  const budgets = externalBudgets !== undefined ? externalBudgets : internalBudgets;
+  // 외부 props 사용
+  const budgets = externalBudgets || [];
 
-  // 예산 데이터 로드 (외부 props가 없을 때만)
+  // 예산 데이터는 MainApp에서 관리하므로 로드 불필요
   useEffect(() => {
     if (externalBudgets !== undefined) {
-      console.log('📦 Statistics: Using external budgets from props', externalBudgets);
+      console.log('📦 Statistics: Using budgets from props', externalBudgets);
       return;
     }
 
-    const loadBudgets = async () => {
-      console.log('📥 Statistics: Loading budgets from Supabase');
-      const { data } = await fetchAllCategoryBudgets();
-      console.log('📊 Statistics: Loaded budgets:', data);
-      if (data) {
-        setInternalBudgets(data);
-      }
-    };
-    loadBudgets();
+    console.log('⚠️ Statistics: No budgets provided via props');
   }, [externalBudgets]);
 
   // 통계 데이터 생성

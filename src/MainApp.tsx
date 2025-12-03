@@ -17,6 +17,7 @@ import AccountManagementModal from './components/Auth/AccountManagementModal';
 import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
 import * as recurringExpenseService from './services/recurringExpenseService';
+import { fetchAllCategoryBudgets, subscribeToCategoryBudgets } from './services/categoryBudgetService';
 
 // Expense Tracker Component (기존 가계부 기능)
 const ExpenseTracker: React.FC = () => {
@@ -114,10 +115,10 @@ const ExpenseTracker: React.FC = () => {
     void loadRecurringExpenses();
   }, [user]);
 
-  // 카테고리 예산 로드 (비로그인 모드만)
+  // 카테고리 예산 로드 (로그인/비로그인 모두)
   useEffect(() => {
     const loadCategoryBudgets = async (): Promise<void> => {
-      // 로그인 안 된 상태면 로컬스토리지에서 로드
+      // 비로그인 상태면 로컬스토리지에서 로드
       if (!user) {
         console.log('📦 Loading category budgets from localStorage (temporary mode)');
         const stored = localStorage.getItem('temp_category_budgets');
@@ -133,9 +134,19 @@ const ExpenseTracker: React.FC = () => {
         } else {
           setCategoryBudgets([]);
         }
-      } else {
-        // 로그인 상태면 초기화하지 않음 (CategoryBudgetManager가 자체적으로 관리)
-        console.log('📥 User logged in, CategoryBudgetManager will handle budgets');
+        return;
+      }
+
+      // 로그인 상태면 Supabase에서 로드
+      console.log('📥 User logged in, loading category budgets from Supabase');
+      const { data, error } = await fetchAllCategoryBudgets();
+
+      if (error) {
+        console.error('Failed to load category budgets:', error);
+        setCategoryBudgets([]);
+      } else if (data) {
+        console.log(`✅ Loaded ${data.length} category budgets from Supabase`);
+        setCategoryBudgets(data);
       }
     };
 
@@ -193,6 +204,26 @@ const ExpenseTracker: React.FC = () => {
         }
       }
     );
+
+    return (): void => {
+      subscription.unsubscribe();
+    };
+  }, [user]);
+
+  // 카테고리 예산 실시간 구독 설정
+  useEffect(() => {
+    if (!user) return;
+
+    const loadBudgetsQuietly = async (): Promise<void> => {
+      const { data } = await fetchAllCategoryBudgets();
+      if (data) {
+        setCategoryBudgets(data);
+      }
+    };
+
+    const subscription = subscribeToCategoryBudgets(user.id, () => {
+      void loadBudgetsQuietly();
+    });
 
     return (): void => {
       subscription.unsubscribe();
@@ -409,10 +440,8 @@ const ExpenseTracker: React.FC = () => {
         transactions={transactions}
         recurringExpenses={recurringExpenses}
         onRecurringExpensesChange={setRecurringExpenses}
-        {...(!user && {
-          categoryBudgets: categoryBudgets,
-          onCategoryBudgetsChange: setCategoryBudgets,
-        })}
+        categoryBudgets={categoryBudgets}
+        onCategoryBudgetsChange={setCategoryBudgets}
         onViewModeChange={(newMode) => {
           setViewMode(newMode);
           trackViewChange(newMode);
