@@ -17,6 +17,10 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
 
   const summary = getDayTransactionSummary(day.transactions, day.date, recurringExpenses);
 
+  // 실제 거래내역 건수 계산
+  const incomeCount = day.transactions.filter(t => t.type === 'income').length;
+  const expenseCount = day.transactions.filter(t => t.type === 'expense').length;
+
   // 해당 날짜의 고정지출이 있는지 확인 (생성일 이후이고 오늘 이전만)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -134,24 +138,24 @@ const CalendarDay: React.FC<CalendarDayProps> = ({ day, recurringExpenses = [], 
             )}
           </div>
 
-          {/* 모바일: 도트 인디케이터만 표시 */}
+          {/* 모바일: 도트 인디케이터만 표시 (실제 거래내역이 있을 때만) */}
           <div className="sm:hidden flex flex-col gap-0.5 mt-1">
             {/* 수입이 있는 경우 녹색 도트와 건수 */}
-            {summary.totalIncome > 0 && (
+            {incomeCount > 0 && (
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400 transition-colors duration-200"></div>
                 <span className="text-[10px] text-green-600 dark:text-green-400 transition-colors duration-200">
-                  {day.transactions.filter(t => t.type === 'income').length}건
+                  {incomeCount}건
                 </span>
               </div>
             )}
 
             {/* 지출이 있는 경우 빨간색 도트와 건수 */}
-            {summary.totalExpense > 0 && (
+            {expenseCount > 0 && (
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400 transition-colors duration-200"></div>
                 <span className="text-[10px] text-red-600 dark:text-red-400 transition-colors duration-200">
-                  {day.transactions.filter(t => t.type === 'expense').length}건
+                  {expenseCount}건
                 </span>
               </div>
             )}

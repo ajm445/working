@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import type { CategoryBudget } from '../../types/database';
 import { EXPENSE_CATEGORIES } from '../../types/transaction';
 import { CurrencyContext } from '../../contexts/CurrencyContext';
@@ -30,7 +30,6 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const currentCurrency = (currencyContext?.currentCurrency || 'KRW') as Currency;
   const exchangeRates = currencyContext?.exchangeRates;
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -116,21 +115,8 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
     return value.replace(/,/g, '');
   };
 
-  // 예산 데이터 로드 - 이제 MainApp에서 관리하므로 로드 불필요
-  useEffect(() => {
-    // 외부에서 props로 전달받으면 사용
-    if (externalBudgets !== undefined) {
-      console.log('📦 CategoryBudgetManager: Using budgets from props', externalBudgets);
-      setLoading(false);
-      return;
-    }
-
-    // props가 없으면 경고 로그
-    console.log('⚠️ CategoryBudgetManager: No budgets provided via props');
-    setLoading(false);
-  }, [externalBudgets]);
-
-  // 실시간 구독은 MainApp에서 관리하므로 제거
+  // 예산 데이터는 MainApp에서 props로 전달받아 관리
+  // 실시간 구독도 MainApp에서 관리
 
   const handleAddBudget = async () => {
     if (!newBudget.category || !newBudget.amount) {
@@ -155,7 +141,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
     // 로그인 상태면 Supabase에 저장
     if (user) {
       try {
-        const { error: addError } = await addCategoryBudget({
+        const { data: addedBudget, error: addError } = await addCategoryBudget({
           category: newBudget.category,
           budget_amount: amount,
           currency: newBudget.currency,
@@ -173,7 +159,10 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           return;
         }
 
-        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
+        // 즉시 UI 업데이트 (실시간 구독을 기다리지 않음)
+        if (addedBudget && onBudgetsChange) {
+          onBudgetsChange([...budgets, addedBudget]);
+        }
 
         // 폼 초기화
         setNewBudget({
@@ -252,7 +241,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
     // 로그인 상태면 Supabase에 업데이트
     if (user && !budgetId.startsWith('local-')) {
       try {
-        const { error: updateError } = await updateCategoryBudget(budgetId, {
+        const { data: updatedBudget, error: updateError } = await updateCategoryBudget(budgetId, {
           budget_amount: amount,
           currency: editingBudget.currency,
           budget_amount_in_krw: amountInKrw,
@@ -260,7 +249,12 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
 
         if (updateError) throw updateError;
 
-        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
+        // 즉시 UI 업데이트 (실시간 구독을 기다리지 않음)
+        if (updatedBudget && onBudgetsChange) {
+          onBudgetsChange(
+            budgets.map((b) => (b.id === budgetId ? updatedBudget : b))
+          );
+        }
 
         setEditingId(null);
         setError(null);
@@ -302,7 +296,10 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
         const { error: deleteError } = await deleteCategoryBudget(budgetId);
         if (deleteError) throw deleteError;
 
-        // MainApp이 실시간 구독을 통해 자동으로 업데이트됨
+        // 즉시 UI 업데이트 (실시간 구독을 기다리지 않음)
+        if (onBudgetsChange) {
+          onBudgetsChange(budgets.filter((b) => b.id !== budgetId));
+        }
 
         setError(null);
         toast.success('예산이 삭제되었습니다.');
@@ -324,16 +321,6 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
   const availableCategories = EXPENSE_CATEGORIES.filter(
     (category) => !budgets.some((b) => b.category === category)
   );
-
-  if (loading) {
-    return (
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 p-6 transition-colors duration-300">
-        <div className="text-center text-gray-500 dark:text-gray-400">
-          로딩 중...
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
@@ -365,6 +352,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
             </p>
           </div>
           <button
+            type="button"
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
           >
@@ -396,6 +384,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
               </p>
               {availableCategories.length > 0 && (
                 <button
+                  type="button"
                   onClick={() => setShowAddModal(true)}
                   className="inline-flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors"
                 >
@@ -459,12 +448,14 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
 
                         <div className="flex gap-2 sm:ml-auto">
                           <button
+                            type="button"
                             onClick={() => handleSaveEdit(budget.id)}
                             className="flex-1 sm:flex-none px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
                           >
                             저장
                           </button>
                           <button
+                            type="button"
                             onClick={handleCancelEdit}
                             className="flex-1 sm:flex-none px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
                           >
@@ -500,6 +491,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                       {/* 액션 버튼 */}
                       <div className="flex items-center gap-2">
                         <button
+                          type="button"
                           onClick={() => handleStartEdit(budget)}
                           className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                           title="수정"
@@ -509,6 +501,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
                           </svg>
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(budget.id)}
                           className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                           title="삭제"
@@ -620,12 +613,14 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
 
               <div className="flex gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={handleAddBudget}
                   className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white font-medium rounded-lg transition-colors duration-300"
                 >
                   추가
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowAddModal(false);
                     setError(null);

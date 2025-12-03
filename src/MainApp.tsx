@@ -78,25 +78,13 @@ const ExpenseTracker: React.FC = () => {
     void loadTransactions();
   }, [user]);
 
-  // 고정지출 로드
+  // 고정지출 로드 및 로그아웃 시 초기화
   useEffect(() => {
     const loadRecurringExpenses = async (): Promise<void> => {
-      // 로그인 안 된 상태면 로컬스토리지에서 로드
+      // 로그인 안 된 상태면 빈 배열로 초기화 (로그아웃 시 즉시 UI 업데이트)
       if (!user) {
-        console.log('📦 Loading recurring expenses from localStorage (temporary mode)');
-        const stored = localStorage.getItem('temp_recurring_expenses');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored) as RecurringExpense[];
-            console.log(`✅ Loaded ${parsed.length} recurring expenses from localStorage`);
-            setRecurringExpenses(parsed);
-          } catch (error) {
-            console.error('Failed to parse recurring expenses from localStorage:', error);
-            setRecurringExpenses([]);
-          }
-        } else {
-          setRecurringExpenses([]);
-        }
+        console.log('🔄 User logged out, clearing recurring expenses');
+        setRecurringExpenses([]);
         return;
       }
 
@@ -115,25 +103,13 @@ const ExpenseTracker: React.FC = () => {
     void loadRecurringExpenses();
   }, [user]);
 
-  // 카테고리 예산 로드 (로그인/비로그인 모두)
+  // 카테고리 예산 로드 및 로그아웃 시 초기화
   useEffect(() => {
     const loadCategoryBudgets = async (): Promise<void> => {
-      // 비로그인 상태면 로컬스토리지에서 로드
+      // 비로그인 상태면 빈 배열로 초기화 (로그아웃 시 즉시 UI 업데이트)
       if (!user) {
-        console.log('📦 Loading category budgets from localStorage (temporary mode)');
-        const stored = localStorage.getItem('temp_category_budgets');
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored) as CategoryBudget[];
-            console.log(`✅ Loaded ${parsed.length} category budgets from localStorage`);
-            setCategoryBudgets(parsed);
-          } catch (error) {
-            console.error('Failed to parse category budgets from localStorage:', error);
-            setCategoryBudgets([]);
-          }
-        } else {
-          setCategoryBudgets([]);
-        }
+        console.log('🔄 User logged out, clearing category budgets');
+        setCategoryBudgets([]);
         return;
       }
 

@@ -269,6 +269,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 overflow-hidden transition-colors duration-300">
         <div className="grid grid-cols-2">
           <button
+            type="button"
             onClick={() => setActiveSubTab('recurring')}
             className={`
               px-4 py-3 font-medium transition-colors
@@ -284,6 +285,7 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
             </div>
           </button>
           <button
+            type="button"
             onClick={() => setActiveSubTab('budget')}
             className={`
               px-4 py-3 font-medium transition-colors border-l dark:border-gray-700

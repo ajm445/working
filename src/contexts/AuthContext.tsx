@@ -256,6 +256,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setSession(null);
       setProfile(null);
+
+      // 로그아웃 시 임시 데이터 localStorage에서 제거
+      console.log('🧹 Clearing temporary data from localStorage');
+      localStorage.removeItem('temp_recurring_expenses');
+      localStorage.removeItem('temp_category_budgets');
     }
     return { error };
   };
