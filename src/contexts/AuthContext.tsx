@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
+import { clearAllCategoryBudgetsFromLocal } from '../utils/localStorageBudget';
 
 interface AuthContextType {
   // 인증 상태
@@ -260,7 +261,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // 로그아웃 시 임시 데이터 localStorage에서 제거
       console.log('🧹 Clearing temporary data from localStorage');
       localStorage.removeItem('temp_recurring_expenses');
-      localStorage.removeItem('temp_category_budgets');
+      clearAllCategoryBudgetsFromLocal();
     }
     return { error };
   };

@@ -155,6 +155,8 @@ export interface Database {
           id: string;
           user_id: string;
           category: string;
+          year: number;
+          month: number; // 1-12
           budget_amount: number;
           currency: string;
           budget_amount_in_krw: number;
@@ -166,6 +168,8 @@ export interface Database {
           id?: string;
           user_id: string;
           category: string;
+          year: number;
+          month: number; // 1-12
           budget_amount: number;
           currency?: string;
           budget_amount_in_krw: number;
@@ -177,6 +181,8 @@ export interface Database {
           id?: string;
           user_id?: string;
           category?: string;
+          year?: number;
+          month?: number; // 1-12
           budget_amount?: number;
           currency?: string;
           budget_amount_in_krw?: number;

@@ -18,6 +18,9 @@ import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
 import * as recurringExpenseService from './services/recurringExpenseService';
 import { fetchAllCategoryBudgets, subscribeToCategoryBudgets } from './services/categoryBudgetService';
+import {
+  saveCurrentMonthBudgetsToLocal,
+} from './utils/localStorageBudget';
 
 // Expense Tracker Component (기존 가계부 기능)
 const ExpenseTracker: React.FC = () => {
@@ -41,11 +44,11 @@ const ExpenseTracker: React.FC = () => {
     }
   }, [recurringExpenses, user]);
 
-  // 임시 모드에서 카테고리 예산이 변경될 때 로컬스토리지에 저장
+  // 임시 모드에서 카테고리 예산이 변경될 때 로컬스토리지에 저장 (현재 월 기준)
   useEffect(() => {
     if (!user && categoryBudgets.length >= 0) {
-      console.log('💾 Saving category budgets to localStorage:', categoryBudgets.length);
-      localStorage.setItem('temp_category_budgets', JSON.stringify(categoryBudgets));
+      console.log('💾 Saving category budgets to localStorage (current month):', categoryBudgets.length);
+      saveCurrentMonthBudgetsToLocal(categoryBudgets);
     }
   }, [categoryBudgets, user]);
 
@@ -106,7 +109,7 @@ const ExpenseTracker: React.FC = () => {
   // 카테고리 예산 로드 및 로그아웃 시 초기화
   useEffect(() => {
     const loadCategoryBudgets = async (): Promise<void> => {
-      // 비로그인 상태면 빈 배열로 초기화 (로그아웃 시 즉시 UI 업데이트)
+      // 비로그인 상태면 즉시 빈 배열로 초기화 (로그아웃 시)
       if (!user) {
         console.log('🔄 User logged out, clearing category budgets');
         setCategoryBudgets([]);
