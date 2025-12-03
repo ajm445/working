@@ -7,7 +7,6 @@ import { useCurrency } from '../../hooks/useCurrency';
 import {
   getTodayDateString,
   isValidDate,
-  isFutureDate,
   isTooOldDate,
   formatInputDateToKorean,
   formatDateForInput
@@ -114,10 +113,8 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
       return;
     }
 
-    if (isFutureDate(formData.date)) {
-      toast.error('미래 날짜는 선택할 수 없습니다.');
-      return;
-    }
+    // 미래 날짜 체크 제거 - 미래 날짜도 추가 가능
+    // 단, 통계 계산 시에는 오늘 이전 데이터만 포함됨
 
     if (isTooOldDate(formData.date)) {
       toast.error('너무 오래된 날짜입니다. 최근 10년 이내의 날짜를 선택해 주세요.');
@@ -337,7 +334,6 @@ const TransactionForm: React.FC<TransactionFormProps> = ({
               value={formData.date}
               onChange={(e) => handleInputChange('date', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-300"
-              max={getTodayDateString()} // 오늘 이후 날짜 선택 방지
             />
             {formData.date && (
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">

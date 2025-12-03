@@ -45,11 +45,18 @@ export const calculateMonthlyExpenses = (transactions: Transaction[]): { [month:
   }, {} as { [month: string]: number });
 };
 
-// 특정 월의 거래만 필터링
+// 특정 월의 거래만 필터링 (오늘 이전 데이터만 포함)
 export const filterTransactionsByMonth = (transactions: Transaction[], year: number, month: number): Transaction[] => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 시간 제거하고 날짜만 비교
+
   return transactions.filter(transaction => {
     const transactionDate = new Date(transaction.date);
-    return transactionDate.getFullYear() === year && transactionDate.getMonth() === month;
+    return (
+      transactionDate.getFullYear() === year &&
+      transactionDate.getMonth() === month &&
+      transactionDate <= today // 오늘 이전(오늘 포함) 데이터만
+    );
   });
 };
 

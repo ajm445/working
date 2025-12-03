@@ -43,6 +43,7 @@ const getEnglishWeekday = (dayIndex: number): string => {
 /**
  * 기간에 따른 필터링된 거래 내역 반환
  * KST 기준 오늘부터 지정된 기간 이전까지의 거래를 반환
+ * 중요: 오늘 이후의 미래 거래는 통계에서 제외
  */
 export const filterTransactionsByPeriod = (
   transactions: Transaction[],
@@ -50,11 +51,25 @@ export const filterTransactionsByPeriod = (
   selectedYear?: number,
   selectedMonth?: number
 ): Transaction[] => {
-  if (period === 'all') return transactions;
+  // KST 기준 오늘 날짜 가져오기 (미래 거래 필터링용)
+  const kstNow = getKSTDate();
+  const today = new Date(
+    kstNow.getUTCFullYear(),
+    kstNow.getUTCMonth(),
+    kstNow.getUTCDate()
+  );
+
+  // 오늘 이전(오늘 포함) 거래만 포함
+  const pastTransactions = transactions.filter(transaction => {
+    const transactionDate = parseTransactionDate(transaction.date);
+    return transactionDate <= today;
+  });
+
+  if (period === 'all') return pastTransactions;
 
   // 월별 선택 모드
   if (period === 'monthly' && selectedYear !== undefined && selectedMonth !== undefined) {
-    return transactions.filter(transaction => {
+    return pastTransactions.filter(transaction => {
       const transactionDate = parseTransactionDate(transaction.date);
       return (
         transactionDate.getFullYear() === selectedYear &&
@@ -62,16 +77,6 @@ export const filterTransactionsByPeriod = (
       );
     });
   }
-
-  // KST 기준 오늘 날짜 가져오기
-  const kstNow = getKSTDate();
-
-  // KST 기준 오늘 날짜를 로컬 타임존 Date로 변환 (parseTransactionDate와 동일한 기준)
-  const today = new Date(
-    kstNow.getUTCFullYear(),
-    kstNow.getUTCMonth(),
-    kstNow.getUTCDate()
-  );
 
   const cutoffDate = new Date(today);
 
@@ -90,7 +95,7 @@ export const filterTransactionsByPeriod = (
       break;
   }
 
-  return transactions.filter(transaction => {
+  return pastTransactions.filter(transaction => {
     const transactionDate = parseTransactionDate(transaction.date);
     return transactionDate >= cutoffDate;
   });
