@@ -149,12 +149,18 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
       setLoading(true);
       const { data, error: fetchError } = await fetchAllCategoryBudgets();
 
+      console.log('📊 Fetched budgets:', data);
+      console.log('❌ Fetch error:', fetchError);
+
       if (fetchError) {
         console.error('Failed to load category budgets:', fetchError);
         setError('예산 정보를 불러오는데 실패했습니다.');
       } else if (data) {
+        console.log(`✅ Setting ${data.length} budgets to state`);
         setBudgets(data);
         setError(null);
+      } else {
+        console.log('⚠️ No data returned from fetchAllCategoryBudgets');
       }
 
       setLoading(false);
@@ -215,7 +221,16 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
           budget_amount_in_krw: amountInKrw,
         });
 
-        if (addError) throw addError;
+        if (addError) {
+          // 중복 키 오류인 경우 특별 처리 - 비활성화된 데이터가 남아있을 수 있음
+          if ('code' in addError && addError.code === '23505') {
+            setError('데이터베이스에 이전 예산 데이터가 남아있습니다. 잠시 후 다시 시도해주세요.');
+            toast.error('이전 예산 데이터가 남아있습니다. 관리자에게 문의하거나 다른 카테고리를 선택해주세요.');
+          } else {
+            throw addError;
+          }
+          return;
+        }
 
         // 데이터 새로고침
         await loadBudgetsQuietly();
@@ -232,6 +247,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
       } catch (err) {
         console.error('Failed to add budget:', err);
         setError('예산 추가에 실패했습니다.');
+        toast.error('예산 추가에 실패했습니다.');
       }
     } else {
       // 비로그인 상태면 로컬 메모리에만 저장
@@ -387,7 +403,7 @@ const CategoryBudgetManager: React.FC<CategoryBudgetManagerProps> = ({
             </h3>
             <p className="text-sm text-purple-800 dark:text-purple-200">
               돈을 효율적으로 관리하기 위해 매월 각 카테고리별로 얼마나 지출할지 미리 계획할 수 있습니다.
-              식비, 교통비, 쇼핑 등 카테고리별 예산을 설정하면 지출 현황을 한눈에 파악할 수 있습니다.
+              식비, 교통비, 쇼핑 등 카테고리별 예산을 설정하면 지출 현황을 통계 탭에서 한눈에 파악할 수 있습니다.
             </p>
           </div>
         </div>

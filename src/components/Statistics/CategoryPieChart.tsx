@@ -22,12 +22,17 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, budgets = [] 
 
   // 예산 맵 생성
   const budgetMap = useMemo(() => {
+    console.log('💰 CategoryPieChart: Creating budget map from', budgets);
     const map = new Map<string, number>();
     budgets.forEach(budget => {
       if (budget.is_active) {
+        console.log(`  ✅ Adding budget for ${budget.category}: ${budget.budget_amount_in_krw} KRW`);
         map.set(budget.category, budget.budget_amount_in_krw);
+      } else {
+        console.log(`  ⚠️ Skipping inactive budget for ${budget.category}`);
       }
     });
+    console.log('📋 Budget map:', map);
     return map;
   }, [budgets]);
 
@@ -44,6 +49,12 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, budgets = [] 
     ...item,
     amount: convertAmount(item.amount),
   })), [data, convertAmount]);
+
+  // 총 지출 계산 - Hook은 early return 전에 호출되어야 함
+  const totalExpense = useMemo(() =>
+    chartData.reduce((sum, item) => sum + item.amount, 0),
+    [chartData]
+  );
 
   // 커스텀 툴팁 - useMemo로 메모이제이션
   const CustomTooltip = useMemo(() => {
@@ -79,12 +90,6 @@ const CategoryPieChart: React.FC<CategoryPieChartProps> = ({ data, budgets = [] 
       </div>
     );
   }
-
-  // 총 지출 계산
-  const totalExpense = useMemo(() =>
-    chartData.reduce((sum, item) => sum + item.amount, 0),
-    [chartData]
-  );
 
   return (
     <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl">

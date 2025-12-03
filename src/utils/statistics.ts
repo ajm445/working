@@ -306,7 +306,9 @@ export const generateCategoryExpense = (
   }
 
   // 배열로 변환 및 정렬 (금액 내림차순)
+  // 금액이 0인 카테고리는 제외
   const categoryExpense: CategoryExpenseData[] = Array.from(categoryMap.entries())
+    .filter(([, amount]) => amount > 0)
     .map(([category, amount], index) => ({
       category,
       amount,
@@ -511,22 +513,39 @@ export const generateStatisticsSummary = (
   const mostExpensiveCategory = categoryExpense[0]?.category || '없음';
   const mostExpensiveCategoryAmount = categoryExpense[0]?.amount || 0;
 
-  // 가장 많이 지출한 날
-  const dailyExpenseMap = new Map<string, number>();
+  // 가장 많이 지출한 날 및 해당 날의 주요 카테고리
+  const dailyExpenseMap = new Map<string, { total: number; categoryMap: Map<string, number> }>();
   filteredTransactions
     .filter(t => t.type === 'expense')
     .forEach(t => {
       const dateStr = t.date;
-      const current = dailyExpenseMap.get(dateStr) || 0;
-      dailyExpenseMap.set(dateStr, current + t.amountInKRW);
+      if (!dailyExpenseMap.has(dateStr)) {
+        dailyExpenseMap.set(dateStr, { total: 0, categoryMap: new Map() });
+      }
+      const dayData = dailyExpenseMap.get(dateStr)!;
+      dayData.total += t.amountInKRW;
+      const categoryAmount = dayData.categoryMap.get(t.category) || 0;
+      dayData.categoryMap.set(t.category, categoryAmount + t.amountInKRW);
     });
 
   let highestExpenseDay = '없음';
   let highestExpenseAmount = 0;
-  dailyExpenseMap.forEach((amount, date) => {
-    if (amount > highestExpenseAmount) {
-      highestExpenseAmount = amount;
+  let highestExpenseDayCategory = '없음';
+  dailyExpenseMap.forEach((dayData, date) => {
+    if (dayData.total > highestExpenseAmount) {
+      highestExpenseAmount = dayData.total;
       highestExpenseDay = date;
+
+      // 해당 날의 가장 많이 지출한 카테고리 찾기
+      let maxCategoryAmount = 0;
+      let maxCategory = '없음';
+      dayData.categoryMap.forEach((amount, category) => {
+        if (amount > maxCategoryAmount) {
+          maxCategoryAmount = amount;
+          maxCategory = category;
+        }
+      });
+      highestExpenseDayCategory = maxCategory;
     }
   });
 
@@ -541,6 +560,7 @@ export const generateStatisticsSummary = (
     mostExpensiveCategoryAmount,
     highestExpenseDay,
     highestExpenseAmount,
+    highestExpenseDayCategory,
   };
 };
 

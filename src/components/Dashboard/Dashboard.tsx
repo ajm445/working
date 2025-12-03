@@ -70,7 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   transactions,
   recurringExpenses = [],
   onRecurringExpensesChange,
-  categoryBudgets = [],
+  categoryBudgets,
   onCategoryBudgetsChange,
   onViewModeChange,
   currentViewMode = 'summary',
@@ -119,15 +119,17 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       <CurrencySelector />
 
-      {/* 이번달 표시 */}
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
-          {currentViewMode === 'calendar'
-            ? `${displayYear}년 ${displayMonth + 1}월`
-            : '이번달'
-          }
-        </h2>
-      </div>
+      {/* 이번달 표시 - 고정지출 및 통계 탭에서는 숨김 */}
+      {currentViewMode !== 'recurring-expenses' && currentViewMode !== 'statistics' && (
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
+            {currentViewMode === 'calendar'
+              ? `${displayYear}년 ${displayMonth + 1}월`
+              : '이번달'
+            }
+          </h2>
+        </div>
+      )}
 
       {/* 잔액 카드들 - 요약 및 캘린더 탭에서만 표시 */}
       {(currentViewMode === 'summary' || currentViewMode === 'calendar') && (

@@ -11,7 +11,7 @@ import { fetchAllCategoryBudgets } from '../../services/categoryBudgetService';
 interface StatisticsDashboardProps {
   transactions: Transaction[];
   recurringExpenses?: RecurringExpense[];
-  categoryBudgets?: CategoryBudget[];
+  categoryBudgets?: CategoryBudget[] | undefined;
 }
 
 const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
@@ -19,7 +19,7 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
   recurringExpenses = [],
   categoryBudgets: externalBudgets
 }) => {
-  const [period, setPeriod] = useState<StatisticsPeriod>('1month');
+  const [period, setPeriod] = useState<StatisticsPeriod>('monthly');
   const [internalBudgets, setInternalBudgets] = useState<CategoryBudget[]>([]);
   const { currentCurrency, exchangeRates } = useCurrency();
 
@@ -34,12 +34,14 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
   // 예산 데이터 로드 (외부 props가 없을 때만)
   useEffect(() => {
     if (externalBudgets !== undefined) {
-      console.log('📦 Using external budgets from props');
+      console.log('📦 Statistics: Using external budgets from props', externalBudgets);
       return;
     }
 
     const loadBudgets = async () => {
+      console.log('📥 Statistics: Loading budgets from Supabase');
       const { data } = await fetchAllCategoryBudgets();
+      console.log('📊 Statistics: Loaded budgets:', data);
       if (data) {
         setInternalBudgets(data);
       }
@@ -68,8 +70,35 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
 
   const { summary } = statistics;
 
+  // 기간에 따른 표시 텍스트 생성
+  const getPeriodLabel = (): string => {
+    switch (period) {
+      case 'monthly':
+        return `${selectedYear}년 ${selectedMonth}월`;
+      case '1month':
+        return '최근 1개월';
+      case '3months':
+        return '최근 3개월';
+      case '6months':
+        return '최근 6개월';
+      case '1year':
+        return '최근 1년';
+      case 'all':
+        return '전체 기간';
+      default:
+        return '이번달';
+    }
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
+      {/* 기간 표시 */}
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
+          {getPeriodLabel()}
+        </h2>
+      </div>
+
       {/* 헤더 및 기간 선택 - 모바일 개선 */}
       <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow transition-colors duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -255,6 +284,11 @@ const StatisticsDashboard: React.FC<StatisticsDashboardProps> = ({
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 transition-colors duration-300">
               {formatCurrencyForStats(convertAmount(summary.highestExpenseAmount), currentCurrency)}
             </p>
+            {summary.highestExpenseDayCategory !== '없음' && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-300">
+                주요 카테고리: {summary.highestExpenseDayCategory}
+              </p>
+            )}
           </div>
         </div>
       </div>

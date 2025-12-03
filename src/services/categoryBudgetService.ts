@@ -6,7 +6,7 @@ import type {
 } from '../types/database';
 
 /**
- * 모든 카테고리 예산 조회
+ * 모든 카테고리 예산 조회 (활성화된 것만)
  */
 export const fetchAllCategoryBudgets = async (): Promise<{
   data: CategoryBudget[] | null;
@@ -25,7 +25,11 @@ export const fetchAllCategoryBudgets = async (): Promise<{
       .from('category_budgets')
       .select('*')
       .eq('user_id', user.id)
+      .eq('is_active', true)
       .order('category', { ascending: true });
+
+    console.log('🔍 Query filters:', { user_id: user.id, is_active: true });
+    console.log('📦 Query result:', { data, error });
 
     if (error) throw error;
 
@@ -37,7 +41,7 @@ export const fetchAllCategoryBudgets = async (): Promise<{
 };
 
 /**
- * 카테고리 예산 추가
+ * 카테고리 예산 추가 (기존 데이터가 있으면 먼저 삭제)
  */
 export const addCategoryBudget = async (
   budget: Omit<CategoryBudgetInsert, 'user_id'>
@@ -54,11 +58,20 @@ export const addCategoryBudget = async (
       return { data: null, error: new Error('Not authenticated') };
     }
 
+    // 먼저 같은 카테고리의 기존 예산을 모두 삭제 (중복 방지)
+    await supabase
+      .from('category_budgets')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('category', budget.category);
+
+    // 새 예산 추가 (is_active를 명시적으로 true로 설정)
     const { data, error } = await (supabase
       .from('category_budgets') as any)
       .insert({
         ...budget,
         user_id: user.id,
+        is_active: true,
       })
       .select()
       .single();
@@ -103,7 +116,7 @@ export const updateCategoryBudget = async (
 };
 
 /**
- * 카테고리 예산 삭제
+ * 카테고리 예산 삭제 (완전 삭제)
  */
 export const deleteCategoryBudget = async (
   id: string

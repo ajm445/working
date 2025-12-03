@@ -304,6 +304,23 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       {/* 고정지출 탭 내용 */}
       {activeSubTab === 'recurring' && (
         <>
+          {/* 고정지출 설명 */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">📅</span>
+              <div>
+                <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  고정지출이란?
+                </h3>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  매월 정해진 날짜에 반복적으로 발생하는 지출을 관리합니다.
+                  월세, 공과금, 구독료 등을 등록하면 매달 자동으로 지출 내역을 생성하여 예산 관리를 더욱 편리하게 할 수 있습니다.
+                  (고정지출을 추가한 날짜부터 적용됩니다.)
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -442,8 +459,8 @@ const RecurringExpenseManager: React.FC<RecurringExpenseManagerProps> = ({
       {/* 카테고리 예산 탭 내용 */}
       {activeSubTab === 'budget' && (
         <CategoryBudgetManager
-          {...(externalBudgets !== undefined && { budgets: externalBudgets })}
-          {...(onBudgetsChange !== undefined && { onBudgetsChange: onBudgetsChange })}
+          {...(!user && externalBudgets !== undefined && { budgets: externalBudgets })}
+          {...(!user && onBudgetsChange !== undefined && { onBudgetsChange: onBudgetsChange })}
         />
       )}
 

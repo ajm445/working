@@ -48,6 +48,7 @@ export interface StatisticsSummary {
   mostExpensiveCategoryAmount: number;
   highestExpenseDay: string;
   highestExpenseAmount: number;
+  highestExpenseDayCategory: string;
 }
 
 /**
