@@ -460,14 +460,15 @@ const ExpenseTracker: React.FC = () => {
         />
       )}
 
-      {/* Transaction List - 요약 보기일 때만 표시 (최신순 7개) */}
+      {/* Transaction List - 요약 보기일 때만 표시 */}
       {viewMode === 'summary' && (
         <TransactionList
           transactions={transactions
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-            .slice(0, 7)}
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
           onDeleteTransaction={deleteTransaction}
           onEditTransaction={handleEditTransaction}
+          showSearch={true}
+          initialDisplayCount={7}
         />
       )}
     </div>
