@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Transaction } from '../../types/transaction';
 import type { RecurringExpense, CategoryBudget } from '../../types/database';
+import type { SavingsGoal } from '../../types/savingsGoal';
 import {
   calculateMonthlyIncome,
   calculateMonthlyExpenseWithRecurring,
@@ -13,6 +14,7 @@ import CurrentTimeDisplay from './CurrentTimeDisplay';
 import { TransactionCalendar } from '../Calendar';
 import { StatisticsDashboard } from '../Statistics';
 import RecurringExpenseManager from '../RecurringExpenses/RecurringExpenseManager';
+import { SavingsGoalManager } from '../SavingsGoals';
 
 /**
  * 대시보드 뷰 모드 타입
@@ -20,8 +22,9 @@ import RecurringExpenseManager from '../RecurringExpenses/RecurringExpenseManage
  * - calendar: 캘린더 보기 (월별 거래 내역 캘린더 형식)
  * - statistics: 통계 분석 (차트 및 분석 데이터)
  * - recurring-expenses: 고정지출 (매월 반복되는 지출 관리)
+ * - savings-goals: 저축 목표 (저축 목표 관리)
  */
-export type ViewMode = 'summary' | 'calendar' | 'statistics' | 'recurring-expenses';
+export type ViewMode = 'summary' | 'calendar' | 'statistics' | 'recurring-expenses' | 'savings-goals';
 
 /**
  * Dashboard 컴포넌트의 Props 정의
@@ -37,6 +40,10 @@ interface DashboardProps {
   categoryBudgets?: CategoryBudget[];
   /** 카테고리 예산 변경 시 호출되는 콜백 함수 */
   onCategoryBudgetsChange?: (budgets: CategoryBudget[]) => void;
+  /** 저축 목표 내역 배열 */
+  savingsGoals?: SavingsGoal[];
+  /** 저축 목표 변경 시 호출되는 콜백 함수 */
+  onSavingsGoalsChange?: (goals: SavingsGoal[]) => void;
   /** 뷰 모드 변경 시 호출되는 콜백 함수 */
   onViewModeChange?: (mode: ViewMode) => void;
   /** 현재 선택된 뷰 모드 (기본값: 'summary') */
@@ -72,6 +79,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   onRecurringExpensesChange,
   categoryBudgets,
   onCategoryBudgetsChange,
+  savingsGoals,
+  onSavingsGoalsChange,
   onViewModeChange,
   currentViewMode = 'summary',
   onCalendarDateClick,
@@ -119,8 +128,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       <CurrencySelector />
 
-      {/* 이번달 표시 - 고정지출 및 통계 탭에서는 숨김 */}
-      {currentViewMode !== 'recurring-expenses' && currentViewMode !== 'statistics' && (
+      {/* 이번달 표시 - 고정지출, 통계, 저축 목표 탭에서는 숨김 */}
+      {currentViewMode !== 'recurring-expenses' && currentViewMode !== 'statistics' && currentViewMode !== 'savings-goals' && (
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300 transition-colors duration-300">
             {currentViewMode === 'calendar'
@@ -159,7 +168,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 뷰 모드 선택 탭 - 모바일 개선 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border dark:border-gray-700 mb-4 md:mb-6 overflow-hidden transition-colors duration-300">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           <button
             onClick={() => handleViewModeChange('summary')}
             className={`
@@ -206,6 +215,21 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </button>
           <button
+            onClick={() => handleViewModeChange('savings-goals')}
+            className={`
+              px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
+              ${currentViewMode === 'savings-goals'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-600'
+              }
+            `}
+          >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">💰</span>
+              <span className="text-[10px] sm:text-sm">저축</span>
+            </div>
+          </button>
+          <button
             onClick={() => handleViewModeChange('statistics')}
             className={`
               px-1 sm:px-4 py-2.5 sm:py-4 font-medium transition-colors border-l dark:border-gray-700 touch-manipulation
@@ -249,6 +273,13 @@ const Dashboard: React.FC<DashboardProps> = ({
           {...(onRecurringExpensesChange !== undefined && { onExpensesChange: onRecurringExpensesChange })}
           {...(categoryBudgets !== undefined && { budgets: categoryBudgets })}
           {...(onCategoryBudgetsChange !== undefined && { onBudgetsChange: onCategoryBudgetsChange })}
+        />
+      )}
+
+      {currentViewMode === 'savings-goals' && (
+        <SavingsGoalManager
+          {...(savingsGoals !== undefined && { goals: savingsGoals })}
+          {...(onSavingsGoalsChange !== undefined && { onGoalsChange: onSavingsGoalsChange })}
         />
       )}
     </div>

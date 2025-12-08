@@ -6,6 +6,7 @@ import { useAppMode } from './contexts/AppModeContext';
 import { useAnalyticsEvent } from './hooks/useAnalyticsEvent';
 import type { Transaction, TransactionFormData } from './types';
 import type { RecurringExpense, CategoryBudget } from './types/database';
+import type { SavingsGoal } from './types/savingsGoal';
 import Dashboard from './components/Dashboard';
 import type { ViewMode } from './components/Dashboard';
 import { TransactionFormModal } from './components/TransactionForm';
@@ -17,6 +18,7 @@ import AccountManagementModal from './components/Auth/AccountManagementModal';
 import { formatInputDateToKorean, formatDateForInput } from './utils/dateUtils';
 import * as transactionService from './services/transactionService';
 import * as recurringExpenseService from './services/recurringExpenseService';
+import * as savingsGoalService from './services/savingsGoalService';
 import { fetchAllCategoryBudgets, subscribeToCategoryBudgets } from './services/categoryBudgetService';
 import {
   saveCurrentMonthBudgetsToLocal,
@@ -29,6 +31,7 @@ const ExpenseTracker: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]); // 고정지출 데이터
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]); // 카테고리 예산 데이터
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]); // 저축 목표 데이터
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('summary');
@@ -130,6 +133,32 @@ const ExpenseTracker: React.FC = () => {
     };
 
     void loadCategoryBudgets();
+  }, [user]);
+
+  // 저축 목표 로드 및 로그아웃 시 초기화
+  useEffect(() => {
+    const loadSavingsGoals = async (): Promise<void> => {
+      // 비로그인 상태면 즉시 빈 배열로 초기화 (로그아웃 시)
+      if (!user) {
+        console.log('🔄 User logged out, clearing savings goals');
+        setSavingsGoals([]);
+        return;
+      }
+
+      // 로그인 상태면 Supabase에서 로드
+      console.log('📥 User logged in, loading savings goals from Supabase');
+      const { data, error } = await savingsGoalService.fetchSavingsGoals();
+
+      if (error) {
+        console.error('Failed to load savings goals:', error);
+        setSavingsGoals([]);
+      } else if (data) {
+        console.log(`✅ Loaded ${data.length} savings goals from Supabase`);
+        setSavingsGoals(data);
+      }
+    };
+
+    void loadSavingsGoals();
   }, [user]);
 
   // 실시간 구독 설정 (다른 브라우저/탭에서의 변경사항 감지용)
@@ -421,6 +450,8 @@ const ExpenseTracker: React.FC = () => {
         onRecurringExpensesChange={setRecurringExpenses}
         categoryBudgets={categoryBudgets}
         onCategoryBudgetsChange={setCategoryBudgets}
+        savingsGoals={savingsGoals}
+        onSavingsGoalsChange={setSavingsGoals}
         onViewModeChange={(newMode) => {
           setViewMode(newMode);
           trackViewChange(newMode);

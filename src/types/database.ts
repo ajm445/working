@@ -191,6 +191,57 @@ export interface Database {
           updated_at?: string;
         };
       };
+      // 저축 목표 테이블
+      savings_goals: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          target_amount: number;
+          current_amount: number;
+          currency: 'KRW' | 'USD' | 'JPY';
+          target_amount_in_krw: number;
+          current_amount_in_krw: number;
+          deadline: string | null;
+          category: string | null;
+          description: string | null;
+          is_completed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          target_amount: number;
+          current_amount?: number;
+          currency?: 'KRW' | 'USD' | 'JPY';
+          target_amount_in_krw: number;
+          current_amount_in_krw?: number;
+          deadline?: string | null;
+          category?: string | null;
+          description?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          target_amount?: number;
+          current_amount?: number;
+          currency?: 'KRW' | 'USD' | 'JPY';
+          target_amount_in_krw?: number;
+          current_amount_in_krw?: number;
+          deadline?: string | null;
+          category?: string | null;
+          description?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -220,6 +271,10 @@ export type RecurringExpenseUpdate = Database['public']['Tables']['recurring_exp
 export type CategoryBudget = Database['public']['Tables']['category_budgets']['Row'];
 export type CategoryBudgetInsert = Database['public']['Tables']['category_budgets']['Insert'];
 export type CategoryBudgetUpdate = Database['public']['Tables']['category_budgets']['Update'];
+
+export type SavingsGoal = Database['public']['Tables']['savings_goals']['Row'];
+export type SavingsGoalInsert = Database['public']['Tables']['savings_goals']['Insert'];
+export type SavingsGoalUpdate = Database['public']['Tables']['savings_goals']['Update'];
 
 // 사용자 설정 타입
 export interface UserSettings {
