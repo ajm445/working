@@ -92,12 +92,12 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md relative">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl dark:shadow-gray-900/50 p-8 w-full max-w-md relative transition-colors duration-300">
         {/* 홈으로 가기 버튼 */}
         <button
           onClick={handleGoHome}
-          className="absolute top-4 left-4 text-indigo-600 hover:text-indigo-800 flex items-center gap-2 transition-colors text-sm"
+          className="absolute top-4 left-4 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-2 transition-colors text-sm"
           aria-label="홈페이지로 돌아가기"
         >
           ← 홈으로
@@ -105,13 +105,13 @@ const LoginPage: React.FC = () => {
 
         {/* 로고 및 타이틀 */}
         <div className="text-center mb-8 mt-4">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-indigo-600 dark:bg-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4 transition-colors duration-300">
             <span className="text-3xl">✈️</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-300">
             일본 워킹홀리데이 가계부
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
             소셜 계정으로 간편하게 시작하세요
           </p>
         </div>
@@ -122,8 +122,8 @@ const LoginPage: React.FC = () => {
             onClick={() => setMode('signin')}
             className={`flex-1 py-2 rounded-lg font-medium transition-all ${
               mode === 'signin'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             role="tab"
             aria-selected={mode === 'signin'}
@@ -135,8 +135,8 @@ const LoginPage: React.FC = () => {
             onClick={() => setMode('signup')}
             className={`flex-1 py-2 rounded-lg font-medium transition-all ${
               mode === 'signup'
-                ? 'bg-indigo-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             role="tab"
             aria-selected={mode === 'signup'}
@@ -149,11 +149,11 @@ const LoginPage: React.FC = () => {
         {/* 에러 메시지 */}
         {error && (
           <div
-            className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+            className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg transition-colors duration-300"
             role="alert"
             aria-live="polite"
           >
-            <p className="text-sm text-red-800">{error}</p>
+            <p className="text-sm text-red-800 dark:text-red-300 transition-colors duration-300">{error}</p>
           </div>
         )}
 
@@ -167,7 +167,7 @@ const LoginPage: React.FC = () => {
         >
           {mode === 'signup' && (
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-300">
                 아이디
               </label>
               <input
@@ -175,7 +175,7 @@ const LoginPage: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-300"
                 placeholder="사용할 아이디를 입력하세요"
                 required={mode === 'signup'}
               />
@@ -183,7 +183,7 @@ const LoginPage: React.FC = () => {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-300">
               이메일
             </label>
             <input
@@ -191,14 +191,14 @@ const LoginPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-300"
               placeholder="example@email.com"
               required
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors duration-300">
               비밀번호
             </label>
             <input
@@ -206,7 +206,7 @@ const LoginPage: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors duration-300"
               placeholder="••••••••"
               required
               minLength={6}
@@ -216,7 +216,7 @@ const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading === 'email'}
-            className="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={mode === 'signin' ? '이메일로 로그인' : '이메일로 회원가입'}
           >
             {loading === 'email' ? (
@@ -233,10 +233,10 @@ const LoginPage: React.FC = () => {
         {/* 구분선 */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-300 dark:border-gray-600 transition-colors duration-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">또는</span>
+            <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors duration-300">또는</span>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ const LoginPage: React.FC = () => {
           <button
             onClick={() => void handleGoogleLogin()}
             disabled={loading !== null}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:bg-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Google 계정으로 로그인"
           >
             {loading === 'google' ? (
@@ -281,7 +281,7 @@ const LoginPage: React.FC = () => {
           <button
             onClick={() => void handleLineLogin()}
             disabled={loading !== null}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#06C755] rounded-lg font-medium text-white hover:bg-[#05B04A] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#06C755] dark:bg-[#05B04A] rounded-lg font-medium text-white hover:bg-[#05B04A] dark:hover:bg-[#049e3f] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading === 'line' ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -295,13 +295,13 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* 약관 동의 */}
-        <p className="mt-6 text-xs text-center text-gray-500">
+        <p className="mt-6 text-xs text-center text-gray-500 dark:text-gray-400 transition-colors duration-300">
           로그인하면{' '}
-          <a href="/terms" className="text-indigo-600 hover:underline">
+          <a href="/terms" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             서비스 약관
           </a>
           과{' '}
-          <a href="/privacy" className="text-indigo-600 hover:underline">
+          <a href="/privacy" className="text-indigo-600 dark:text-indigo-400 hover:underline">
             개인정보 처리방침
           </a>
           에 동의하는 것으로 간주됩니다.
