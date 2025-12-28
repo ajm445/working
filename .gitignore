@@ -37,3 +37,12 @@ dist/stats.html
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Claude Code MCP config (contains API keys)
+.mcp.json
+
+# claude setting
+.claude
+
+# clone database
+/clone
