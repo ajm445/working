@@ -34,7 +34,7 @@ const JapanCostCategoryCard: React.FC<JapanCostCategoryCardProps> = ({
   };
 
   const handleSuggestionClick = (amount: number): void => {
-    const convertedAmount = convertAmount(amount, regionRange.currency, currency);
+    const convertedAmount = Math.round(convertAmount(amount, regionRange.currency, currency));
     setInputValue(convertedAmount.toString());
     onAmountChange(convertedAmount);
   };

@@ -87,6 +87,26 @@ const InitialCostCalculator: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* 안내 문구 */}
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 transition-colors duration-300">
+        <div className="flex items-start gap-3">
+          <span className="text-amber-500 dark:text-amber-400 text-xl">ℹ️</span>
+          <div>
+            <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-1 transition-colors duration-300">
+              예상 비용 안내
+            </h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300 leading-relaxed transition-colors duration-300">
+              표시된 금액은 <strong>2025년 기준 대략적인 예상 범위</strong>입니다.
+              실제 비용은 환율 변동, 시기, 개인 상황에 따라 달라질 수 있습니다.
+              정확한 비용은 해당 기관이나 서비스 제공자에게 직접 확인하시기 바랍니다.
+            </p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 transition-colors duration-300">
+              💡 최소/평균/최대 버튼은 빠른 입력을 위한 참고 금액입니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Region Selection */}
       <JapanRegionSelector
         selectedRegion={selectedRegion}
